@@ -86,3 +86,47 @@ must not prevent normal MVP260 operation.
 6. validate temperature display
 7. validate fault-code rendering
 8. only then connect to the main spa controller state machine
+
+
+## Confirmed reference pinout from kgstorm GS100/VL260 project
+
+The reference project reports the following RJ45-style topside wiring for the VL200/VL400-family 3/4-button panel interface:
+
+| Pin | Function |
+|---:|---|
+| 1 | VIN |
+| 2 | Warm button |
+| 3 | Light button |
+| 4 | GND |
+| 5 | Display data |
+| 6 | Display clock |
+| 7 | Jets button |
+| 8 | Cool button |
+
+Observed electrical behavior in that project:
+
+- button lines sit at approximately 2.5 V when idle
+- a button press connects the relevant line toward 5 V
+- optocouplers are used to emulate button presses without loading the panel
+- display data and clock are reduced to ESP32-safe levels using resistor dividers
+- display frames are 24 bits total
+- display data is sampled on clock rising edges
+- the project reports roughly 19 ms between frames
+
+### Important verification rule
+
+This pinout is an excellent starting point for the MVP260 because the GS100 technical documentation lists the MVP260 as the VL260 panel option and the kgstorm project targets the same simple Balboa panel family.
+
+However, this project will still verify the actual Fisher MVP260 harness with a multimeter / logic analyzer before connecting it to the Waveshare controller.
+
+Do not rely solely on wire color.
+
+### Suggested MVP260 interface hardware
+
+- RJ45-style mating socket / extension lead
+- 4 optocoupler channels for Warm / Cool / Jets / Light button emulation
+- divider / buffer inputs for Display Data and Clock
+- ESD protection
+- removable low-voltage connector between interface board and main controller
+
+The display decoder can be ported from the open-source reference rather than re-created from scratch.
