@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900">
+  <style>
+    .box{fill:#f7f7f7;stroke:#222;stroke-width:2;rx:14;ry:14}
+    .title{font:700 24px Arial,sans-serif;fill:#111}
+    .txt{font:18px Arial,sans-serif;fill:#222}
+    .small{font:15px Arial,sans-serif;fill:#333}
+    .line{stroke:#222;stroke-width:3;fill:none}
+    .dash{stroke:#666;stroke-width:2;stroke-dasharray:8 6;fill:none}
+  </style>
+  <text x="700" y="42" text-anchor="middle" class="title">Fisher Spa ESP32 Retrofit — V1 Hardware Architecture</text>
+
+  <rect x="520" y="75" width="360" height="75" class="box"/>
+  <text x="700" y="106" text-anchor="middle" class="txt">240 VAC / 10 A Spa Supply</text>
+  <text x="700" y="133" text-anchor="middle" class="small">Upstream RCD/RCBO retained</text>
+
+  <path d="M700 150 V190 M700 190 H240 M700 190 H1160" class="line"/>
+
+  <rect x="90" y="220" width="300" height="110" class="box"/>
+  <text x="240" y="255" text-anchor="middle" class="txt">Pump Power</text>
+  <text x="240" y="285" text-anchor="middle" class="small">LOW + HIGH contactors</text>
+  <text x="240" y="310" text-anchor="middle" class="small">hardware NC interlock</text>
+
+  <rect x="550" y="220" width="300" height="110" class="box"/>
+  <text x="700" y="255" text-anchor="middle" class="txt">Heater Power</text>
+  <text x="700" y="285" text-anchor="middle" class="small">Safety contactor → SSR</text>
+  <text x="700" y="310" text-anchor="middle" class="small">2 kW heater</text>
+
+  <rect x="1010" y="220" width="300" height="110" class="box"/>
+  <text x="1160" y="255" text-anchor="middle" class="txt">24 VDC PSU</text>
+  <text x="1160" y="285" text-anchor="middle" class="small">60 W / 2.5 A</text>
+  <text x="1160" y="310" text-anchor="middle" class="small">controller + coils</text>
+
+  <path d="M240 190 V220 M700 190 V220 M1160 190 V220" class="line"/>
+
+  <rect x="970" y="390" width="380" height="210" class="box"/>
+  <text x="1160" y="425" text-anchor="middle" class="txt">Waveshare ESP32-S3 6CH</text>
+  <text x="1000" y="460" class="small">CH1 → LOW contactor</text>
+  <text x="1000" y="487" class="small">CH2 → HIGH contactor</text>
+  <text x="1000" y="514" class="small">CH3 → heater safety contactor</text>
+  <text x="1000" y="541" class="small">CH4 → UV / ozone</text>
+  <text x="1000" y="568" class="small">CH5 → light   CH6 → spare</text>
+
+  <path d="M1160 330 V390" class="line"/>
+
+  <rect x="540" y="400" width="300" height="165" class="box"/>
+  <text x="690" y="435" text-anchor="middle" class="txt">Heater Interface</text>
+  <text x="570" y="470" class="small">GPIO16 → transistor → SSR input</text>
+  <text x="570" y="497" class="small">CH3 → safety contactor</text>
+  <text x="570" y="524" class="small">independent high-limit</text>
+
+  <path d="M970 485 H840" class="dash"/>
+  <path d="M690 400 V330" class="dash"/>
+
+  <rect x="80" y="405" width="370" height="155" class="box"/>
+  <text x="265" y="440" text-anchor="middle" class="txt">OEM M7 Sensors</text>
+  <text x="110" y="477" class="small">Sensor A + Sensor B</text>
+  <text x="110" y="504" class="small">10 kΩ precision dividers</text>
+  <text x="110" y="531" class="small">ADS1115 → I²C GPIO8/9</text>
+  <path d="M450 485 H970" class="dash"/>
+
+  <rect x="80" y="655" width="440" height="170" class="box"/>
+  <text x="300" y="690" text-anchor="middle" class="txt">Balboa MVP260 Topside</text>
+  <text x="110" y="727" class="small">DATA → GPIO10</text>
+  <text x="110" y="754" class="small">CLOCK → GPIO11</text>
+  <text x="110" y="781" class="small">WARM / COOL / JETS / LIGHT</text>
+  <text x="110" y="808" class="small">→ optocouplers → GPIO12–15</text>
+  <path d="M520 740 H970" class="dash"/>
+
+  <rect x="930" y="680" width="420" height="145" class="box"/>
+  <text x="1140" y="715" text-anchor="middle" class="txt">Software / User Layer</text>
+  <text x="960" y="752" class="small">Local safety state machine</text>
+  <text x="960" y="779" class="small">ESP32 web interface</text>
+  <text x="960" y="806" class="small">Matter → Google Home</text>
+  <path d="M1160 600 V680" class="dash"/>
+</svg>
