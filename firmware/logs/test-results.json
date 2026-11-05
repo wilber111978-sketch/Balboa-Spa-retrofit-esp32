@@ -1,0 +1,344 @@
+[
+  {
+    "build": "Demo",
+    "case": "startup",
+    "passed": true,
+    "output": "PASS 1 startup\n"
+  },
+  {
+    "build": "Demo",
+    "case": "heat",
+    "passed": true,
+    "output": "PASS 1 heat\n"
+  },
+  {
+    "build": "Demo",
+    "case": "hysteresis",
+    "passed": true,
+    "output": "PASS 1 hysteresis\n"
+  },
+  {
+    "build": "Demo",
+    "case": "changeover",
+    "passed": true,
+    "output": "PASS 1 changeover\n"
+  },
+  {
+    "build": "Demo",
+    "case": "fault-high",
+    "passed": true,
+    "output": "PASS 1 fault-high\n"
+  },
+  {
+    "build": "Demo",
+    "case": "sensor-b",
+    "passed": true,
+    "output": "PASS 1 sensor-b\n"
+  },
+  {
+    "build": "Demo",
+    "case": "overtemp",
+    "passed": true,
+    "output": "PASS 1 overtemp\n"
+  },
+  {
+    "build": "Demo",
+    "case": "disagreement",
+    "passed": true,
+    "output": "PASS 1 disagreement\n"
+  },
+  {
+    "build": "Demo",
+    "case": "diff-inhibit",
+    "passed": true,
+    "output": "PASS 1 diff-inhibit\n"
+  },
+  {
+    "build": "Demo",
+    "case": "highlimit",
+    "passed": true,
+    "output": "PASS 1 highlimit\n"
+  },
+  {
+    "build": "Demo",
+    "case": "invalid-range",
+    "passed": true,
+    "output": "PASS 1 invalid-range\n"
+  },
+  {
+    "build": "Demo",
+    "case": "filtration",
+    "passed": true,
+    "output": "PASS 1 filtration\n"
+  },
+  {
+    "build": "Demo",
+    "case": "schedule-heat",
+    "passed": true,
+    "output": "PASS 1 schedule-heat\n"
+  },
+  {
+    "build": "Demo",
+    "case": "overnight",
+    "passed": true,
+    "output": "PASS 1 overnight\n"
+  },
+  {
+    "build": "Demo",
+    "case": "equal-window",
+    "passed": true,
+    "output": "PASS 1 equal-window\n"
+  },
+  {
+    "build": "Demo",
+    "case": "catchup",
+    "passed": true,
+    "output": "PASS 1 catchup\n"
+  },
+  {
+    "build": "Demo",
+    "case": "afteruse",
+    "passed": true,
+    "output": "PASS 1 afteruse\n"
+  },
+  {
+    "build": "Demo",
+    "case": "afteruse-pause",
+    "passed": true,
+    "output": "PASS 1 afteruse-pause\n"
+  },
+  {
+    "build": "Demo",
+    "case": "jets-timeout",
+    "passed": true,
+    "output": "PASS 1 jets-timeout\n"
+  },
+  {
+    "build": "Demo",
+    "case": "ready-timeout",
+    "passed": true,
+    "output": "PASS 1 ready-timeout\n"
+  },
+  {
+    "build": "Demo",
+    "case": "runtime",
+    "passed": true,
+    "output": "PASS 1 runtime\n"
+  },
+  {
+    "build": "Demo",
+    "case": "day-rollover",
+    "passed": true,
+    "output": "PASS 1 day-rollover\n"
+  },
+  {
+    "build": "Demo",
+    "case": "nonfinite",
+    "passed": true,
+    "output": "PASS 1 nonfinite\n"
+  },
+  {
+    "build": "Demo",
+    "case": "filter-threshold",
+    "passed": true,
+    "output": "PASS 1 filter-threshold\n"
+  },
+  {
+    "build": "Demo",
+    "case": "clock-backwards",
+    "passed": true,
+    "output": "PASS 1 clock-backwards\n"
+  },
+  {
+    "build": "Demo",
+    "case": "stale",
+    "passed": true,
+    "output": "PASS 1 stale\n"
+  },
+  {
+    "build": "Demo",
+    "case": "json",
+    "passed": true,
+    "output": "{\"demo\":true,\"tempA\":null,\"tempB\":36.00,\"setpoint\":38.0,\"pump\":0,\"requestedPump\":0,\"heaterPinsInhibited\":true,\"ch1\":false,\"ch3\":false,\"light\":false,\"fault\":5,\"lockout\":false,\"heatMode\":0,\"serviceMode\":false,\"settingsHealthy\":true,\"resetReason\":1,\"ready\":false,\"dailyLowSeconds\":0,\"afterUseSeconds\":0,\"filterCleanDue\":false,\"heatingCommissioned\":false}\nPASS 1 json\n"
+  },
+  {
+    "build": "Demo",
+    "case": "rapid-commands",
+    "passed": true,
+    "output": "PASS 1 rapid-commands\n"
+  },
+  {
+    "build": "Demo",
+    "case": "rollover",
+    "passed": true,
+    "output": "PASS 1 rollover\n"
+  },
+  {
+    "build": "Demo",
+    "case": "wifi-loss",
+    "passed": true,
+    "output": "PASS 1 wifi-loss\n"
+  },
+  {
+    "build": "Demo",
+    "case": "malformed",
+    "passed": true,
+    "output": "PASS 1 malformed\n"
+  },
+  {
+    "build": "Demo",
+    "case": "power-save",
+    "passed": true,
+    "output": "PASS 1 power-save\n"
+  },
+  {
+    "build": "Demo",
+    "case": "power-recover",
+    "passed": true,
+    "output": "PASS 1 power-recover\n"
+  },
+  {
+    "build": "Demo",
+    "case": "web-auth",
+    "passed": true,
+    "output": "PASS 1 web-auth\n"
+  },
+  {
+    "build": "Demo",
+    "case": "web-input",
+    "passed": true,
+    "output": "PASS 1 web-input\n"
+  },
+  {
+    "build": "Demo",
+    "case": "heat-runon",
+    "passed": true,
+    "output": "PASS 1 heat-runon\n"
+  },
+  {
+    "build": "Demo",
+    "case": "fault-v-schedule",
+    "passed": true,
+    "output": "PASS 1 fault-v-schedule\n"
+  },
+  {
+    "build": "Demo",
+    "case": "rapid-rise",
+    "passed": true,
+    "output": "PASS 1 rapid-rise\n"
+  },
+  {
+    "build": "Demo",
+    "case": "runon-wrap",
+    "passed": true,
+    "output": "PASS 1 runon-wrap\n"
+  },
+  {
+    "build": "Demo",
+    "case": "clock-loss",
+    "passed": true,
+    "output": "PASS 1 clock-loss\n"
+  },
+  {
+    "build": "Demo",
+    "case": "clean-confirm",
+    "passed": true,
+    "output": "PASS 1 clean-confirm\n"
+  },
+  {
+    "build": "Demo",
+    "case": "corrupt-config",
+    "passed": true,
+    "output": "PASS 1 corrupt-config\n"
+  },
+  {
+    "build": "Demo",
+    "case": "restart-fault",
+    "passed": true,
+    "output": "PASS 1 restart-fault\n"
+  },
+  {
+    "build": "Demo",
+    "case": "restart-manual",
+    "passed": true,
+    "output": "PASS 1 restart-manual\n"
+  },
+  {
+    "build": "Demo",
+    "case": "restart-afteruse",
+    "passed": true,
+    "output": "PASS 1 restart-afteruse\n"
+  },
+  {
+    "build": "Main",
+    "case": "main-injections",
+    "passed": true,
+    "output": "PASS 0 main-injections\n"
+  },
+  {
+    "build": "Main",
+    "case": "main-lock",
+    "passed": true,
+    "output": "PASS 0 main-lock\n"
+  },
+  {
+    "build": "Main",
+    "case": "adc-startup",
+    "passed": true,
+    "output": "PASS 0 adc-startup\n"
+  },
+  {
+    "build": "Main",
+    "case": "adc-disconnect",
+    "passed": true,
+    "output": "PASS 0 adc-disconnect\n"
+  },
+  {
+    "build": "Main",
+    "case": "adc-timeout",
+    "passed": true,
+    "output": "PASS 0 adc-timeout\n"
+  },
+  {
+    "build": "Main",
+    "case": "ntc",
+    "passed": true,
+    "output": "PASS 0 ntc\n"
+  },
+  {
+    "build": "Main",
+    "case": "main-ema",
+    "passed": true,
+    "output": "PASS 0 main-ema\n"
+  },
+  {
+    "build": "Main",
+    "case": "raw-overtemp",
+    "passed": true,
+    "output": "PASS 0 raw-overtemp\n"
+  },
+  {
+    "build": "Main",
+    "case": "corrupt-config",
+    "passed": true,
+    "output": "PASS 0 corrupt-config\n"
+  },
+  {
+    "build": "Main",
+    "case": "restart-fault",
+    "passed": true,
+    "output": "PASS 0 restart-fault\n"
+  },
+  {
+    "build": "Main",
+    "case": "restart-manual",
+    "passed": true,
+    "output": "PASS 0 restart-manual\n"
+  },
+  {
+    "build": "Main",
+    "case": "restart-afteruse",
+    "passed": true,
+    "output": "PASS 0 restart-afteruse\n"
+  }
+]

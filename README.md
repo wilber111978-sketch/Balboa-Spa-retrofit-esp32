@@ -14,7 +14,7 @@ The goal is to retain the OEM spa experience and existing harnesses, while repla
 - proper motor contactors and SSR heater switching
 - future pH / ORP monitoring and dosing support
 
-> **Status:** hardware design and parts selection in progress. Major control hardware has been ordered. Enclosure sizing will be done after bench layout.
+> **Status:** reviewed firmware **V0.6.2** is now tracked under [`firmware/`](firmware/README.md). Main and Demo compile and 141 host scenarios pass. Both physical heater outputs remain inhibited; hardware commissioning is outstanding. The web app milestone is demo-first and the planned rich JSON API is not yet served by this firmware.
 
 ---
 
@@ -53,16 +53,18 @@ Selected because it provides:
 - 7–36 VDC supply input
 - industrial-style screw terminals / enclosure
 
-### Planned output allocation
+### Reviewed V0.6.2 output allocation
 
-| Channel | Function |
-|---|---|
-| CH1 | Pump LOW contactor |
-| CH2 | Pump HIGH contactor |
-| CH3 | Heater control / safety logic |
-| CH4 | UV / ozone |
-| CH5 | Spa light |
-| CH6 | Spare / future expansion |
+| Channel | GPIO | Function |
+|---|---:|---|
+| CH1 | 1 | Heater safety contactor (inhibited) |
+| CH2 | 2 | Pump LOW contactor |
+| CH3 | 41 | Heater SSR control via dry relay contacts (inhibited) |
+| CH4 | 42 | Pump HIGH contactor |
+| CH5 | 45 | UV / ozone |
+| CH6 | 46 | Spa light |
+
+This supersedes the older proposal with a GPIO16 SSR driver. See [MASTER_GPIO_MAP.md](docs/MASTER_GPIO_MAP.md). This records the reviewed software mapping; physical polarity/wiring still require bench verification.
 
 ---
 
@@ -100,7 +102,7 @@ One controls LOW speed and one controls HIGH speed.
 
 Each contactor's NC auxiliary contact is placed in series with the opposite contactor coil.
 
-This means both pump windings cannot be energized simultaneously even if firmware fails.
+The electrical cross-interlock is one protective layer. It does not prove mutual exclusion under simultaneous pickup, welded contacts or wiring faults; validate the actual motor/contactors and any required mechanical interlock and feedback during commissioning.
 
 Firmware will also enforce a changeover dead-time of approximately 0.5–1.0 s.
 
@@ -338,7 +340,7 @@ V1 will support scheduled daytime heating to take advantage of solar generation.
 Example:
 
 ```
-09:00–15:30
+11:00–16:00
 ```
 
 Future versions can optionally integrate actual inverter / surplus-solar data.
@@ -413,3 +415,17 @@ Minimum rules:
 This project contains mains electricity, water, a heater and a motor.
 
 Final mains wiring, earthing, branch protection, enclosure suitability, RCD/RCBO protection and commissioning should be inspected and tested by a suitably licensed electrician before the spa is returned to service.
+
+
+## Reviewed firmware: run and test
+
+```sh
+cd firmware
+python3 tests/run_all.py
+bash build.sh
+```
+
+Install the pinned toolchain/libraries first; see [firmware/README.md](firmware/README.md). Tests never flash hardware. Read the [test report](firmware/reports/TEST_REPORT.md) and [commissioning checklist](firmware/reports/COMMISSIONING_CHECKLIST.md).
+
+`alloff` / `service on` enter persistent Service Mode; `service off confirm` exits after safe acknowledgement. `off` only releases manual pump demand and may allow automatic LOW/after-use circulation to resume. Heating remains uncommissioned.
+

@@ -1,6 +1,6 @@
-# Hardware Interface Schematic — V1
+# Hardware Interface — V0.6.2 mapping, commissioning pending
 
-This document defines the first practical wiring/schematic for the replacement controller.
+This document records the reviewed V0.6.2 software allocation alongside uncommissioned hardware proposals. It is not validated installation guidance. Both heater outputs remain physically inhibited. See the firmware commissioning checklist before bench work.
 
 It is intended to become the basis for a small interface PCB or DIN-rail daughter board.
 
@@ -65,9 +65,9 @@ Use a dedicated 24 V distribution terminal block.
 ```
 +24 V
   |
-Waveshare CH1 COM
+Waveshare CH2 COM
   |
-Waveshare CH1 NO
+Waveshare CH2 NO
   |
 HIGH contactor NC auxiliary (21-22)
   |
@@ -83,9 +83,9 @@ LOW coil A2
 ```
 +24 V
   |
-Waveshare CH2 COM
+Waveshare CH4 COM
   |
-Waveshare CH2 NO
+Waveshare CH4 NO
   |
 LOW contactor NC auxiliary (21-22)
   |
@@ -111,9 +111,9 @@ This creates a real electrical interlock independent of firmware.
   |
 hardware high-limit / emergency permissive
   |
-Waveshare CH3 COM
+Waveshare CH1 COM
   |
-Waveshare CH3 NO
+Waveshare CH1 NO
   |
 heater safety contactor coil A1
   |
@@ -124,25 +124,11 @@ A2
 
 If the independent high-limit opens, the safety contactor cannot energize even if the ESP32 requests heat.
 
-### 4.2 SSR normal control
+### 4.2 SSR control in the reviewed firmware
 
-Use a dedicated transistor driver from **GPIO16**.
+V0.6.2 routes the SSR's separately supplied DC control circuit through **CH3 / GPIO41 dry relay contacts**, rather than the superseded GPIO16 transistor proposal. CH3 is not a direct ESP32-to-SSR connection. Correct control voltage, polarity and contact ratings must be independently verified.
 
-Suggested simple low-side driver:
-
-```
-GPIO16 ---- 2.2k ---- base 2N2222 / BC337
-                       |
-                    10k to GND
-
-+24 V ---------------- SSR INPUT +
-SSR INPUT - ----------- transistor collector
-transistor emitter ---- 0 V
-```
-
-A small logic-level MOSFET may be used instead.
-
-The SSR input is optically isolated internally, so the transistor stage is primarily for level shifting / current handling.
+No high-frequency/time-proportioning relay cycling is implemented. The heater safety contactor's power path remains in series with the SSR. CH1 and CH3 are forced OFF by both shipping builds; do not remove the inhibit without a separately validated live-heating design.
 
 ### 4.3 Heater mains path
 
@@ -178,7 +164,7 @@ Proposed pins:
 ```
 3.3 V
   |
-10 kΩ, 0.1%
+30 kΩ reference (reviewed firmware model)
   |
   +------ ADS1115 A0
   |
@@ -192,7 +178,7 @@ Balboa M7 Sensor A
 ```
 3.3 V
   |
-10 kΩ, 0.1%
+30 kΩ reference (reviewed firmware model)
   |
   +------ ADS1115 A1
   |
@@ -209,7 +195,7 @@ Recommended input conditioning on each ADC channel:
 
 The final resistor/filter values remain subject to bench testing against the OEM sensors.
 
-Firmware should convert measured voltage -> resistance -> temperature using the Balboa resistance table rather than assuming a Beta coefficient.
+Current V0.6.2 converts voltage → resistance → temperature using the unvalidated 30 kΩ / beta 3860 model. The published Balboa table remains a calibration reference for future validation; table interpolation is not implemented. Keep the heater lockout.
 
 ---
 
@@ -294,7 +280,7 @@ For V1:
 ```
 240 V active
    |
-Waveshare CH4 COM / NO
+Waveshare CH5 COM / NO
    |
 OEM UV / ozone connector
 ```
@@ -303,13 +289,13 @@ Neutral and protective earth continue through proper distribution blocks.
 
 Before commissioning, verify the UV / ozone device current and startup characteristics.
 
-If its ballast/inrush is significant, CH4 should drive a small external contactor instead of carrying the load directly.
+If its ballast/inrush is significant, CH5 should drive a small external contactor instead of carrying the load directly.
 
 ---
 
 ## 8. Light output
 
-CH5 is reserved for the original spa light.
+CH6 is allocated to the original spa light.
 
 Do **not** wire this section until the original light voltage has been confirmed.
 

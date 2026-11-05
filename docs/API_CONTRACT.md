@@ -1,5 +1,7 @@
 # Fisher Spa Web API / Data Contract
 
+> **Planned application contract, not the V0.6.2 wire protocol.** Current firmware provides authenticated `GET /api/status`, `GET /api/events` and form-encoded `POST /api/cmd`. It does not yet serve `/api/state`, the JSON POST endpoints below, or static UI files. The demo app uses this rich contract; HttpSpaService must remain disconnected until firmware implements it. See `docs/APP_IMPLEMENTATION.md`.
+
 ## Design principle
 
 The web app consumes a small JSON API from the ESP32.
@@ -187,3 +189,5 @@ Attempts to clear only faults that firmware marks resettable.
 - Bound numeric values.
 - Rate-limit repeated commands.
 - Never let the browser become the source of truth.
+
+

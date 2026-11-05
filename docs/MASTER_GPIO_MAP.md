@@ -18,30 +18,27 @@ This is the project-wide source of truth for ESP32-S3 pin usage. Update this fil
 | GPIO38 | RGB LED | RESERVED |
 | GPIO0 | BOOT | RESERVED |
 
-## Project assignments
+## Reviewed firmware V0.6.2 assignments
 
 | GPIO | Project use | Status |
 |---:|---|---|
-| GPIO8 | I2C SDA — ADS1115 / sensor expansion | ASSIGNED |
-| GPIO9 | I2C SCL — ADS1115 / sensor expansion | ASSIGNED |
-| GPIO10 | MVP260 display DATA | ASSIGNED |
-| GPIO11 | MVP260 display CLOCK | ASSIGNED |
-| GPIO12 | MVP260 WARM button emulation | ASSIGNED |
-| GPIO13 | MVP260 COOL button emulation | ASSIGNED |
-| GPIO14 | MVP260 JETS button emulation | ASSIGNED |
-| GPIO15 | MVP260 LIGHT button emulation | ASSIGNED |
-| GPIO16 | Heater SSR MOSFET driver | ASSIGNED |
+| GPIO8 | I2C SDA — ADS1115 | IMPLEMENTED; wiring unverified |
+| GPIO9 | I2C SCL — ADS1115 | IMPLEMENTED; wiring unverified |
+| GPIO10–15 | Future VL260 interface proposal | RESERVED; not implemented |
+| GPIO16 | Former SSR transistor-driver proposal | NOT USED in V0.6.2 |
 
-## Relay channel allocation
+## Relay channel allocation — V0.6.2 source of truth
 
 | Relay | GPIO | Function |
 |---|---:|---|
-| CH1 | GPIO1 | Pump LOW contactor |
-| CH2 | GPIO2 | Pump HIGH contactor |
-| CH3 | GPIO41 | Heater safety contactor |
-| CH4 | GPIO42 | UV / ozone |
-| CH5 | GPIO45 | Spa light |
-| CH6 | GPIO46 | Spare / future |
+| CH1 | GPIO1 | Heater safety contactor; physical output inhibited |
+| CH2 | GPIO2 | Pump LOW contactor |
+| CH3 | GPIO41 | Heater SSR control through dry relay contacts; physical output inhibited |
+| CH4 | GPIO42 | Pump HIGH contactor |
+| CH5 | GPIO45 | UV / ozone |
+| CH6 | GPIO46 | Spa light |
+
+This mapping supersedes the earlier proposal with CH1/CH2 as LOW/HIGH and GPIO16 as SSR. No hardware has been reconfigured by this documentation update. Bench-verify wiring, polarity, boot behavior and contactors before connecting loads. The independent high-limit/feedback pins remain unassigned, and heater commissioning remains blocked.
 
 ## Currently free / candidate GPIOs
 

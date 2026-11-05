@@ -39,6 +39,10 @@ Important: some aftermarket product pages describe Balboa sensors as 10 kΩ devi
 | 88.0 | 3.0 kΩ |
 | 110.5 | 1.5 kΩ |
 
+## Current firmware status
+
+V0.6.2 uses ADS1115 AIN0/AIN1, a 3.3 V divider with 30 kΩ reference resistors, and an assumed 30 kΩ / beta 3860 thermistor model. The table above is a reference for future calibration, not the conversion currently implemented. Neither heater output is commissioned.
+
 ## Recommended readout method
 
 Do not depend on the ESP32's raw ADC for the final heater-safety measurement if avoidable.
@@ -48,7 +52,7 @@ Recommended V1 hardware:
 - ADS1115 16-bit ADC
 - 3.3 V supply
 - one channel per M7 sensor
-- precision 10 kΩ 0.1% reference resistor per channel
+- 30 kΩ reference resistor per channel, matching the reviewed firmware model
 - small RC input filter
 - optional series resistor / clamp protection
 - common low-voltage ground with the controller sensor domain
@@ -58,7 +62,7 @@ Example divider per sensor:
 ```
 3.3 V
   |
-10 kΩ 0.1%
+30 kΩ reference
   |
   +------ ADS1115 input
   |
@@ -69,12 +73,12 @@ M7 NTC sensor
 
 At representative spa temperatures this gives comfortably measurable voltages:
 
-- 25 °C / 30 kΩ: ~2.48 V
-- 38.5 °C / 17.2 kΩ: ~2.09 V
-- 42.5 °C / 14.7 kΩ: ~1.96 V
-- 52.5 °C / 10 kΩ: ~1.65 V
+- 25 °C / 30 kΩ: ~1.65 V
+- 38.5 °C / 17.2 kΩ: ~1.20 V
+- 42.5 °C / 14.7 kΩ: ~1.09 V
+- 52.5 °C / 10 kΩ: ~0.825 V
 
-## Conversion strategy
+## Future calibration / conversion strategy
 
 Use the Balboa published resistance table as the primary conversion reference.
 

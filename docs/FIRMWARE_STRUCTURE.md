@@ -1,4 +1,17 @@
-# Firmware Structure
+# Current firmware structure — V0.6.2
+
+- `firmware/SpaMain_V0_6/` and `firmware/SpaDemo_V0_6/`: mode-only Arduino entry sketches.
+- `firmware/libraries/SpaController/src/SpaController.h`: shared control implementation.
+- `SpaPersistence.h`: checked versioned NVS records.
+- `BoundedWebServer.h`: bounded authenticated HTTP subset.
+- `firmware/tests/`: 57 original plus 84 safeguard host cases; `run_all.py` runs 141.
+- `firmware/baseline/`: frozen references for invariant checks.
+- `firmware/reports/` and `firmware/logs/`: actual build/test evidence and commissioning limits.
+- `firmware/data/`: demo-first static UI assets; not yet served by the controller.
+
+The modular layout below is a future refactoring proposal, not the current implementation. No panel/Matter/current-sensing modules are implemented by listing them here.
+
+# Future modular layout
 
 Recommended project layout:
 

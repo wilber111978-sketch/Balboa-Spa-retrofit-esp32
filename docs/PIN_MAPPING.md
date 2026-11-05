@@ -48,25 +48,18 @@ Expected functions depend on the actual Fisher installation and voltage.
 
 Do not assume the light is 240 V.
 
-## New controller mapping
+## Reviewed V0.6.2 controller mapping
 
-### Pump LOW
-Waveshare CH1 -> 24 VDC LOW contactor coil
+| Function | Output |
+|---|---|
+| Heater safety contactor | CH1 / GPIO1, inhibited |
+| Pump LOW | CH2 / GPIO2 |
+| Heater SSR control | CH3 / GPIO41 dry relay contacts, inhibited |
+| Pump HIGH | CH4 / GPIO42 |
+| UV / ozone | CH5 / GPIO45 |
+| Spa light | CH6 / GPIO46 |
 
-### Pump HIGH
-Waveshare CH2 -> 24 VDC HIGH contactor coil
-
-### Heater
-Waveshare CH3 -> heater permissive / SSR control logic
-
-### UV / ozone
-Waveshare CH4
-
-### Light
-Waveshare CH5
-
-### Spare
-Waveshare CH6
+See [MASTER_GPIO_MAP.md](MASTER_GPIO_MAP.md). GPIO16 is not used for SSR drive in this revision. Harness terminal positions and light voltage are still unverified. This records software assignments, not permission to wire or energize them.
 
 ## Interlock wiring
 
