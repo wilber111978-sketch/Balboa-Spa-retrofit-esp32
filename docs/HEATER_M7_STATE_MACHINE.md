@@ -1,5 +1,7 @@
 # Heater / M7 State Machine Specification
 
+> Design intent, not a certified Balboa M7 reproduction. Reviewed V0.6.2 implements protective checks but leaves Main heating qualification unavailable and both physical heater outputs inhibited. See `firmware/reports/COMMISSIONING_CHECKLIST.md`; UI scenarios are synthetic and cannot commission this state machine.
+
 ## Objective
 
 Recreate the useful parts of Balboa's dual-temperature-sensor heater / flow logic while adding clearer diagnostics.

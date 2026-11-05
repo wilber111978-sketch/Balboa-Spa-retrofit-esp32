@@ -1,0 +1,8 @@
+node_modules/
+artifacts/
+firmware/.build*/
+firmware/tests/test-0
+firmware/tests/test-1
+firmware/tests/extended-0
+firmware/tests/extended-1
+**/__pycache__/

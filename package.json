@@ -1,0 +1,1 @@
+{"name":"fisher-spa-demo","version":"0.1.0","private":true,"type":"module","scripts":{"test":"node --test tests/model.test.js","test:browser":"node tests/browser.mjs","size":"node tests/asset-size.mjs"},"devDependencies":{"playwright":"1.62.1"}}

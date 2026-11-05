@@ -429,3 +429,10 @@ Install the pinned toolchain/libraries first; see [firmware/README.md](firmware/
 
 `alloff` / `service on` enter persistent Service Mode; `service off confirm` exits after safe acknowledgement. `off` only releases manual pump demand and may allow automatic LOW/after-use circulation to resume. Heating remains uncommissioned.
 
+## Demo web app
+
+```sh
+python3 -m http.server 8080 --directory firmware/data
+```
+
+Open **http://localhost:8080/**. Home, History, Diagnostics and Settings work without hardware using 12 selectable demo scenarios. The demo never calls physical controller endpoints. [Run/tests and integration notes](docs/APP_IMPLEMENTATION.md) explain the service boundary and [UI validation](docs/APP_TEST_REPORT.md) records executed results. This app is not yet hosted by the V0.6.2 HTTP server.

@@ -191,3 +191,12 @@ Attempts to clear only faults that firmware marks resettable.
 - Never let the browser become the source of truth.
 
 
+## Demo transport clarifications (milestone 1)
+
+The default demo schedule is 11:00–16:00, matching the reviewed firmware. Earlier 09:00–15:30 examples in this document illustrate JSON shape, not current defaults. V0.6.2 windows have hour precision and no weekday selector; the planned UI/API supports minute precision and weekdays, requiring a future adapter/firmware change.
+
+Planned command acknowledgement: `{"accepted":true}` on an accepted request, otherwise a non-2xx response or `{"accepted":false,"message":"reason"}`. After acknowledgement the UI must fetch authoritative state; submitted values are not state.
+
+Planned service payload: `{"enabled":true,"confirm":true}` to enter, or `{"enabled":false,"confirm":true}` to exit. Planned fault-reset payload: `{"confirm":true}`. Fault acknowledgement never exits Service Mode. Demo temperatures are limited to 20–40°C in 0.5°C UI steps; live limits must eventually come from firmware capabilities.
+
+`NORMAL` is not yet mapped to firmware `heatmode manual`; this mapping and safe override duration need an explicit integration decision. The UI never sends relay/GPIO commands.
