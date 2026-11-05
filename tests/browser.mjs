@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {resolve} from 'node:path';import {pathToFileURL} from 'node:url';
 import {mkdir,writeFile} from 'node:fs/promises';
 const {chromium}=process.env.PLAYWRIGHT_MODULE?await import(process.env.PLAYWRIGHT_MODULE):await import('playwright');
 const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
@@ -6,6 +7,7 @@ const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFac
 const failures=[];const checks=[];page.on('pageerror',e=>failures.push(e.message));
 page.on('console',m=>{if(m.type()==='error')failures.push(m.text());});
 const url=process.env.APP_URL||'http://127.0.0.1:8080/';
+const shots=process.env.SCREENSHOT_DIR?pathToFileURL(resolve(process.env.SCREENSHOT_DIR)+'/'):new URL('../docs/screenshots/',import.meta.url);
 page.on('request',request=>{if(!request.url().startsWith(url)&&!request.url().startsWith('data:'))failures.push('Unexpected external request: '+request.url());});
 const check=async(name,fn)=>{await fn();checks.push(name);console.log('PASS',name);};
 const ready=()=>page.waitForFunction(()=>document.querySelector('#main')?.getAttribute('aria-busy')==='false'&&document.querySelector('.temperature'));
@@ -14,8 +16,8 @@ const navigate=async name=>{await page.locator('.bottom-nav').getByRole('button'
 try{
  await page.goto(url);await ready();
  await check('demo Home loads and local assets have no console errors',async()=>{assert.match(await page.locator('#main').innerText(),/36\.8/);assert.match(await page.locator('#main').innerText(),/11:00–16:00/);});
- await mkdir(new URL('../docs/screenshots/',import.meta.url),{recursive:true});
- await page.screenshot({path:new URL('../docs/screenshots/home.jpg',import.meta.url).pathname,fullPage:true,type:"jpeg",quality:75});
+ await mkdir(shots,{recursive:true});
+ await page.screenshot({path:new URL('home.jpg',shots).pathname,fullPage:true,type:"jpeg",quality:75});
  await check('confirmed temperature and jets requests update central state',async()=>{
   await page.getByRole('button',{name:'Increase target temperature'}).click();await page.waitForFunction(()=>document.querySelector('#feedback').textContent.includes('Request accepted'));assert.match(await page.locator('#main').innerText(),/38\.5/);
   await page.locator('[data-action=jets][data-value=HIGH]').click();await page.waitForFunction(()=>document.querySelector('[data-action=jets][data-value=HIGH]')?.getAttribute('aria-pressed')==='true');
@@ -27,7 +29,7 @@ try{
  await check('all 12 selectable scenarios render coherent screens',async()=>{for(const id of ['idle','heating','reached','high','sensor-a','sensor-b','mismatch','flow','no-response','overtemp','wifi']){await scenario(id);if(['sensor-a','sensor-b','mismatch','flow','no-response','overtemp','wifi'].includes(id))assert.equal(await page.getByRole('button',{name:'Increase target temperature'}).isDisabled(),true);}});
  await check('offline banner and controls disabled',async()=>{assert.match(await page.locator('#banners').innerText(),/Controller offline/);assert.equal(await page.locator('[data-action=jets][data-value=HIGH]').isDisabled(),true);});
  await scenario('flow');await navigate('Diagnostics');
- await page.screenshot({path:new URL('../docs/screenshots/diagnostics.jpg',import.meta.url).pathname,fullPage:true,type:"jpeg",quality:75});
+ await page.screenshot({path:new URL('diagnostics.jpg',shots).pathname,fullPage:true,type:"jpeg",quality:75});
  await check('fault Diagnostics shows OEM code, trigger, snapshot, causes and checks',async()=>{const text=await page.locator('#main').innerText();for(const v of ['dr','DELTA_T_HIGH','Captured at trigger','Probable causes','Suggested checks','4.0°C'])assert.ok(text.includes(v));});
  await check('History events open full immutable fault details',async()=>{await navigate('History');await page.locator('[data-action=event]').filter({hasText:'Low flow suspected'}).first().click();await page.locator('#detail-dialog').waitFor({state:'visible'});assert.match(await page.locator('#dialog-content').innerText(),/DELTA_T_HIGH/);await page.getByRole('button',{name:'Close',exact:true}).click();});
  await scenario('idle');await navigate('Settings');

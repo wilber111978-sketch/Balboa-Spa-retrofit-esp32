@@ -14,7 +14,7 @@ The goal is to retain the OEM spa experience and existing harnesses, while repla
 - proper motor contactors and SSR heater switching
 - future pH / ORP monitoring and dosing support
 
-> **Status:** reviewed firmware **V0.6.2** is now tracked under [`firmware/`](firmware/README.md). Main and Demo compile and 141 host scenarios pass. Both physical heater outputs remain inhibited; hardware commissioning is outstanding. The web app milestone is demo-first and the planned rich JSON API is not yet served by this firmware.
+> **Status:** reviewed firmware **V0.6.2** is now tracked under [`firmware/`](firmware/README.md). Main and Demo compile and 141 host scenarios pass. Both physical heater outputs remain inhibited; hardware commissioning is outstanding. The original sketches remain frozen; separate V0.6.3 live sketches now provide the JSON API/static UI while preserving the same physical heater inhibition.
 
 ---
 
@@ -436,3 +436,11 @@ python3 -m http.server 8080 --directory firmware/data
 ```
 
 Open **http://localhost:8080/**. Home, History, Diagnostics and Settings work without hardware using 12 selectable demo scenarios. The demo never calls physical controller endpoints. [Run/tests and integration notes](docs/APP_IMPLEMENTATION.md) explain the service boundary and [UI validation](docs/APP_TEST_REPORT.md) records executed results. This app is not yet hosted by the V0.6.2 HTTP server.
+
+## Live integration on the frozen baseline
+
+V0.6.2 remains pinned at `3cc63df` on `baseline/v0.6.2-reviewed`; the pre-integration demo checkpoint is `bb305cc`. [Rollback/checksum instructions](docs/BASELINE_V062.md) identify both immutable commits.
+
+The later integration adds separate **SpaMain_Live / SpaDemo_Live** sketches and a bounded JSON/static-asset adapter without modifying any of the 44 frozen firmware files. On a configured controller it serves the UI and selects live HTTP automatically; local static serving still runs the simulator. Both physical heater outputs remain inhibited.
+
+[Build, live API limits and test instructions](docs/LIVE_API_INTEGRATION.md) · [Executed integration results](docs/LIVE_API_TEST_REPORT.md)

@@ -1,5 +1,7 @@
 # Demo UI milestone 1 — executed validation
 
+> Historical validation at the pre-integration checkpoint `bb305cc`. Current live-adapter results are in [LIVE_API_TEST_REPORT.md](LIVE_API_TEST_REPORT.md).
+
 Date: 5 November 2026. Demo UI and reviewed V0.6.2 firmware are separate layers. No live controller or mains equipment was connected.
 
 | Check | Executed result |

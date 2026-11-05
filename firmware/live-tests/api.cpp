@@ -1,0 +1,39 @@
+#define main frozen_regression_main
+#include "../tests/scenarios.cpp"
+#undef main
+std::string liveHTTP(const std::string &path,const std::string &body="",bool auth=true,bool post=false){
+ std::string request=(post?"POST ":"GET ")+path+" HTTP/1.1\r\n";
+ if(auth)request+="Authorization: Basic c3BhOnRlc3QtcGFzc3dvcmQtb25seQ==\r\n";
+ if(post)request+="Content-Type: application/json\r\nContent-Length: "+std::to_string(body.size())+"\r\n";
+ int id=MockSockets::connect(request+"\r\n"+body);
+ for(int i=0;i<1000&&MockSockets::sockets[id]->active;i++){fakeMs+=1;processWeb();}
+ return MockSockets::sockets[id]->output;
+}
+JsonDocument responseJSON(const std::string &http){JsonDocument doc;size_t at=http.find("\r\n\r\n");require(at!=std::string::npos,"HTTP headers present");require(!deserializeJson(doc,http.substr(at+4)),"valid JSON response");return doc;}
+void expectCode(const std::string &response,int code){require(response.rfind("HTTP/1.1 "+std::to_string(code)+" ",0)==0,"expected HTTP status");}
+#ifndef SPA_LIVE_BRIDGE
+int main(int argc,char **argv){std::string test=argc>1?argv[1]:"state";setup();
+ if(test=="state"){auto r=liveHTTP("/api/state");expectCode(r,200);auto d=responseJSON(r);require(d["mode"]["demo"].as<bool>()==(bool)SPA_BENCH_DEMO,"build truth");for(const char *key:{"water_c","sensor_a_c","sensor_b_c","delta_t_c","rise_rate_c_min"})require(!d["temperature"][key].isUnbound(),"all nullable temperature fields exist");require(!d["heater"]["allowed"].as<bool>()&&d["heater"]["physical_outputs_inhibited"].as<bool>(),"physical heater gate exposed");require(!d["m7"]["flow_ok"].as<bool>(),"no invented flow proof");require(d["schedule"]["start"]=="11:00","unchanged schedule default");}
+ else if(test=="capabilities"){auto d=responseJSON(liveHTTP("/api/capabilities"));require(d["api_version"]==1&&d["schedule"]["precision_minutes"]==60,"explicit compatible capabilities");require(d["heating_modes"].size()==2,"no implicit manual override");}
+ else if(test=="auth"){for(const char *p:{"/api/state","/api/faults","/api/diagnostics","/api/capabilities","/","/app.js","/runtime.js"})expectCode(liveHTTP(p,"",false),401);expectCode(liveHTTP("/api/jets","{\"requested\":\"HIGH\"}",false,true),401);require(spa.requestedPump==PumpMode::OFF,"unauthorized start cannot apply");}
+ else if(test=="target"){auto r=liveHTTP("/api/target","{\"target_c\":39.5}",true,true);expectCode(r,200);require(responseJSON(r)["accepted"]==true&&config.setpointC==39.5,"target ACK after checked controller save");}
+ else if(test=="bounds"){for(const char *b:{"{\"target_c\":40.5}","{\"target_c\":19}","{\"target_c\":38.2}"})expectCode(liveHTTP("/api/target",b,true,true),422);require(config.setpointC==38,"invalid target does not apply");}
+ else if(test=="strict-json"){for(const char *b:{"[]","{","{\"target_c\":39}junk","{\"target_c\":39,\"target_c\":40}","{\"target_c\":39,\"relay\":1}","{\"target_c\":true}","{\"target_c\":\"39\"}"})expectCode(liveHTTP("/api/target",b,true,true),400);require(config.setpointC==38,"ambiguous/malformed request never applies");}
+ else if(test=="jets"){expectCode(liveHTTP("/api/jets","{\"requested\":\"HIGH\"}",true,true),200);require(spa.requestedPump==PumpMode::HIGH_SPEED,"request only; baseline owns sequencing");run(1200);require(pins[42]&&!pins[2]&&!pins[1]&&!pins[41],"HIGH preserves interlock and heater inhibition");expectCode(liveHTTP("/api/jets","{\"requested\":\"OFF\"}",true,true),200);}
+ else if(test=="light-idempotent"){expectCode(liveHTTP("/api/light","{\"on\":true}",true,true),200);fakeMs+=300;expectCode(liveHTTP("/api/light","{\"on\":true}",true,true),200);require(spa.light&&pins[46],"absolute light ON never toggles OFF on retry");expectCode(liveHTTP("/api/light","{\"on\":false}",true,true),200);require(!pins[46],"safe OFF bypasses request throttle");}
+ else if(test=="service"){expectCode(liveHTTP("/api/service-mode","{\"enabled\":true,\"confirm\":true}",true,true),200);require(serviceMode,"persistent controller service entered");expectCode(liveHTTP("/api/jets","{\"requested\":\"HIGH\"}",true,true),409);expectCode(liveHTTP("/api/service-mode","{\"enabled\":false}",true,true),400);expectCode(liveHTTP("/api/service-mode","{\"enabled\":false,\"confirm\":true}",true,true),200);require(!serviceMode,"explicit checked exit");}
+ else if(test=="fault"){raiseFault(FaultCode::OVERTEMP,true);liveObserveFault();expectCode(liveHTTP("/api/jets","{\"requested\":\"HIGH\"}",true,true),409);auto d=responseJSON(liveHTTP("/api/state"));require(d["fault"]["id"]=="OVER_TEMP"&&d["fault"]["snapshot"].is<JsonObject>(),"rich captured fault");expectCode(liveHTTP("/api/service-mode","{\"enabled\":true,\"confirm\":true}",true,true),200);expectCode(liveHTTP("/api/service-mode","{\"enabled\":false,\"confirm\":true}",true,true),409);require(serviceMode,"fault acknowledgement cannot be skipped");}
+ else if(test=="save-failure"){Preferences::failWrite=true;expectCode(liveHTTP("/api/target","{\"target_c\":39}",true,true),409);require(serviceMode&&!storageHealthy,"failed NVS save never acknowledged");}
+ else if(test=="rate-limit"){expectCode(liveHTTP("/api/target","{\"target_c\":39}",true,true),200);expectCode(liveHTTP("/api/target","{\"target_c\":38}",true,true),429);expectCode(liveHTTP("/api/service-mode","{\"enabled\":true,\"confirm\":true}",true,true),200);require(serviceMode,"shutdown never blocked by rate limiter");}
+ else if(test=="schedule"){expectCode(liveHTTP("/api/schedule","{\"enabled\":true,\"start\":\"22:00\",\"end\":\"06:00\",\"days\":[1,2,3,4,5,6,7]}",true,true),200);require(solarStart==22&&solarEnd==6,"baseline overnight primitive preserved");}
+ else if(test=="unsupported"){expectCode(liveHTTP("/api/mode","{\"heating\":\"NORMAL\"}",true,true),422);expectCode(liveHTTP("/api/schedule","{\"enabled\":true,\"start\":\"11:30\",\"end\":\"16:00\",\"days\":[1,2,3,4,5,6,7]}",true,true),422);expectCode(liveHTTP("/api/schedule","{\"enabled\":true,\"start\":\"11:00\",\"end\":\"16:00\",\"days\":[1]}",true,true),422);require(heatMode==0&&solarStart==11,"unsupported features do not approximate or mutate");}
+ else if(test=="static-stream"){for(const auto &asset:spaAssets){auto r=liveHTTP(asset.path);expectCode(r,200);require(r.find("Content-Encoding: gzip")!=std::string::npos,"flash assets gzip encoded");auto body=r.substr(r.find("\r\n\r\n")+4);require(body.size()==asset.size&&!memcmp(body.data(),asset.data,asset.size),"complete asset streamed without response buffer copy");require(web.lastTxBytes<=128,"TX budget retained");}require(liveHTTP("/runtime.js").find("mode:'live'")!=std::string::npos,"controller boot selects live service");}
+ else if(test=="origin"){int id=MockSockets::connect("POST /api/cmd HTTP/1.1\r\nAuthorization: Basic c3BhOnRlc3QtcGFzc3dvcmQtb25seQ==\r\nHost: spa.local\r\nOrigin: http://other.local\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 8\r\n\r\ncmd=high");for(int i=0;i<100&&MockSockets::sockets[id]->active;i++){fakeMs++;processWeb();}expectCode(MockSockets::sockets[id]->output,403);require(spa.requestedPump==PumpMode::OFF,"cross-origin legacy command rejected");}
+ else if(test=="history"){for(int i=0;i<30;++i)liveRecord("EVENT","Bounded event");auto r=liveHTTP("/api/faults");auto d=responseJSON(r);require(d.is<JsonArray>()&&d.size()==8&&r.size()<4096,"bounded event ring/response");}
+ else if(test=="diagnostics"){auto d=responseJSON(liveHTTP("/api/diagnostics"));require(d["raw_adc"].isNull()&&!d["permissives"].is<JsonObject>(),"raw service data not fabricated/exposed outside service");setServiceMode(true);d=responseJSON(liveHTTP("/api/diagnostics"));require(d["permissives"].is<JsonObject>()&&!d["permissives"]["flow_ok"].as<bool>(),"read-only service observations no flow proof");}
+ else require(false,"unknown API scenario");
+ for(int pin:{1,41}){require(!pins[pin],"physical heater pins remain off");}
+ std::cout<<"PASS "<<SPA_BENCH_DEMO<<" "<<test<<"\n";return 0;
+}
+
+#endif

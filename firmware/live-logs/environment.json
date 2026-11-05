@@ -1,0 +1,36 @@
+{
+  "version": "0.6.3-live-adapter",
+  "frozen_commit": "3cc63df3fa445b5e01342122deafaa788749abcc",
+  "parent_commit": "bb305ccd27b6ad94ca5db20c2dd0dcadaa89ee62",
+  "core": "esp32:esp32@3.3.2",
+  "libraries": {
+    "Adafruit ADS1X15": "2.5.0",
+    "Adafruit BusIO": "1.17.4",
+    "ArduinoJson": "7.4.2"
+  },
+  "builds": {
+    "main": {
+      "result": "PASS",
+      "flash_bytes": 1011847,
+      "flash_limit": 3145728,
+      "ram_bytes": 47480,
+      "ram_limit": 327680,
+      "warnings_emitted": 0
+    },
+    "demo": {
+      "result": "PASS",
+      "flash_bytes": 1011391,
+      "flash_limit": 3145728,
+      "ram_bytes": 47496,
+      "ram_limit": 327680,
+      "warnings_emitted": 0
+    }
+  },
+  "controller_regressions": 141,
+  "api_cases": 36,
+  "ui_unit_cases": 40,
+  "demo_browser_checks": 14,
+  "native_api_browser_checks": 8,
+  "frozen_files": 44,
+  "hardware_tested": false
+}

@@ -76,7 +76,7 @@ export function validateRequest(kind,payload) {
   if (kind==='target' && (Object.keys(payload).length!==1 || !Number.isFinite(payload.target_c) || payload.target_c<LIMITS.min || payload.target_c>LIMITS.max || Math.abs(payload.target_c/LIMITS.step-Math.round(payload.target_c/LIMITS.step))>1e-8)) throw new Error('Target must be 20–40°C in 0.5°C steps.');
   if (kind==='jets' && !['OFF','LOW','HIGH'].includes(payload.requested)) throw new Error('Invalid jets request.');
   if (kind==='light' && typeof payload.on!=='boolean') throw new Error('Light requires an on/off request.');
-  if (kind==='mode' && !['NORMAL','SOLAR_PRIORITY'].includes(payload.heating)) throw new Error('Invalid heating mode.');
+  if (kind==='mode' && !['NORMAL','SOLAR_PRIORITY','OFF'].includes(payload.heating)) throw new Error('Invalid heating mode.');
   if (kind==='service-mode' && (typeof payload.enabled!=='boolean' || payload.confirm!==true)) throw new Error('Service change requires explicit confirmation.');
   if (kind==='fault-reset' && payload.confirm!==true) throw new Error('Fault acknowledgement requires confirmation.');
   if (kind==='schedule') {
@@ -92,6 +92,8 @@ export function validateState(s) {
   for (const n of ['water_c','sensor_a_c','sensor_b_c','delta_t_c','rise_rate_c_min']) if (s.temperature[n]!==null && !Number.isFinite(s.temperature[n])) throw new Error('Invalid temperature state.');
   if (!Number.isFinite(s.temperature.target_c)||s.temperature.target_c<LIMITS.min||s.temperature.target_c>LIMITS.max || !['OFF','LOW','HIGH'].includes(s.pump.actual)||!['OFF','LOW','HIGH'].includes(s.pump.requested)) throw new Error('Invalid controller values.');
   if (![s.controller.online,s.controller.watchdog_ok,s.heater.demand,s.heater.ssr_command,s.heater.safety_contactor,s.heater.allowed,s.uv.on,s.light.on,s.mode.service,s.mode.demo,s.fault.active,s.network.wifi_connected].every(bool)) throw new Error('Invalid controller flags.');
-  validateRequest('mode',{heating:s.mode.heating});validateRequest('schedule',s.schedule);
+  if(!['NORMAL','SOLAR_PRIORITY','OFF','MANUAL_LEGACY'].includes(s.mode.heating))throw new Error('Invalid mode state.');validateRequest('schedule',s.schedule);
   return s;
 }
+
+export function nextTarget(current,direction){const scaled=current/LIMITS.step;const value=(direction>0?Math.floor(scaled+1e-8)+1:Math.ceil(scaled-1e-8)-1)*LIMITS.step;return Math.min(LIMITS.max,Math.max(LIMITS.min,value));}

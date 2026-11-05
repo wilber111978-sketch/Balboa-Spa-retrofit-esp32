@@ -1,0 +1,1064 @@
+[
+  {
+    "build": "Main",
+    "case": "state",
+    "passed": true,
+    "output": "PASS 0 state\n"
+  },
+  {
+    "build": "Main",
+    "case": "capabilities",
+    "passed": true,
+    "output": "PASS 0 capabilities\n"
+  },
+  {
+    "build": "Main",
+    "case": "auth",
+    "passed": true,
+    "output": "PASS 0 auth\n"
+  },
+  {
+    "build": "Main",
+    "case": "target",
+    "passed": true,
+    "output": "PASS 0 target\n"
+  },
+  {
+    "build": "Main",
+    "case": "bounds",
+    "passed": true,
+    "output": "PASS 0 bounds\n"
+  },
+  {
+    "build": "Main",
+    "case": "strict-json",
+    "passed": true,
+    "output": "PASS 0 strict-json\n"
+  },
+  {
+    "build": "Main",
+    "case": "jets",
+    "passed": true,
+    "output": "PASS 0 jets\n"
+  },
+  {
+    "build": "Main",
+    "case": "light-idempotent",
+    "passed": true,
+    "output": "PASS 0 light-idempotent\n"
+  },
+  {
+    "build": "Main",
+    "case": "service",
+    "passed": true,
+    "output": "PASS 0 service\n"
+  },
+  {
+    "build": "Main",
+    "case": "fault",
+    "passed": true,
+    "output": "PASS 0 fault\n"
+  },
+  {
+    "build": "Main",
+    "case": "save-failure",
+    "passed": true,
+    "output": "PASS 0 save-failure\n"
+  },
+  {
+    "build": "Main",
+    "case": "rate-limit",
+    "passed": true,
+    "output": "PASS 0 rate-limit\n"
+  },
+  {
+    "build": "Main",
+    "case": "schedule",
+    "passed": true,
+    "output": "PASS 0 schedule\n"
+  },
+  {
+    "build": "Main",
+    "case": "unsupported",
+    "passed": true,
+    "output": "PASS 0 unsupported\n"
+  },
+  {
+    "build": "Main",
+    "case": "static-stream",
+    "passed": true,
+    "output": "PASS 0 static-stream\n"
+  },
+  {
+    "build": "Main",
+    "case": "origin",
+    "passed": true,
+    "output": "PASS 0 origin\n"
+  },
+  {
+    "build": "Main",
+    "case": "history",
+    "passed": true,
+    "output": "PASS 0 history\n"
+  },
+  {
+    "build": "Main",
+    "case": "diagnostics",
+    "passed": true,
+    "output": "PASS 0 diagnostics\n"
+  },
+  {
+    "build": "Demo",
+    "case": "state",
+    "passed": true,
+    "output": "PASS 1 state\n"
+  },
+  {
+    "build": "Demo",
+    "case": "capabilities",
+    "passed": true,
+    "output": "PASS 1 capabilities\n"
+  },
+  {
+    "build": "Demo",
+    "case": "auth",
+    "passed": true,
+    "output": "PASS 1 auth\n"
+  },
+  {
+    "build": "Demo",
+    "case": "target",
+    "passed": true,
+    "output": "PASS 1 target\n"
+  },
+  {
+    "build": "Demo",
+    "case": "bounds",
+    "passed": true,
+    "output": "PASS 1 bounds\n"
+  },
+  {
+    "build": "Demo",
+    "case": "strict-json",
+    "passed": true,
+    "output": "PASS 1 strict-json\n"
+  },
+  {
+    "build": "Demo",
+    "case": "jets",
+    "passed": true,
+    "output": "PASS 1 jets\n"
+  },
+  {
+    "build": "Demo",
+    "case": "light-idempotent",
+    "passed": true,
+    "output": "PASS 1 light-idempotent\n"
+  },
+  {
+    "build": "Demo",
+    "case": "service",
+    "passed": true,
+    "output": "PASS 1 service\n"
+  },
+  {
+    "build": "Demo",
+    "case": "fault",
+    "passed": true,
+    "output": "PASS 1 fault\n"
+  },
+  {
+    "build": "Demo",
+    "case": "save-failure",
+    "passed": true,
+    "output": "PASS 1 save-failure\n"
+  },
+  {
+    "build": "Demo",
+    "case": "rate-limit",
+    "passed": true,
+    "output": "PASS 1 rate-limit\n"
+  },
+  {
+    "build": "Demo",
+    "case": "schedule",
+    "passed": true,
+    "output": "PASS 1 schedule\n"
+  },
+  {
+    "build": "Demo",
+    "case": "unsupported",
+    "passed": true,
+    "output": "PASS 1 unsupported\n"
+  },
+  {
+    "build": "Demo",
+    "case": "static-stream",
+    "passed": true,
+    "output": "PASS 1 static-stream\n"
+  },
+  {
+    "build": "Demo",
+    "case": "origin",
+    "passed": true,
+    "output": "PASS 1 origin\n"
+  },
+  {
+    "build": "Demo",
+    "case": "history",
+    "passed": true,
+    "output": "PASS 1 history\n"
+  },
+  {
+    "build": "Demo",
+    "case": "diagnostics",
+    "passed": true,
+    "output": "PASS 1 diagnostics\n"
+  },
+  {
+    "build": "Demo",
+    "case": "startup",
+    "passed": true,
+    "output": "PASS 1 startup\n"
+  },
+  {
+    "build": "Demo",
+    "case": "heat",
+    "passed": true,
+    "output": "PASS 1 heat\n"
+  },
+  {
+    "build": "Demo",
+    "case": "hysteresis",
+    "passed": true,
+    "output": "PASS 1 hysteresis\n"
+  },
+  {
+    "build": "Demo",
+    "case": "changeover",
+    "passed": true,
+    "output": "PASS 1 changeover\n"
+  },
+  {
+    "build": "Demo",
+    "case": "fault-high",
+    "passed": true,
+    "output": "PASS 1 fault-high\n"
+  },
+  {
+    "build": "Demo",
+    "case": "sensor-b",
+    "passed": true,
+    "output": "PASS 1 sensor-b\n"
+  },
+  {
+    "build": "Demo",
+    "case": "overtemp",
+    "passed": true,
+    "output": "PASS 1 overtemp\n"
+  },
+  {
+    "build": "Demo",
+    "case": "disagreement",
+    "passed": true,
+    "output": "PASS 1 disagreement\n"
+  },
+  {
+    "build": "Demo",
+    "case": "diff-inhibit",
+    "passed": true,
+    "output": "PASS 1 diff-inhibit\n"
+  },
+  {
+    "build": "Demo",
+    "case": "highlimit",
+    "passed": true,
+    "output": "PASS 1 highlimit\n"
+  },
+  {
+    "build": "Demo",
+    "case": "invalid-range",
+    "passed": true,
+    "output": "PASS 1 invalid-range\n"
+  },
+  {
+    "build": "Demo",
+    "case": "filtration",
+    "passed": true,
+    "output": "PASS 1 filtration\n"
+  },
+  {
+    "build": "Demo",
+    "case": "schedule-heat",
+    "passed": true,
+    "output": "PASS 1 schedule-heat\n"
+  },
+  {
+    "build": "Demo",
+    "case": "overnight",
+    "passed": true,
+    "output": "PASS 1 overnight\n"
+  },
+  {
+    "build": "Demo",
+    "case": "equal-window",
+    "passed": true,
+    "output": "PASS 1 equal-window\n"
+  },
+  {
+    "build": "Demo",
+    "case": "catchup",
+    "passed": true,
+    "output": "PASS 1 catchup\n"
+  },
+  {
+    "build": "Demo",
+    "case": "afteruse",
+    "passed": true,
+    "output": "PASS 1 afteruse\n"
+  },
+  {
+    "build": "Demo",
+    "case": "afteruse-pause",
+    "passed": true,
+    "output": "PASS 1 afteruse-pause\n"
+  },
+  {
+    "build": "Demo",
+    "case": "jets-timeout",
+    "passed": true,
+    "output": "PASS 1 jets-timeout\n"
+  },
+  {
+    "build": "Demo",
+    "case": "ready-timeout",
+    "passed": true,
+    "output": "PASS 1 ready-timeout\n"
+  },
+  {
+    "build": "Demo",
+    "case": "runtime",
+    "passed": true,
+    "output": "PASS 1 runtime\n"
+  },
+  {
+    "build": "Demo",
+    "case": "day-rollover",
+    "passed": true,
+    "output": "PASS 1 day-rollover\n"
+  },
+  {
+    "build": "Demo",
+    "case": "nonfinite",
+    "passed": true,
+    "output": "PASS 1 nonfinite\n"
+  },
+  {
+    "build": "Demo",
+    "case": "filter-threshold",
+    "passed": true,
+    "output": "PASS 1 filter-threshold\n"
+  },
+  {
+    "build": "Demo",
+    "case": "clock-backwards",
+    "passed": true,
+    "output": "PASS 1 clock-backwards\n"
+  },
+  {
+    "build": "Demo",
+    "case": "stale",
+    "passed": true,
+    "output": "PASS 1 stale\n"
+  },
+  {
+    "build": "Demo",
+    "case": "json",
+    "passed": true,
+    "output": "{\"demo\":true,\"tempA\":null,\"tempB\":36.00,\"setpoint\":38.0,\"pump\":0,\"requestedPump\":0,\"heaterPinsInhibited\":true,\"ch1\":false,\"ch3\":false,\"light\":false,\"fault\":5,\"lockout\":false,\"heatMode\":0,\"serviceMode\":false,\"settingsHealthy\":true,\"resetReason\":1,\"ready\":false,\"dailyLowSeconds\":0,\"afterUseSeconds\":0,\"filterCleanDue\":false,\"heatingCommissioned\":false}\nPASS 1 json\n"
+  },
+  {
+    "build": "Demo",
+    "case": "rapid-commands",
+    "passed": true,
+    "output": "PASS 1 rapid-commands\n"
+  },
+  {
+    "build": "Demo",
+    "case": "rollover",
+    "passed": true,
+    "output": "PASS 1 rollover\n"
+  },
+  {
+    "build": "Demo",
+    "case": "wifi-loss",
+    "passed": true,
+    "output": "PASS 1 wifi-loss\n"
+  },
+  {
+    "build": "Demo",
+    "case": "malformed",
+    "passed": true,
+    "output": "PASS 1 malformed\n"
+  },
+  {
+    "build": "Demo",
+    "case": "power-save",
+    "passed": true,
+    "output": "PASS 1 power-save\n"
+  },
+  {
+    "build": "Demo",
+    "case": "power-recover",
+    "passed": true,
+    "output": "PASS 1 power-recover\n"
+  },
+  {
+    "build": "Demo",
+    "case": "web-auth",
+    "passed": true,
+    "output": "PASS 1 web-auth\n"
+  },
+  {
+    "build": "Demo",
+    "case": "web-input",
+    "passed": true,
+    "output": "PASS 1 web-input\n"
+  },
+  {
+    "build": "Demo",
+    "case": "heat-runon",
+    "passed": true,
+    "output": "PASS 1 heat-runon\n"
+  },
+  {
+    "build": "Demo",
+    "case": "fault-v-schedule",
+    "passed": true,
+    "output": "PASS 1 fault-v-schedule\n"
+  },
+  {
+    "build": "Demo",
+    "case": "rapid-rise",
+    "passed": true,
+    "output": "PASS 1 rapid-rise\n"
+  },
+  {
+    "build": "Demo",
+    "case": "runon-wrap",
+    "passed": true,
+    "output": "PASS 1 runon-wrap\n"
+  },
+  {
+    "build": "Demo",
+    "case": "clock-loss",
+    "passed": true,
+    "output": "PASS 1 clock-loss\n"
+  },
+  {
+    "build": "Demo",
+    "case": "clean-confirm",
+    "passed": true,
+    "output": "PASS 1 clean-confirm\n"
+  },
+  {
+    "build": "Demo",
+    "case": "corrupt-config",
+    "passed": true,
+    "output": "PASS 1 corrupt-config\n"
+  },
+  {
+    "build": "Demo",
+    "case": "restart-fault",
+    "passed": true,
+    "output": "PASS 1 restart-fault\n"
+  },
+  {
+    "build": "Demo",
+    "case": "restart-manual",
+    "passed": true,
+    "output": "PASS 1 restart-manual\n"
+  },
+  {
+    "build": "Demo",
+    "case": "restart-afteruse",
+    "passed": true,
+    "output": "PASS 1 restart-afteruse\n"
+  },
+  {
+    "build": "Main",
+    "case": "main-injections",
+    "passed": true,
+    "output": "PASS 0 main-injections\n"
+  },
+  {
+    "build": "Main",
+    "case": "main-lock",
+    "passed": true,
+    "output": "PASS 0 main-lock\n"
+  },
+  {
+    "build": "Main",
+    "case": "adc-startup",
+    "passed": true,
+    "output": "PASS 0 adc-startup\n"
+  },
+  {
+    "build": "Main",
+    "case": "adc-disconnect",
+    "passed": true,
+    "output": "PASS 0 adc-disconnect\n"
+  },
+  {
+    "build": "Main",
+    "case": "adc-timeout",
+    "passed": true,
+    "output": "PASS 0 adc-timeout\n"
+  },
+  {
+    "build": "Main",
+    "case": "ntc",
+    "passed": true,
+    "output": "PASS 0 ntc\n"
+  },
+  {
+    "build": "Main",
+    "case": "main-ema",
+    "passed": true,
+    "output": "PASS 0 main-ema\n"
+  },
+  {
+    "build": "Main",
+    "case": "raw-overtemp",
+    "passed": true,
+    "output": "PASS 0 raw-overtemp\n"
+  },
+  {
+    "build": "Main",
+    "case": "corrupt-config",
+    "passed": true,
+    "output": "PASS 0 corrupt-config\n"
+  },
+  {
+    "build": "Main",
+    "case": "restart-fault",
+    "passed": true,
+    "output": "PASS 0 restart-fault\n"
+  },
+  {
+    "build": "Main",
+    "case": "restart-manual",
+    "passed": true,
+    "output": "PASS 0 restart-manual\n"
+  },
+  {
+    "build": "Main",
+    "case": "restart-afteruse",
+    "passed": true,
+    "output": "PASS 0 restart-afteruse\n"
+  },
+  {
+    "build": "Demo",
+    "case": "service",
+    "passed": true,
+    "output": "PASS 1 service\n"
+  },
+  {
+    "build": "Demo",
+    "case": "alloff",
+    "passed": true,
+    "output": "PASS 1 alloff\n"
+  },
+  {
+    "build": "Demo",
+    "case": "off-semantics",
+    "passed": true,
+    "output": "PASS 1 off-semantics\n"
+  },
+  {
+    "build": "Demo",
+    "case": "service-fault-exit",
+    "passed": true,
+    "output": "PASS 1 service-fault-exit\n"
+  },
+  {
+    "build": "Demo",
+    "case": "service-save",
+    "passed": true,
+    "output": "PASS 1 service-save\n"
+  },
+  {
+    "build": "Demo",
+    "case": "service-reboot",
+    "passed": true,
+    "output": "PASS 1 service-reboot\n"
+  },
+  {
+    "build": "Demo",
+    "case": "watchdog-reboot",
+    "passed": true,
+    "output": "PASS 1 watchdog-reboot\n"
+  },
+  {
+    "build": "Demo",
+    "case": "watchdog-panic",
+    "passed": true,
+    "output": "PASS 1 watchdog-panic\n"
+  },
+  {
+    "build": "Demo",
+    "case": "brownout",
+    "passed": true,
+    "output": "PASS 1 brownout\n"
+  },
+  {
+    "build": "Demo",
+    "case": "watchdog-feed",
+    "passed": true,
+    "output": "PASS 1 watchdog-feed\n"
+  },
+  {
+    "build": "Demo",
+    "case": "watchdog-feed-failure",
+    "passed": true,
+    "output": "PASS 1 watchdog-feed-failure\n"
+  },
+  {
+    "build": "Demo",
+    "case": "watchdog-init-failure",
+    "passed": true,
+    "output": "PASS 1 watchdog-init-failure\n"
+  },
+  {
+    "build": "Demo",
+    "case": "watchdog-existing",
+    "passed": true,
+    "output": "PASS 1 watchdog-existing\n"
+  },
+  {
+    "build": "Demo",
+    "case": "settings-open-failure",
+    "passed": true,
+    "output": "PASS 1 settings-open-failure\n"
+  },
+  {
+    "build": "Demo",
+    "case": "settings-write-failure",
+    "passed": true,
+    "output": "PASS 1 settings-write-failure\n"
+  },
+  {
+    "build": "Demo",
+    "case": "settings-short-write",
+    "passed": true,
+    "output": "PASS 1 settings-short-write\n"
+  },
+  {
+    "build": "Demo",
+    "case": "settings-readback",
+    "passed": true,
+    "output": "PASS 1 settings-readback\n"
+  },
+  {
+    "build": "Demo",
+    "case": "settings-crc",
+    "passed": true,
+    "output": "PASS 1 settings-crc\n"
+  },
+  {
+    "build": "Demo",
+    "case": "settings-version",
+    "passed": true,
+    "output": "PASS 1 settings-version\n"
+  },
+  {
+    "build": "Demo",
+    "case": "settings-missing",
+    "passed": true,
+    "output": "PASS 1 settings-missing\n"
+  },
+  {
+    "build": "Demo",
+    "case": "settings-truncated",
+    "passed": true,
+    "output": "PASS 1 settings-truncated\n"
+  },
+  {
+    "build": "Demo",
+    "case": "settings-semantic",
+    "passed": true,
+    "output": "PASS 1 settings-semantic\n"
+  },
+  {
+    "build": "Demo",
+    "case": "settings-migration",
+    "passed": true,
+    "output": "PASS 1 settings-migration\n"
+  },
+  {
+    "build": "Demo",
+    "case": "settings-roundtrip",
+    "passed": true,
+    "output": "PASS 1 settings-roundtrip\n"
+  },
+  {
+    "build": "Demo",
+    "case": "safety-crc",
+    "passed": true,
+    "output": "PASS 1 safety-crc\n"
+  },
+  {
+    "build": "Demo",
+    "case": "runtime-crc",
+    "passed": true,
+    "output": "PASS 1 runtime-crc\n"
+  },
+  {
+    "build": "Demo",
+    "case": "fault-reset-save-failure",
+    "passed": true,
+    "output": "PASS 1 fault-reset-save-failure\n"
+  },
+  {
+    "build": "Demo",
+    "case": "service-exit-save-failure",
+    "passed": true,
+    "output": "PASS 1 service-exit-save-failure\n"
+  },
+  {
+    "build": "Demo",
+    "case": "stale-before-refresh",
+    "passed": true,
+    "output": "PASS 1 stale-before-refresh\n"
+  },
+  {
+    "build": "Demo",
+    "case": "stale-b",
+    "passed": true,
+    "output": "PASS 1 stale-b\n"
+  },
+  {
+    "build": "Demo",
+    "case": "stale-wrap",
+    "passed": true,
+    "output": "PASS 1 stale-wrap\n"
+  },
+  {
+    "build": "Demo",
+    "case": "network-slow-header",
+    "passed": true,
+    "output": "PASS 1 network-slow-header\n"
+  },
+  {
+    "build": "Demo",
+    "case": "network-slow-body",
+    "passed": true,
+    "output": "PASS 1 network-slow-body\n"
+  },
+  {
+    "build": "Demo",
+    "case": "network-budget",
+    "passed": true,
+    "output": "PASS 1 network-budget\n"
+  },
+  {
+    "build": "Demo",
+    "case": "network-large-header",
+    "passed": true,
+    "output": "PASS 1 network-large-header\n"
+  },
+  {
+    "build": "Demo",
+    "case": "network-stalled-response",
+    "passed": true,
+    "output": "PASS 1 network-stalled-response\n"
+  },
+  {
+    "build": "Demo",
+    "case": "network-auth-status",
+    "passed": true,
+    "output": "PASS 1 network-auth-status\n"
+  },
+  {
+    "build": "Demo",
+    "case": "network-duplicate-length",
+    "passed": true,
+    "output": "PASS 1 network-duplicate-length\n"
+  },
+  {
+    "build": "Demo",
+    "case": "network-service",
+    "passed": true,
+    "output": "PASS 1 network-service\n"
+  },
+  {
+    "build": "Demo",
+    "case": "network-tx-budget",
+    "passed": true,
+    "output": "PASS 1 network-tx-budget\n"
+  },
+  {
+    "build": "Demo",
+    "case": "crc-known-vector",
+    "passed": true,
+    "output": "PASS 1 crc-known-vector\n"
+  },
+  {
+    "build": "Demo",
+    "case": "settings-legacy-values",
+    "passed": true,
+    "output": "PASS 1 settings-legacy-values\n"
+  },
+  {
+    "build": "Main",
+    "case": "service",
+    "passed": true,
+    "output": "PASS 0 service\n"
+  },
+  {
+    "build": "Main",
+    "case": "alloff",
+    "passed": true,
+    "output": "PASS 0 alloff\n"
+  },
+  {
+    "build": "Main",
+    "case": "off-semantics",
+    "passed": true,
+    "output": "PASS 0 off-semantics\n"
+  },
+  {
+    "build": "Main",
+    "case": "service-fault-exit",
+    "passed": true,
+    "output": "PASS 0 service-fault-exit\n"
+  },
+  {
+    "build": "Main",
+    "case": "service-save",
+    "passed": true,
+    "output": "PASS 0 service-save\n"
+  },
+  {
+    "build": "Main",
+    "case": "service-reboot",
+    "passed": true,
+    "output": "PASS 0 service-reboot\n"
+  },
+  {
+    "build": "Main",
+    "case": "watchdog-reboot",
+    "passed": true,
+    "output": "PASS 0 watchdog-reboot\n"
+  },
+  {
+    "build": "Main",
+    "case": "watchdog-panic",
+    "passed": true,
+    "output": "PASS 0 watchdog-panic\n"
+  },
+  {
+    "build": "Main",
+    "case": "brownout",
+    "passed": true,
+    "output": "PASS 0 brownout\n"
+  },
+  {
+    "build": "Main",
+    "case": "watchdog-feed",
+    "passed": true,
+    "output": "PASS 0 watchdog-feed\n"
+  },
+  {
+    "build": "Main",
+    "case": "watchdog-feed-failure",
+    "passed": true,
+    "output": "PASS 0 watchdog-feed-failure\n"
+  },
+  {
+    "build": "Main",
+    "case": "watchdog-init-failure",
+    "passed": true,
+    "output": "PASS 0 watchdog-init-failure\n"
+  },
+  {
+    "build": "Main",
+    "case": "watchdog-existing",
+    "passed": true,
+    "output": "PASS 0 watchdog-existing\n"
+  },
+  {
+    "build": "Main",
+    "case": "settings-open-failure",
+    "passed": true,
+    "output": "PASS 0 settings-open-failure\n"
+  },
+  {
+    "build": "Main",
+    "case": "settings-write-failure",
+    "passed": true,
+    "output": "PASS 0 settings-write-failure\n"
+  },
+  {
+    "build": "Main",
+    "case": "settings-short-write",
+    "passed": true,
+    "output": "PASS 0 settings-short-write\n"
+  },
+  {
+    "build": "Main",
+    "case": "settings-readback",
+    "passed": true,
+    "output": "PASS 0 settings-readback\n"
+  },
+  {
+    "build": "Main",
+    "case": "settings-crc",
+    "passed": true,
+    "output": "PASS 0 settings-crc\n"
+  },
+  {
+    "build": "Main",
+    "case": "settings-version",
+    "passed": true,
+    "output": "PASS 0 settings-version\n"
+  },
+  {
+    "build": "Main",
+    "case": "settings-missing",
+    "passed": true,
+    "output": "PASS 0 settings-missing\n"
+  },
+  {
+    "build": "Main",
+    "case": "settings-truncated",
+    "passed": true,
+    "output": "PASS 0 settings-truncated\n"
+  },
+  {
+    "build": "Main",
+    "case": "settings-semantic",
+    "passed": true,
+    "output": "PASS 0 settings-semantic\n"
+  },
+  {
+    "build": "Main",
+    "case": "settings-migration",
+    "passed": true,
+    "output": "PASS 0 settings-migration\n"
+  },
+  {
+    "build": "Main",
+    "case": "settings-roundtrip",
+    "passed": true,
+    "output": "PASS 0 settings-roundtrip\n"
+  },
+  {
+    "build": "Main",
+    "case": "safety-crc",
+    "passed": true,
+    "output": "PASS 0 safety-crc\n"
+  },
+  {
+    "build": "Main",
+    "case": "runtime-crc",
+    "passed": true,
+    "output": "PASS 0 runtime-crc\n"
+  },
+  {
+    "build": "Main",
+    "case": "fault-reset-save-failure",
+    "passed": true,
+    "output": "PASS 0 fault-reset-save-failure\n"
+  },
+  {
+    "build": "Main",
+    "case": "service-exit-save-failure",
+    "passed": true,
+    "output": "PASS 0 service-exit-save-failure\n"
+  },
+  {
+    "build": "Main",
+    "case": "stale-before-refresh",
+    "passed": true,
+    "output": "PASS 0 stale-before-refresh\n"
+  },
+  {
+    "build": "Main",
+    "case": "stale-b",
+    "passed": true,
+    "output": "PASS 0 stale-b\n"
+  },
+  {
+    "build": "Main",
+    "case": "stale-wrap",
+    "passed": true,
+    "output": "PASS 0 stale-wrap\n"
+  },
+  {
+    "build": "Main",
+    "case": "network-slow-header",
+    "passed": true,
+    "output": "PASS 0 network-slow-header\n"
+  },
+  {
+    "build": "Main",
+    "case": "network-slow-body",
+    "passed": true,
+    "output": "PASS 0 network-slow-body\n"
+  },
+  {
+    "build": "Main",
+    "case": "network-budget",
+    "passed": true,
+    "output": "PASS 0 network-budget\n"
+  },
+  {
+    "build": "Main",
+    "case": "network-large-header",
+    "passed": true,
+    "output": "PASS 0 network-large-header\n"
+  },
+  {
+    "build": "Main",
+    "case": "network-stalled-response",
+    "passed": true,
+    "output": "PASS 0 network-stalled-response\n"
+  },
+  {
+    "build": "Main",
+    "case": "network-auth-status",
+    "passed": true,
+    "output": "PASS 0 network-auth-status\n"
+  },
+  {
+    "build": "Main",
+    "case": "network-duplicate-length",
+    "passed": true,
+    "output": "PASS 0 network-duplicate-length\n"
+  },
+  {
+    "build": "Main",
+    "case": "network-service",
+    "passed": true,
+    "output": "PASS 0 network-service\n"
+  },
+  {
+    "build": "Main",
+    "case": "network-tx-budget",
+    "passed": true,
+    "output": "PASS 0 network-tx-budget\n"
+  },
+  {
+    "build": "Main",
+    "case": "crc-known-vector",
+    "passed": true,
+    "output": "PASS 0 crc-known-vector\n"
+  },
+  {
+    "build": "Main",
+    "case": "settings-legacy-values",
+    "passed": true,
+    "output": "PASS 0 settings-legacy-values\n"
+  }
+]

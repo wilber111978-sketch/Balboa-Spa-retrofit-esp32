@@ -1,5 +1,7 @@
 # Demo web app milestone 1
 
+> Historical first-milestone implementation at `bb305cc`. The later live adapter is documented in [LIVE_API_INTEGRATION.md](LIVE_API_INTEGRATION.md); plain local static serving still uses this demo workflow.
+
 ## Run locally
 
 From the repository root:

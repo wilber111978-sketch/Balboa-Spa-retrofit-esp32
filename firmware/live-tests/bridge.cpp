@@ -1,0 +1,6 @@
+// Test-only stdio bridge: actual C++ HTTP/controller code, mocked peripherals.
+// Never built into ESP32 firmware; injection commands exist only in this driver.
+#define SPA_LIVE_BRIDGE 1
+#include "api.cpp"
+std::string encode64(const std::string &in){static const char a[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";std::string out;uint32_t v=0;int bits=-6;for(unsigned char c:in){v=(v<<8)|c;bits+=8;while(bits>=0){out+=a[(v>>bits)&63];bits-=6;}}if(bits>-6)out+=a[((v<<8)>>(bits+8))&63];while(out.size()%4)out+='=';return out;}
+int main(){setup();std::string line;while(std::getline(std::cin,line)){JsonDocument request,response;if(deserializeJson(request,line)){response["error"]="Invalid bridge input";}else if(request["tick"].is<int>()){fakeMs+=request["tick"].as<int>();loop();response["tick"]=true;}else if(request["inject"].is<const char*>()){executeCommand(request["inject"].as<const char*>());fakeMs+=600;loop();response["injected"]=true;}else{std::string auth=request["authorization"]|"";auto out=liveHTTP(request["path"].as<std::string>(),request["body"]|"",auth=="Basic c3BhOnRlc3QtcGFzc3dvcmQtb25seQ==",request["method"]=="POST");response["response"]=encode64(out);}std::cout<<liveJSON(response)<<std::endl;}return 0;}

@@ -1,3 +1,7 @@
+# Current layered firmware layout
+
+The V0.6.2 implementation below is frozen. New live entry sketches `firmware/SpaMain_Live` and `firmware/SpaDemo_Live` include `libraries/SpaLiveApi`, which calls the unchanged baseline controller with a compatible extended HTTP server. Generated gzip flash assets come from `firmware/data/`; there is no required filesystem upload. See [LIVE_API_INTEGRATION.md](LIVE_API_INTEGRATION.md).
+
 # Current firmware structure — V0.6.2
 
 - `firmware/SpaMain_V0_6/` and `firmware/SpaDemo_V0_6/`: mode-only Arduino entry sketches.

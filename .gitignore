@@ -6,3 +6,8 @@ firmware/tests/test-1
 firmware/tests/extended-0
 firmware/tests/extended-1
 **/__pycache__/
+
+firmware/live-tests/api-0
+firmware/live-tests/api-1
+firmware/live-tests/bridge
+firmware/live-tests/regression-*

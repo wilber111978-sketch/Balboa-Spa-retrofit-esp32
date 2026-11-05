@@ -52,7 +52,7 @@ export class DemoSpaService {
 // Future transport for docs/API_CONTRACT.md, NOT an adapter for V0.6.2 /api/cmd.
 // The UI does not instantiate this class in milestone 1.
 export class HttpSpaService {
-  constructor({base='',fetchFn=globalThis.fetch,timeoutMs=2500}={}){this.base=base;this.fetchFn=fetchFn;this.timeoutMs=timeoutMs;}
+  constructor({base='',fetchFn=globalThis.fetch.bind(globalThis),timeoutMs=2500,requireCapabilities=false}={}){this.base=base;this.fetchFn=fetchFn;this.timeoutMs=timeoutMs;this.requireCapabilities=requireCapabilities;this.capabilities=null;}
   async json(path,options={}){
     const abort=new AbortController();const timer=setTimeout(()=>abort.abort(),this.timeoutMs);
     try{
@@ -63,7 +63,7 @@ export class HttpSpaService {
     }catch(error){if(error.name==='AbortError')throw new Error('Controller timed out. Request outcome is unknown; refresh before retrying.');throw error;}
     finally{clearTimeout(timer);}
   }
-  async read(){const [state,events,diagnostics]=await Promise.all([this.json('/api/state'),this.json('/api/faults'),this.json('/api/diagnostics')]);validateState(state);if(!Array.isArray(events)||events.length>50)throw new Error('Invalid bounded event list.');return {state,events,diagnostics};}
+  async read(){if(this.requireCapabilities&&!this.capabilities){const caps=await this.json('/api/capabilities');if(caps.api_version!==1||caps.heater_commissioned!==false||!Array.isArray(caps.heating_modes)||caps.schedule?.precision_minutes!==60)throw new Error('Unsupported controller API capabilities.');this.capabilities=caps;}const [state,events,diagnostics]=await Promise.all([this.json('/api/state'),this.json('/api/faults'),this.json('/api/diagnostics')]);validateState(state);if(!Array.isArray(events)||events.length>50)throw new Error('Invalid bounded event list.');return {state,events,diagnostics,capabilities:this.capabilities};}
   async request(kind,payload){validateRequest(kind,payload);const ack=await this.json('/api/'+kind,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     if(ack?.accepted!==true)throw new Error(ack?.message||'Controller did not acknowledge this request.');
     // Never turn the submitted values into state. Read the controller after ACK.

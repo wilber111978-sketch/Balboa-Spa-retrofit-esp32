@@ -1,6 +1,6 @@
 # Fisher Spa Web API / Data Contract
 
-> **Planned application contract, not the V0.6.2 wire protocol.** Current firmware provides authenticated `GET /api/status`, `GET /api/events` and form-encoded `POST /api/cmd`. It does not yet serve `/api/state`, the JSON POST endpoints below, or static UI files. The demo app uses this rich contract; HttpSpaService must remain disconnected until firmware implements it. See `docs/APP_IMPLEMENTATION.md`.
+> **Planned application contract, not the V0.6.2 wire protocol.** Current firmware provides authenticated `GET /api/status`, `GET /api/events` and form-encoded `POST /api/cmd`. It does not yet serve `/api/state`, the JSON POST endpoints below, or static UI files. The standalone demo uses this rich contract. HttpSpaService now connects only through the separate V0.6.3 live adapter and its capability handshake; it cannot connect to the frozen V0.6.2 protocol. The illustrative example below is not a claim of commissioned heater permission. See `docs/APP_IMPLEMENTATION.md`.
 
 ## Design principle
 
@@ -200,3 +200,11 @@ Planned command acknowledgement: `{"accepted":true}` on an accepted request, oth
 Planned service payload: `{"enabled":true,"confirm":true}` to enter, or `{"enabled":false,"confirm":true}` to exit. Planned fault-reset payload: `{"confirm":true}`. Fault acknowledgement never exits Service Mode. Demo temperatures are limited to 20–40°C in 0.5°C UI steps; live limits must eventually come from firmware capabilities.
 
 `NORMAL` is not yet mapped to firmware `heatmode manual`; this mapping and safe override duration need an explicit integration decision. The UI never sends relay/GPIO commands.
+
+## V0.6.3 live-adapter implementation
+
+The first live integration now implements this JSON state/command family through the **new** `SpaMain_Live` / `SpaDemo_Live` sketches. The frozen original V0.6.2 sketches still expose only their historical protocol. See [LIVE_API_INTEGRATION.md](LIVE_API_INTEGRATION.md) for the exact API and [BASELINE_V062.md](BASELINE_V062.md) for rollback.
+
+`GET /api/capabilities` is required by the live UI before connecting. API v1 reports uncommissioned heating, supported OFF/SOLAR_PRIORITY modes, whole-hour daily windows and UI target bounds. Unsupported Normal/manual, minute or weekday requests return 422. Equal window endpoints disable the schedule; the JSON enabled flag must agree. This preserves the baseline schedule instead of introducing an unreviewed scheduler.
+
+State may report `mode.heating` as OFF or MANUAL_LEGACY in addition to the demo contract values. The latter is read-only through this adapter. Nullable sensor values are always present, `m7.flow_ok` does not claim proven flow, and `heater.physical_outputs_inhibited` is true. Events can use null wall-clock timestamps with `uptime_ms`; captures are labelled as observations after baseline safety processing. Recent records are bounded in RAM and by response size.
