@@ -1,0 +1,19 @@
+{
+  "passed": [
+    "demo Home loads and local assets have no console errors",
+    "confirmed temperature and jets requests update central state",
+    "rejected requests leave target unchanged and show error",
+    "all 12 selectable scenarios render coherent screens",
+    "offline banner and controls disabled",
+    "fault Diagnostics shows OEM code, trigger, snapshot, causes and checks",
+    "History events open full immutable fault details",
+    "schedule draft survives polling and saves overnight weekdays",
+    "Service entry confirmation can be cancelled and confirmed",
+    "Service persists after browser reload and explicitly exits",
+    "watchdog scenario requires reset then service exit",
+    "paused updates become stale and cannot send commands",
+    "four screens fit 360, 390, 430 and 1280px without horizontal overflow",
+    "no console errors or external dependencies"
+  ],
+  "failures": []
+}

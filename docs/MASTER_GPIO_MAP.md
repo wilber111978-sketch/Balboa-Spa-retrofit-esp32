@@ -24,7 +24,10 @@ This is the project-wide source of truth for ESP32-S3 pin usage. Update this fil
 |---:|---|---|
 | GPIO8 | I2C SDA — ADS1115 | IMPLEMENTED; wiring unverified |
 | GPIO9 | I2C SCL — ADS1115 | IMPLEMENTED; wiring unverified |
-| GPIO10–15 | Future VL260 interface proposal | RESERVED; not implemented |
+| GPIO10/11 | V0.8 GC9A01 SCLK/MOSI | IMPLEMENTED; electrical validation pending |
+| GPIO12/13/14 | V0.8 display CS/DC/RESET | IMPLEMENTED; electrical validation pending |
+| GPIO15 | V0.8 external backlight driver ENABLE | DEFAULT OFF; never LED current supply |
+| GPIO4/5/6/7 | V0.8 Jets/Light/Temp UP/Temp DOWN | IMPLEMENTED; active LOW inputs |
 | GPIO16 | Former SSR transistor-driver proposal | NOT USED in V0.6.2 |
 
 ## Relay channel allocation — V0.6.2 source of truth
@@ -45,10 +48,6 @@ This mapping supersedes the earlier proposal with CH1/CH2 as LOW/HIGH and GPIO16
 The following exposed pins are currently unassigned and may be used later after bench verification:
 
 - GPIO3
-- GPIO4
-- GPIO5
-- GPIO6
-- GPIO7
 - GPIO35
 - GPIO36
 - GPIO37
@@ -66,6 +65,8 @@ Do not allocate any of these permanently without first checking:
 ## Rules
 
 1. No user-interface code may directly control mains outputs.
-2. Matter, web UI and MVP260 handlers only submit requests to the safety state machine.
+2. Matter, web UI and custom topside handlers only submit requests to the safety state machine.
 3. GPIO assignments in firmware must be defined in one central config file.
 4. Any pin change must be reflected here before firmware is merged.
+
+V0.8 replaces the abandoned VL260 proposal. Topside pins are centralized in `firmware/libraries/SpaTopside/src/TopsideConfig.h`. See `TOPSIDE_V08_HARDWARE.md` for wiring, module-current and verification requirements. No relay allocations changed.

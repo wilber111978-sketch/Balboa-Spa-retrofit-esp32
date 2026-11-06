@@ -1,0 +1,13 @@
+{
+  "passed": [
+    "real C++ serves authenticated gzip assets and live runtime",
+    "UI target request traverses JSON adapter and verified baseline save",
+    "HIGH request waits for baseline sequencing; heating stays inhibited",
+    "live capabilities remove unsupported Normal/minute/weekday controls",
+    "persistent Service Mode is actual controller state and survives page reload",
+    "actual sensor fault reaches rich UI and acknowledgement keeps Service Mode",
+    "transport loss shows cached data and blocks requests, then reconnects",
+    "no page errors in live C++ integration"
+  ],
+  "failures": []
+}

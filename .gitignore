@@ -11,3 +11,6 @@ firmware/live-tests/api-0
 firmware/live-tests/api-1
 firmware/live-tests/bridge
 firmware/live-tests/regression-*
+
+firmware/topside-logs/topside-*
+firmware/topside-logs/render-svg

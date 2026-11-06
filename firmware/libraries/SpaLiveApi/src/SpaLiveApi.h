@@ -1,4 +1,10 @@
 #pragma once
+#ifndef SPA_LIVE_VERSION
+#define SPA_LIVE_VERSION "0.6.3-live"
+#endif
+#ifndef SPA_LIVE_BUILD
+#define SPA_LIVE_BUILD "live-api-1"
+#endif
 #include <LiveWebServer.h>
 // Include the frozen baseline once, substituting only its entry-point/server
 // symbols. No sensor, interlock, persistence, scheduling or relay code is forked.
@@ -63,7 +69,7 @@ void liveFaultJSON(JsonObject d,FaultCode code,const LiveEvent *record=nullptr){
     snapshot["pump"]=livePump(record?record->pump:spa.actualPump);snapshot["heater"]=record?record->heater:spa.heaterSSR;snapshot["uv"]=record?record->uv:spa.uv;
 }
 void liveState(){JsonDocument d;
-    auto c=d["controller"].to<JsonObject>();c["online"]=true;c["uptime_s"]=millis()/1000;c["firmware"]=SPA_BENCH_DEMO?"0.6.3-live-demo":"0.6.3-live-main";c["build"]="live-api-1";c["reset_reason"]=resetReason;c["watchdog_ok"]=controlWatchdog!=nullptr;
+    auto c=d["controller"].to<JsonObject>();c["online"]=true;c["uptime_s"]=millis()/1000;c["firmware"]=SPA_BENCH_DEMO?SPA_LIVE_VERSION "-demo":SPA_LIVE_VERSION "-main";c["build"]=SPA_LIVE_BUILD;c["reset_reason"]=resetReason;c["watchdog_ok"]=controlWatchdog!=nullptr;
     auto t=d["temperature"].to<JsonObject>();liveNumber(t["water_c"],spa.waterTemperature);t["target_c"]=config.setpointC;liveNumber(t["sensor_a_c"],tempA.filteredC);liveNumber(t["sensor_b_c"],tempB.filteredC);liveNumber(t["delta_t_c"],spa.tempDifference);liveNumber(t["rise_rate_c_min"],(tempA.rateCPerSec+tempB.rateCPerSec)*30);
     d["pump"]["requested"]=livePump(spa.requestedPump);d["pump"]["actual"]=livePump(spa.actualPump);
     d["heater"]["demand"]=spa.heaterDemand>0;d["heater"]["ssr_command"]=spa.heaterSSR;d["heater"]["safety_contactor"]=spa.heaterSafetyContactor;d["heater"]["allowed"]=false;
@@ -137,5 +143,9 @@ void liveRoutes(){
     web.on("/api/faults",HTTP_GET,[](){if(webAuth())liveHistory();});web.on("/api/diagnostics",HTTP_GET,[](){if(webAuth())liveDiagnostics();});
     for(const char *name:{"target","jets","light","mode","schedule","service-mode","fault-reset"}){std::string route=name;web.on(("/api/"+route).c_str(),HTTP_POST,[route](){if(webAuth())liveCommand(route);});}
 }
-void setup(){spa062Setup();liveRoutes();liveRecord("LIVE_API_STARTED","Live API adapter started; heater outputs inhibited");liveObserveFault();}
-void loop(){spa062Loop();liveObserveFault();}
+void spaLiveSetup(){spa062Setup();liveRoutes();liveRecord("LIVE_API_STARTED","Live API adapter started; heater outputs inhibited");liveObserveFault();}
+void spaLiveLoop(){spa062Loop();liveObserveFault();}
+#ifndef SPA_LIVE_EXTERNAL_ENTRYPOINTS
+void setup(){spaLiveSetup();}
+void loop(){spaLiveLoop();}
+#endif

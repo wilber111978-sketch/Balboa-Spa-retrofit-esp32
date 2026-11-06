@@ -1,0 +1,83 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'><circle cx='120' cy='120' r='120' fill='black'/>
+<defs><clipPath id='s0'><rect x='0' y='0' width='240' height='8'/></clipPath></defs><g clip-path='url(#s0)'>
+</g>
+<defs><clipPath id='s8'><rect x='0' y='8' width='240' height='8'/></clipPath></defs><g clip-path='url(#s8)'>
+</g>
+<defs><clipPath id='s16'><rect x='0' y='16' width='240' height='8'/></clipPath></defs><g clip-path='url(#s16)'>
+</g>
+<defs><clipPath id='s24'><rect x='0' y='24' width='240' height='8'/></clipPath></defs><g clip-path='url(#s24)'>
+<text x='66' y='33' fill='rgb(0,255,255)' font-family='monospace' font-size='8' textLength='108' lengthAdjust='spacingAndGlyphs'>TARGET TEMPERATURE</text>
+</g>
+<defs><clipPath id='s32'><rect x='0' y='32' width='240' height='8'/></clipPath></defs><g clip-path='url(#s32)'>
+<text x='66' y='33' fill='rgb(0,255,255)' font-family='monospace' font-size='8' textLength='108' lengthAdjust='spacingAndGlyphs'>TARGET TEMPERATURE</text>
+</g>
+<defs><clipPath id='s40'><rect x='0' y='40' width='240' height='8'/></clipPath></defs><g clip-path='url(#s40)'>
+</g>
+<defs><clipPath id='s48'><rect x='0' y='48' width='240' height='8'/></clipPath></defs><g clip-path='url(#s48)'>
+</g>
+<defs><clipPath id='s56'><rect x='0' y='56' width='240' height='8'/></clipPath></defs><g clip-path='url(#s56)'>
+<text x='48' y='86' fill='rgb(255,255,255)' font-family='monospace' font-size='32' textLength='144' lengthAdjust='spacingAndGlyphs'>38.0 C</text>
+</g>
+<defs><clipPath id='s64'><rect x='0' y='64' width='240' height='8'/></clipPath></defs><g clip-path='url(#s64)'>
+<text x='48' y='86' fill='rgb(255,255,255)' font-family='monospace' font-size='32' textLength='144' lengthAdjust='spacingAndGlyphs'>38.0 C</text>
+</g>
+<defs><clipPath id='s72'><rect x='0' y='72' width='240' height='8'/></clipPath></defs><g clip-path='url(#s72)'>
+<text x='48' y='86' fill='rgb(255,255,255)' font-family='monospace' font-size='32' textLength='144' lengthAdjust='spacingAndGlyphs'>38.0 C</text>
+</g>
+<defs><clipPath id='s80'><rect x='0' y='80' width='240' height='8'/></clipPath></defs><g clip-path='url(#s80)'>
+<text x='48' y='86' fill='rgb(255,255,255)' font-family='monospace' font-size='32' textLength='144' lengthAdjust='spacingAndGlyphs'>38.0 C</text>
+</g>
+<defs><clipPath id='s88'><rect x='0' y='88' width='240' height='8'/></clipPath></defs><g clip-path='url(#s88)'>
+<text x='48' y='86' fill='rgb(255,255,255)' font-family='monospace' font-size='32' textLength='144' lengthAdjust='spacingAndGlyphs'>38.0 C</text>
+</g>
+<defs><clipPath id='s96'><rect x='0' y='96' width='240' height='8'/></clipPath></defs><g clip-path='url(#s96)'>
+</g>
+<defs><clipPath id='s104'><rect x='0' y='104' width='240' height='8'/></clipPath></defs><g clip-path='url(#s104)'>
+<text x='120' y='115' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='0' lengthAdjust='spacingAndGlyphs'></text>
+</g>
+<defs><clipPath id='s112'><rect x='0' y='112' width='240' height='8'/></clipPath></defs><g clip-path='url(#s112)'>
+<text x='120' y='115' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='0' lengthAdjust='spacingAndGlyphs'></text>
+</g>
+<defs><clipPath id='s120'><rect x='0' y='120' width='240' height='8'/></clipPath></defs><g clip-path='url(#s120)'>
+<text x='72' y='131' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='96' lengthAdjust='spacingAndGlyphs'>UP / DOWN: 0.5 C</text>
+</g>
+<defs><clipPath id='s128'><rect x='0' y='128' width='240' height='8'/></clipPath></defs><g clip-path='url(#s128)'>
+<text x='72' y='131' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='96' lengthAdjust='spacingAndGlyphs'>UP / DOWN: 0.5 C</text>
+</g>
+<defs><clipPath id='s136'><rect x='0' y='136' width='240' height='8'/></clipPath></defs><g clip-path='url(#s136)'>
+<text x='63' y='147' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='114' lengthAdjust='spacingAndGlyphs'>Pump LOW | Wi-Fi OK</text>
+</g>
+<defs><clipPath id='s144'><rect x='0' y='144' width='240' height='8'/></clipPath></defs><g clip-path='url(#s144)'>
+<text x='63' y='147' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='114' lengthAdjust='spacingAndGlyphs'>Pump LOW | Wi-Fi OK</text>
+</g>
+<defs><clipPath id='s152'><rect x='0' y='152' width='240' height='8'/></clipPath></defs><g clip-path='url(#s152)'>
+<text x='120' y='163' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='0' lengthAdjust='spacingAndGlyphs'></text>
+</g>
+<defs><clipPath id='s160'><rect x='0' y='160' width='240' height='8'/></clipPath></defs><g clip-path='url(#s160)'>
+<text x='120' y='163' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='0' lengthAdjust='spacingAndGlyphs'></text>
+</g>
+<defs><clipPath id='s168'><rect x='0' y='168' width='240' height='8'/></clipPath></defs><g clip-path='url(#s168)'>
+<text x='60' y='179' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='120' lengthAdjust='spacingAndGlyphs'>Mode: Solar Priority</text>
+</g>
+<defs><clipPath id='s176'><rect x='0' y='176' width='240' height='8'/></clipPath></defs><g clip-path='url(#s176)'>
+<text x='60' y='179' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='120' lengthAdjust='spacingAndGlyphs'>Mode: Solar Priority</text>
+</g>
+<defs><clipPath id='s184'><rect x='0' y='184' width='240' height='8'/></clipPath></defs><g clip-path='url(#s184)'>
+<text x='69' y='195' fill='rgb(0,255,255)' font-family='monospace' font-size='8' textLength='102' lengthAdjust='spacingAndGlyphs'>HEATING INHIBITED</text>
+</g>
+<defs><clipPath id='s192'><rect x='0' y='192' width='240' height='8'/></clipPath></defs><g clip-path='url(#s192)'>
+<text x='69' y='195' fill='rgb(0,255,255)' font-family='monospace' font-size='8' textLength='102' lengthAdjust='spacingAndGlyphs'>HEATING INHIBITED</text>
+</g>
+<defs><clipPath id='s200'><rect x='0' y='200' width='240' height='8'/></clipPath></defs><g clip-path='url(#s200)'>
+<text x='120' y='211' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='0' lengthAdjust='spacingAndGlyphs'></text>
+</g>
+<defs><clipPath id='s208'><rect x='0' y='208' width='240' height='8'/></clipPath></defs><g clip-path='url(#s208)'>
+<text x='120' y='211' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='0' lengthAdjust='spacingAndGlyphs'></text>
+</g>
+<defs><clipPath id='s216'><rect x='0' y='216' width='240' height='8'/></clipPath></defs><g clip-path='url(#s216)'>
+</g>
+<defs><clipPath id='s224'><rect x='0' y='224' width='240' height='8'/></clipPath></defs><g clip-path='url(#s224)'>
+</g>
+<defs><clipPath id='s232'><rect x='0' y='232' width='240' height='8'/></clipPath></defs><g clip-path='url(#s232)'>
+</g>
+</svg>

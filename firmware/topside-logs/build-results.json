@@ -1,0 +1,41 @@
+{
+  "parent": "e17fdec0e59cce09cd1963c5e7c3273363c03028",
+  "fqbn": "esp32:esp32:esp32s3:FlashSize=16M,PartitionScheme=app3M_fat9M_16MB,PSRAM=disabled,CDCOnBoot=cdc",
+  "dependencies": {
+    "Arduino CLI": "1.3.1",
+    "ESP32 Arduino": "3.3.2",
+    "Adafruit ADS1X15": "2.5.0",
+    "Adafruit BusIO": "1.17.4",
+    "ArduinoJson": "7.4.2",
+    "Adafruit GC9A01A": "1.1.1",
+    "Adafruit GFX Library": "1.12.1"
+  },
+  "builds": {
+    "main": {
+      "passed": true,
+      "summary": [
+        "Sketch uses 1029239 bytes (32%) of program storage space. Maximum is 3145728 bytes.",
+        "Global variables use 47960 bytes (14%) of dynamic memory, leaving 279720 bytes for local variables. Maximum is 327680 bytes."
+      ],
+      "warnings": 0
+    },
+    "demo": {
+      "passed": true,
+      "summary": [
+        "Sketch uses 1013071 bytes (32%) of program storage space. Maximum is 3145728 bytes.",
+        "Global variables use 47544 bytes (14%) of dynamic memory, leaving 280136 bytes for local variables. Maximum is 327680 bytes."
+      ],
+      "warnings": 0
+    }
+  },
+  "source_sha256": {
+    "firmware/libraries/SpaTopside/library.properties": "1885c198d15b1bfca400c1c95a34c37ff0288fa3c8444b045dc837fcfbbcf4ea",
+    "firmware/libraries/SpaTopside/src/SpaTopside.h": "d16056b88954603f79f08981ffa631ee86679c1f09f22b7b1a30a36b595b069b",
+    "firmware/libraries/SpaTopside/src/TopsideConfig.h": "f09c1be703d15be75f263807486a52fc1f76df0c7458f5936f4ca6b77db10867",
+    "firmware/libraries/SpaTopside/src/TopsideDisplay.h": "535f97e7ea18f81b246f9c0a19794d8f4603be5b9ea118b65556e371e747ecf2",
+    "firmware/libraries/SpaTopside/src/TopsideModel.h": "9979d9b59b5d28e409c8e6acccc14dd855608e1fbea9e56b923001626daef5ba",
+    "firmware/SpaMain_Live/SpaMain_Live.ino": "29d7793a627e8198017e2ed1be275bc198d809bbeaf9989724dd659c7c676f82",
+    "firmware/SpaDemo_Live/SpaDemo_Live.ino": "ec1815282829af16db14765d630621cd31a0f8db3a92c043ae14aa22ac1c7c74",
+    "firmware/libraries/SpaLiveApi/src/SpaLiveApi.h": "3f7a427e044f870c8fed2509c30411b43a70ea9de120c5c84e9b336e3c516e70"
+  }
+}
