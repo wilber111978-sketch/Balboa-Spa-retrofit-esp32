@@ -213,77 +213,73 @@ Firmware should convert measured voltage -> resistance -> temperature using the 
 
 ---
 
-## 6. MVP260 interface
+## 6. Replacement topside — GC9A01 TFT + four buttons
 
-Reference project wiring indicates the panel uses an RJ45-style connector and separate lines for four buttons plus display DATA / CLOCK.
+The original VL260 protocol interface is retired for the replacement controller.
 
-Reference pin functions:
+### TFT
 
-| RJ45 pin | Function |
-|---:|---|
-| 1 | VIN |
-| 2 | Warm |
-| 3 | Light |
-| 4 | GND |
-| 5 | Display Data |
-| 6 | Display Clock |
-| 7 | Jets |
-| 8 | Cool |
+Hardware:
+- 1.28-inch round IPS display
+- GC9A01 controller
+- 240 × 240
+- SPI
+- 3.3 V logic
 
-This must still be confirmed on the actual Fisher panel before final connection.
+Proposed wiring:
 
-### Display DATA input
+| TFT signal | Waveshare |
+|---|---|
+| VCC | 3.3 V |
+| GND | GND |
+| SCLK | GPIO10 |
+| DIN / MOSI | GPIO11 |
+| CS | GPIO12 |
+| DC | GPIO13 |
+| RESET | GPIO14 |
+| BL | GPIO15 |
 
-Reference circuit:
+No MISO connection is required for the normal display path.
 
-```
-MVP260 DATA
-   |
- 2.2 kΩ
-   |
-   +---- 220 Ω ---- GPIO10
-   |
- 4.7 kΩ
-   |
-  GND
-```
+The backlight may be driven directly only if the display module's BL input current is within the GPIO/module specification. Otherwise use a small transistor/MOSFET driver.
 
-The open-source reference uses a 2.2 kΩ / 4.7 kΩ divider to bring the nominal 5 V display line into the ESP32 range.
+Add local display decoupling:
+- 100 nF ceramic near the display supply
+- optional 10 µF bulk capacitor near the topside connector
 
-### Display CLOCK input
+### Buttons
 
-Use the same divider / series protection:
+Four waterproof momentary buttons:
 
-```
-MVP260 CLOCK
-   |
- 2.2 kΩ
-   |
-   +---- 220 Ω ---- GPIO11
-   |
- 4.7 kΩ
-   |
-  GND
-```
+| Button | GPIO |
+|---|---:|
+| Jets | GPIO4 |
+| Light | GPIO5 |
+| Temperature + | GPIO6 |
+| Temperature - | GPIO7 |
 
-GPIO11 should be configured as the timing / interrupt input.
+Recommended input method:
+- one side of each button to GND
+- other side to GPIO
+- ESP32 internal pull-up enabled
+- software debounce
+- long-press support where useful
+- stuck-button timeout / fault logging
 
-### Button emulation
+The buttons submit high-level requests to the spa state machine. They never directly energize relays/contactors.
 
-Use four optocouplers, following the proven kgstorm architecture.
+### Topside display content
 
-ESP32 side:
+The TFT should show at minimum:
+- current water temperature
+- target temperature
+- heating state
+- pump/jets state
+- light state
+- fault status
+- Wi-Fi / Matter indicator where practical
 
-- GPIO12 -> WARM optocoupler LED
-- GPIO13 -> COOL optocoupler LED
-- GPIO14 -> JETS optocoupler LED
-- GPIO15 -> LIGHT optocoupler LED
-
-Each LED requires an appropriate current-limiting resistor.
-
-The optocoupler transistor side should be wired across the same two nodes the physical MVP260 button connects when pressed, matching the reference project's proven orientation.
-
-Do not guess optocoupler polarity from wire color; verify against the panel and reference PCB before soldering.
+Faults should be more descriptive than the original VL260 2-character display.
 
 ---
 
@@ -323,7 +319,7 @@ Keep physical separation between:
 
 - 240 V mains wiring
 - 24 V control wiring
-- sensor / MVP260 logic wiring
+- sensor / TFT/button low-voltage wiring
 
 Use:
 - DIN terminals
@@ -334,7 +330,7 @@ Use:
 - wire labels
 - suitable branch protection
 
-Do not route M7 sensor or MVP260 data wires alongside the pump/heater mains conductors if avoidable.
+Do not route M7 sensor or TFT/button wiring alongside the pump/heater mains conductors if avoidable.
 
 ---
 
@@ -348,7 +344,7 @@ Do not route M7 sensor or MVP260 data wires alongside the pump/heater mains cond
 6. test SSR driver with low-voltage indicator/load
 7. connect ADS1115 and dummy resistors
 8. connect OEM M7 sensors and compare resistance/temperature
-9. connect MVP260 interface and verify protocol
+9. connect GC9A01 TFT and four buttons; verify local topside UI
 10. only then begin controlled mains commissioning
 
 Final mains installation and safety testing should be completed / checked by a suitably licensed electrician.
