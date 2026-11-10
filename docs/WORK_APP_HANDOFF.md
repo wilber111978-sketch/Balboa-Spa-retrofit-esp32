@@ -18,7 +18,6 @@ Read these files before changing code:
 - docs/HARDWARE_INTERFACE.md
 - docs/HEATER_M7_STATE_MACHINE.md
 - docs/M7_SENSOR_INTERFACE.md
-- docs/MVP260_INTERFACE.md
 - docs/FAULTS.md
 - docs/APP_UI_SPEC.md
 - docs/API_CONTRACT.md
@@ -31,7 +30,9 @@ Treat the safety architecture in those files as fixed unless a contradiction or 
 
 - Fisher 3-person spa
 - OEM Balboa GS100
-- confirmed Balboa VL260 topside panel
+- original Balboa VL260 topside panel is being retired
+- replacement topside: 1.28-inch round GC9A01 240×240 SPI TFT
+- four waterproof momentary buttons: Jets, Light, Temp +, Temp -
 - single 2-speed pump
 - 2 kW heater
 - UV / ozone
@@ -204,7 +205,7 @@ The first milestone is complete when:
 
 - live Matter pairing
 - real M7 ADC integration
-- real VL260 decoding
+- real TFT/topside hardware integration
 - real mains commissioning
 - pH/ORP
 - dosing
