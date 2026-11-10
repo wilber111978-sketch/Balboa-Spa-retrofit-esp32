@@ -20,17 +20,44 @@ This is the project-wide source of truth for ESP32-S3 pin usage. Update this fil
 
 ## Project assignments
 
+### Sensor bus
+
 | GPIO | Project use | Status |
 |---:|---|---|
 | GPIO8 | I2C SDA — ADS1115 / sensor expansion | ASSIGNED |
 | GPIO9 | I2C SCL — ADS1115 / sensor expansion | ASSIGNED |
-| GPIO10 | MVP260 display DATA | ASSIGNED |
-| GPIO11 | MVP260 display CLOCK | ASSIGNED |
-| GPIO12 | MVP260 WARM button emulation | ASSIGNED |
-| GPIO13 | MVP260 COOL button emulation | ASSIGNED |
-| GPIO14 | MVP260 JETS button emulation | ASSIGNED |
-| GPIO15 | MVP260 LIGHT button emulation | ASSIGNED |
-| GPIO16 | Heater SSR MOSFET driver | ASSIGNED |
+
+### Replacement topside — GC9A01 1.28-inch 240×240 TFT
+
+| GPIO | TFT function | Status |
+|---:|---|---|
+| GPIO10 | SPI SCLK | ASSIGNED |
+| GPIO11 | SPI MOSI / DIN | ASSIGNED |
+| GPIO12 | TFT CS | ASSIGNED |
+| GPIO13 | TFT DC | ASSIGNED |
+| GPIO14 | TFT RESET | ASSIGNED |
+| GPIO15 | TFT backlight control | ASSIGNED |
+
+TFT supply:
+- VCC: 3.3 V
+- GND: GND
+
+### Waterproof momentary buttons
+
+| GPIO | Button | Status |
+|---:|---|---|
+| GPIO4 | Jets | ASSIGNED |
+| GPIO5 | Light | ASSIGNED |
+| GPIO6 | Temperature + | ASSIGNED |
+| GPIO7 | Temperature - | ASSIGNED |
+
+Buttons should be wired as simple momentary digital inputs using a defined pull-up/pull-down strategy, with software debounce and stuck-button detection.
+
+### Heater SSR
+
+| GPIO | Function | Status |
+|---:|---|---|
+| GPIO16 | heater SSR MOSFET driver | ASSIGNED |
 
 ## Relay channel allocation
 
@@ -48,10 +75,6 @@ This is the project-wide source of truth for ESP32-S3 pin usage. Update this fil
 The following exposed pins are currently unassigned and may be used later after bench verification:
 
 - GPIO3
-- GPIO4
-- GPIO5
-- GPIO6
-- GPIO7
 - GPIO35
 - GPIO36
 - GPIO37
@@ -60,15 +83,16 @@ The following exposed pins are currently unassigned and may be used later after 
 - GPIO47
 - GPIO48
 
-Do not allocate any of these permanently without first checking:
+Do not allocate any permanently without checking:
 - Waveshare schematic
 - boot/strap behavior
-- conflicts with onboard peripherals
+- onboard peripheral conflicts
 - voltage compatibility
 
 ## Rules
 
 1. No user-interface code may directly control mains outputs.
-2. Matter, web UI and MVP260 handlers only submit requests to the safety state machine.
+2. Matter, web UI and topside button handlers only submit requests to the safety state machine.
 3. GPIO assignments in firmware must be defined in one central config file.
 4. Any pin change must be reflected here before firmware is merged.
+5. The old VL260 RJ45/data/clock/button-emulation GPIO allocation is retired.
