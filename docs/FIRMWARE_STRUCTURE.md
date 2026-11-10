@@ -24,9 +24,13 @@ firmware/
       current_monitor.cpp
       current_monitor.h
 
-    panel/
-      mvp260.cpp
-      mvp260.h
+    topside/
+      gc9a01_display.cpp
+      gc9a01_display.h
+      topside_buttons.cpp
+      topside_buttons.h
+      topside_ui.cpp
+      topside_ui.h
 
     diagnostics/
       fault_manager.cpp
@@ -59,19 +63,39 @@ firmware/
     test_state_machine.cpp
     test_fault_logic.cpp
     test_sensor_validation.cpp
+    test_topside_buttons.cpp
+    test_topside_ui.cpp
 ```
 
 ## Architectural rules
 
 ### Safety first
-All hardware outputs should be controlled through a single safety-aware state machine.
+All hardware outputs are controlled through one safety-aware state machine.
 
-No web / Matter / panel handler should directly energize:
+No web / Matter / TFT/button handler may directly energize:
 - heater SSR
 - heater safety contactor
 - pump contactors
 
-Instead, interfaces submit requests to the controller.
+Interfaces submit requests to the controller.
+
+### New topside
+The old VL260 protocol decoder is no longer part of the production firmware.
+
+The replacement local UI is:
+- GC9A01 240×240 TFT
+- Jets button
+- Light button
+- Temperature + button
+- Temperature - button
+
+Button handling must include:
+- debounce
+- stuck-button detection
+- optional long-press behavior
+- no blocking delays
+
+The display renders controller state only; it is not the source of truth.
 
 ### Single source of truth
 Maintain one central spa state model containing:
@@ -80,13 +104,15 @@ Maintain one central spa state model containing:
 - measured temperatures
 - pump state
 - heater state
+- light state
+- UV state
 - fault state
 - safety permissives
 
 ### Fault manager
 Responsible for:
 - creating fault events
-- mapping internal triggers to MVP260 codes
+- assigning concise local display codes/titles
 - storing probable causes
 - storing recommended checks
 - retry / latch policy
@@ -97,18 +123,17 @@ Use a compact ring-buffer / persistent log for:
 - major state transitions
 - heater cycles
 - manual resets
+- controller reboots
 
 ### Matter
-Matter should expose only safe high-level controls:
+Matter exposes only safe high-level controls:
 - setpoint
 - jets
 - light
 - basic status
 
-Matter must never bypass the state machine.
-
 ### Web UI
-The web UI can expose deeper diagnostics, but still must route all commands through the same safety layer.
+The web UI exposes deeper diagnostics but routes all commands through the same safety layer.
 
 ### Testing
-State-machine and fault logic should be unit-tested before mains commissioning.
+State-machine, topside-button and fault logic should be unit-tested before mains commissioning.
