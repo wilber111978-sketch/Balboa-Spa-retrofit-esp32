@@ -1,6 +1,6 @@
 # Balboa Spa Retrofit ESP32
 
-Modern retrofit controller for a Fisher 3-person spa originally using a **Balboa GS100** power/control board and **Balboa MVP260** topside panel.
+Modern retrofit controller for a Fisher 3-person spa originally using a **Balboa GS100** power/control board and **Balboa VL260** topside panel.
 
 The goal is to retain the OEM spa experience and existing harnesses, while replacing the aging GS100 with an ESP32-S3 based controller that adds:
 
@@ -8,7 +8,7 @@ The goal is to retain the OEM spa experience and existing harnesses, while repla
 - Google Home via Matter
 - a local custom web interface
 - OEM-style M7 heater/flow logic
-- familiar short fault codes on the MVP260
+- a new local 1.28-inch round TFT topside with descriptive status and faults
 - detailed fault history and probable-cause diagnostics
 - solar-priority heating
 - proper motor contactors and SSR heater switching
@@ -25,7 +25,8 @@ The goal is to retain the OEM spa experience and existing harnesses, while repla
 - standard 10 A plug supply
 - upstream RCD/RCBO protection
 - Balboa GS100 controller
-- Balboa MVP260 topside panel
+- original Balboa VL260 topside panel (being replaced)
+- replacement topside: 1.28-inch round GC9A01 240×240 TFT + 4 waterproof momentary buttons
 - single 2-speed pump
 - 2 kW heater
 - UV / ozone auxiliary
@@ -199,25 +200,26 @@ An independent hardware high-limit remains part of the heater safety chain.
 
 ---
 
-## MVP260 topside
+## Replacement topside
 
-The original **Balboa MVP260** panel will be retained.
+The original Balboa VL260 is being removed from the replacement-controller architecture.
 
-The new controller should:
+The new local topside is:
 
-- read local button presses
-- maintain familiar local control
-- show familiar short fault codes
-- continue working when Wi-Fi or cloud access is unavailable
+- 1.28-inch round IPS TFT
+- GC9A01 controller
+- 240 × 240 resolution
+- 4-wire SPI
+- 3.3 V logic
+- four waterproof momentary buttons:
+  - Jets
+  - Light
+  - Temperature +
+  - Temperature -
 
-The open-source **kgstorm Balboa GS100 / VL260 ESP32 project** is a key reference for:
+The topside connects directly to the Waveshare ESP32-S3. No VL260 display clock decoding, button optocouplers or RJ45 topside protocol layer are required.
 
-- topside signaling
-- button emulation
-- display decoding
-- error-code handling
-
-Although that project is named around the VL260, it is relevant to the MVP260-style Balboa interface used here.
+The kgstorm GS100/VL260 project remains useful only as a historical/OEM behavior reference.
 
 ---
 
@@ -248,9 +250,7 @@ Exact pin assignments will be confirmed against the original GS100 board marking
 
 ## Diagnostics philosophy
 
-The MVP260 can continue to show short OEM-style faults such as `Sn`, `dr`, etc.
-
-The web interface should provide much richer information.
+The TFT topside should show a concise local fault title/code, while the web interface provides richer diagnostic detail.
 
 Each stored fault event should contain:
 
@@ -375,7 +375,7 @@ For a small spa, dosing should be conservative:
 The design draws ideas from several existing projects rather than starting from zero:
 
 - **kgstorm / Balboa-GS100-with-VL260-topside**  
-  MVP/VL topside decoding, display, button emulation, fault handling
+  retained as an OEM-behavior/reference source only; the new controller no longer depends on the VL260 protocol
 
 - **ESP32 Spa Manager**  
   replacement-controller state machine and sequencing ideas
