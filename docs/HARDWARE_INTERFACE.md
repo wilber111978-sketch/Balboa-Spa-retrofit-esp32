@@ -458,6 +458,7 @@ Do not route M7 sensor or TFT/button wiring alongside the pump/heater mains cond
 9. connect DS3231; verify time survives power-off
 10. connect OEM M7 sensors and compare resistance/temperature
 11. connect GC9A01 TFT and four buttons; verify local topside UI
-12. only then begin controlled mains commissioning; during first wet heat run, confirm which sensor is heater inlet (A) and outlet (B) — the outlet rises first
+12. only then begin controlled mains commissioning
+13. on the spa: let the one-time install self-test run ([COMMISSIONING_SELF_TEST.md](COMMISSIONING_SELF_TEST.md)). It detects heater inlet/outlet sensors automatically on the first heat run, captures baseline heating figures, and walks through pump, jets and light checks
 
 Final mains installation and safety testing should be completed / checked by a suitably licensed electrician.

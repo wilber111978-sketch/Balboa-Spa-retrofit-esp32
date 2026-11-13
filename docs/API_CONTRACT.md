@@ -160,6 +160,16 @@ Firmware performs all heater shutdown / dead-time / interlock sequencing.
 
 Ends priming early (same as pressing Temp+ / Temp− on the topside during priming). Requires `"confirm": true`.
 
+## Install self-test
+
+See [COMMISSIONING_SELF_TEST.md](COMMISSIONING_SELF_TEST.md).
+
+- `GET /api/commissioning`: overall status (`PENDING`, `PART_A_RUNNING`, `PART_B_RUNNING`, `COMPLETE`), per-check results and values, current guided prompt if any, suggested thresholds
+- `POST /api/commissioning/answer`: `{"step":"B6","answer":"YES"}`; answers `YES`, `NO`, `REPEAT`, `SKIP`; token required
+- `POST /api/commissioning/start-guided`: starts Part B; token + confirm required
+- `POST /api/commissioning/accept-thresholds`: applies the suggested trip thresholds; token + confirm required
+- `POST /api/commissioning/rerun`: Service mode only; token + confirm required
+
 ## Firmware update
 
 See [PROVISIONING_AND_UPDATES.md](PROVISIONING_AND_UPDATES.md).

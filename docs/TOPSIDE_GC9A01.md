@@ -77,6 +77,7 @@ The safety state machine performs the actual sequencing. After each change, pres
 | Combination | Hold | Action |
 |---|---|---|
 | Temp+ or Temp− during priming | press | end priming early |
+| During install test prompts | press | Temp+ = Yes, Temp− = No, Jets = repeat, Light = skip |
 | Temp+ and Temp− | 5 s | reset latched safety fault |
 | Jets and Light | 3 s | open Setup screen (Wi-Fi status, address, app QR, Matter QR) |
 | Jets (on Setup screen) | 10 s | clear Wi-Fi and restart in setup access-point mode |

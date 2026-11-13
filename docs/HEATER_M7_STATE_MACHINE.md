@@ -373,7 +373,7 @@ Critical faults remain latched until a **local** manual reset at the topside (e.
 
 ## Suggested initial thresholds
 
-These are placeholders only and must be tuned from real measurements.
+These are placeholders only and must be tuned from real measurements. The install self-test ([COMMISSIONING_SELF_TEST.md](COMMISSIONING_SELF_TEST.md)) records baseline heating figures on the first heat run and suggests thresholds for the user to accept. It also detects which sensor is the heater outlet and swaps A/B in software if needed.
 
 - sensor absolute plausibility: configure from OEM sensor curve
 - sensor mismatch while heater OFF: small allowable difference

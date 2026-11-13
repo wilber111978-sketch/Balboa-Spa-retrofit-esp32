@@ -132,6 +132,9 @@ Implement selectable demo scenarios:
 18. priming in progress
 19. light on with colour program and auto-off countdown
 20. input lockout after a jets change
+21. install test pending
+22. install test guided prompt in progress
+23. install test complete with suggested thresholds
 
 Scenario changes should update the complete UI coherently.
 

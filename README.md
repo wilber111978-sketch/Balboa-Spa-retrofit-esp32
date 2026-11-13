@@ -57,6 +57,7 @@ This is the same load pattern the original GS100 ran for years on the same 10 A 
 | Priming after power-up: heater locked out ~4 min while air is purged | firmware |
 | Pump / light changes ignored for 2 s after each change (not queued) | firmware |
 | Light auto-off after 40 min; 2-wire RGB colour selected by power-interruption steps | firmware |
+| One-time install self-test: automatic sensor/heater checks (incl. inlet/outlet detection and baseline capture) plus guided pump, jets and light checks | firmware |
 | Freeze protection: pump LOW if **either** heater sensor reads < 5 °C; one failed sensor cannot block it; timed circulation if both fail | firmware |
 
 ---
@@ -473,6 +474,7 @@ Minimum rules:
 - [Firmware structure](docs/FIRMWARE_STRUCTURE.md)
 - [Web API contract](docs/API_CONTRACT.md)
 - [Provisioning, firmware updates and flash storage](docs/PROVISIONING_AND_UPDATES.md)
+- [Install commissioning self-test](docs/COMMISSIONING_SELF_TEST.md) — runs once on first install
 - [Web app UI spec](docs/APP_UI_SPEC.md)
 - [Web app work handoff](docs/WORK_APP_HANDOFF.md)
 - [Archive: legacy VL260 topside interface](docs/archive/LEGACY_VL260_TOPSIDE_INTERFACE.md) — retired, reference only

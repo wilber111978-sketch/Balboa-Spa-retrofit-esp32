@@ -144,6 +144,16 @@ Show:
 - reset/retry status
 - for latched critical faults: "Reset at the spa — hold Temp+ and Temp− for 5 s" (no remote reset button)
 
+### Install test
+Results of the one-time install self-test ([COMMISSIONING_SELF_TEST.md](COMMISSIONING_SELF_TEST.md)):
+- each check with pass / fail / skipped and its measured value
+- sensor orientation result
+- baseline heating figures with suggested thresholds (Accept / Keep defaults)
+- light settings found (program count, step time, reset time)
+- guided-test prompts mirrored from the topside, with Yes / No / Repeat / Skip buttons while Part B runs
+- "Install test pending" banner on Home until complete
+- "Re-run install test" in Service mode only
+
 ### Raw/service values
 Service-mode only:
 - raw ADC values
@@ -209,6 +219,9 @@ Initial demo scenarios:
 - priming in progress
 - light on, program 4, 12 min remaining
 - input lockout active after a jets change
+- install test pending
+- install test Part B in progress (light colour count prompt)
+- install test complete with results and suggested thresholds
 
 Demo mode must never energize physical outputs.
 

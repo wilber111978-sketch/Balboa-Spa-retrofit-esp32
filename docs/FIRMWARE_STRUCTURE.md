@@ -45,6 +45,8 @@ firmware/
       ota_update.h
       persistence.cpp        # NVS settings, write debounce, latched-fault store
       persistence.h
+      commissioning.cpp      # one-time install self-test (auto + guided)
+      commissioning.h
 
     time/
       rtc_ds3231.cpp
