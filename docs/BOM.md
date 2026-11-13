@@ -12,6 +12,7 @@
 | 1 | Molex 50-84-2032 | 3-position female cable housing |
 | 1 | Molex 50-84-2022 | 2-position female cable housing |
 | 20 | Molex 02-08-1002 | female crimp contacts |
+| 1 | 12 V AC power supply | spa light, switched by CH5 |
 | assorted | Ferrules | 0.5 / 0.75 / 1.0 / 1.5 / 2.5 mm² |
 
 ## Still to finalize / purchase
@@ -44,7 +45,6 @@
 | 3 | 1 kΩ resistors + 3 × 100 nF capacitors | ADC input RC filters (A0, A1, A2) |
 | 1 | DS3231 RTC module with CR2032 / LIR2032 | board has no RTC; I²C 0x68 |
 | 1 | low-side MOSFET module or BC337 + resistors | SSR input driver from GPIO16 |
-| 1 | spa light supply (TBC) | 12 V AC transformer or 12 V DC supply to suit the 2-wire RGB light, if the GS100 provided it onboard |
 | optional | ~2.2 kΩ 1 W resistor | SSR input bleed if LOW spare pole 2 is unreliable at ~10 mA |
 | optional | pump current sensor | enhanced diagnostics |
 | optional | heater current sensor | enhanced diagnostics |

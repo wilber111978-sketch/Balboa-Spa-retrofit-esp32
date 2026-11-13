@@ -7,6 +7,7 @@
 - 2 x CJX2-K1201 DC pump contactors
 - JOTTA SSR-40DA zero-cross SSR
 - SSR aluminium heatsink
+- 12 V AC power supply for the spa light (wired through relay CH5)
 - ferrule assortment
 - ferrule crimping tools
 - modular/RJ-style breakout / termination adapter for low-voltage panel work

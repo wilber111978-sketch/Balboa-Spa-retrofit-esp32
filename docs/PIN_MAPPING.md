@@ -46,7 +46,7 @@ Expected functions:
 ### Light
 Expected functions depend on the actual Fisher installation and voltage.
 
-Do not assume the light is 240 V. It is a 2-wire RGB LED light — most likely 12 V AC, possibly supplied from a transformer on the GS100 itself. Measure before removing the GS100 (see [HARDWARE_INTERFACE.md](HARDWARE_INTERFACE.md) §8).
+Do not assume the light is 240 V. It is a 2-wire RGB LED light on **12 V AC**, fed from a dedicated 12 V AC supply switched by CH5 (see [HARDWARE_INTERFACE.md](HARDWARE_INTERFACE.md) §8).
 
 ## New controller mapping
 
@@ -104,6 +104,6 @@ Record the actual terminal numbers once wired.
 - verify earth continuity
 - verify heater polarity / neutral routing
 - verify UV / ozone connector assignment
-- verify light voltage and connector assignment
+- verify light connector assignment (12 V AC from dedicated supply via CH5)
 - verify heater permissive: no safety contactor / SSR operation unless LOW is pulled in
 - label each pigtail

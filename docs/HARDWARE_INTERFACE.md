@@ -386,14 +386,16 @@ This is enforced in firmware.
 
 CH5 is reserved for the original spa light: a **2-wire RGB LED light**.
 
-### Supply — confirm before wiring
+### Supply — confirmed
 
-Do **not** wire this section until the original light voltage has been confirmed. 2-wire spa LED lights are normally **12 V AC** (some accept 12 V AC or DC), and on many Balboa boards that 12 V comes from a transformer **on the controller board itself**. If the GS100 supplied it, removing the GS100 removes the light supply.
+A dedicated **12 V AC power supply** feeds the light through Waveshare relay **CH5** (switching the 12 V AC side, primary always powered). This is already in place on the bench.
 
-1. With the GS100 still running, measure the voltage on the light's 2-pin connector with the light on (AC and DC ranges).
-2. Check the light's label / datasheet for the accepted input.
-3. Provide a matching supply in the new enclosure (e.g. small 12 V AC safety transformer, or 12 V DC supply if the light accepts DC). Add to BOM once known.
-4. CH5 switches that low-voltage supply to the light.
+```
+240 VAC ---- 12 V AC supply ---- CH5 COM / NO ---- light (2-wire)
+                     |------------------------------- light return
+```
+
+Switching the 12 V AC side gives clean, immediate power interruptions for colour stepping (no transformer start-up delay). 12 V AC at LED-light current is well within the CH5 relay rating.
 
 ### Colour / program control
 
