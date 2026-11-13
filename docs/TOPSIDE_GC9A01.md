@@ -69,7 +69,7 @@ The safety state machine performs the actual sequencing. After each change, pres
 
 ### Light
 - short press: light ON / OFF (2 s lockout applies)
-- long press (1 s) while ON: next colour / program
+- long press (1 s) while ON: next colour / program; the screen shows its name from the install-test colour decode
 - auto-off after 40 min
 
 ### Button combinations
@@ -78,6 +78,7 @@ The safety state machine performs the actual sequencing. After each change, pres
 |---|---|---|
 | Temp+ or Temp− during priming | press | end priming early |
 | During install test prompts | press | Temp+ = Yes, Temp− = No, Jets = repeat, Light = skip |
+| During light colour decode | press | Temp+ / Temp− = move through colour swatches, Jets = confirm, Light = repeat step pulse |
 | Temp+ and Temp− | 5 s | reset latched safety fault |
 | Jets and Light | 3 s | open Setup screen (Wi-Fi status, address, app QR, Matter QR) |
 | Jets (on Setup screen) | 10 s | clear Wi-Fi and restart in setup access-point mode |

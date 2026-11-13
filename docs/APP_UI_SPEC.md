@@ -72,7 +72,7 @@ The UI submits a requested state only. Firmware performs all sequencing and inte
 
 ### Light
 - on/off toggle
-- colour / program picker (1…program count), shown while the light is on
+- colour picker showing the named swatches from the install-test colour decode (falls back to "Program 1…N" if not decoded), shown while the light is on
 - auto-off time remaining (40 min timer)
 
 ### Priming banner
@@ -149,7 +149,7 @@ Results of the one-time install self-test ([COMMISSIONING_SELF_TEST.md](COMMISSI
 - each check with pass / fail / skipped and its measured value
 - sensor orientation result
 - baseline heating figures with suggested thresholds (Accept / Keep defaults)
-- light settings found (program count, step time, reset time)
+- light settings found (colour decode table, step time, reset time)
 - guided-test prompts mirrored from the topside, with Yes / No / Repeat / Skip buttons while Part B runs
 - "Install test pending" banner on Home until complete
 - "Re-run install test" in Service mode only
@@ -220,7 +220,7 @@ Initial demo scenarios:
 - light on, program 4, 12 min remaining
 - input lockout active after a jets change
 - install test pending
-- install test Part B in progress (light colour count prompt)
+- install test Part B in progress ("What is the light showing?" colour grid)
 - install test complete with results and suggested thresholds
 
 Demo mode must never energize physical outputs.

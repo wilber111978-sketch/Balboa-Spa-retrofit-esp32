@@ -66,7 +66,14 @@ Example response:
   "light": {
     "on": false,
     "program": 1,
-    "program_count": 7,
+    "program_count": 5,
+    "programs": [
+      {"n": 1, "name": "White", "swatch": "#ffffff"},
+      {"n": 2, "name": "Blue", "swatch": "#2060ff"},
+      {"n": 3, "name": "Green", "swatch": "#20c040"},
+      {"n": 4, "name": "Red", "swatch": "#ff3030"},
+      {"n": 5, "name": "Colour cycle (slow)", "swatch": null}
+    ],
     "auto_off_remaining_s": null
   },
   "priming": {
@@ -165,7 +172,8 @@ Ends priming early (same as pressing Temp+ / Temp− on the topside during primi
 See [COMMISSIONING_SELF_TEST.md](COMMISSIONING_SELF_TEST.md).
 
 - `GET /api/commissioning`: overall status (`PENDING`, `PART_A_RUNNING`, `PART_B_RUNNING`, `COMPLETE`), per-check results and values, current guided prompt if any, suggested thresholds
-- `POST /api/commissioning/answer`: `{"step":"B6","answer":"YES"}`; answers `YES`, `NO`, `REPEAT`, `SKIP`; token required
+- `POST /api/commissioning/answer`: `{"step":"B5","answer":"YES"}`; answers `YES`, `NO`, `REPEAT`, `SKIP`. For the B6 colour decode: `{"step":"B6","answer":"COLOUR","value":"Blue"}` or `{"step":"B6","answer":"BACK_TO_FIRST"}`. Token required
+- `POST /api/light/programs`: rename decoded programs, e.g. `[{"n":2,"name":"Ocean blue"}]`; token required
 - `POST /api/commissioning/start-guided`: starts Part B; token + confirm required
 - `POST /api/commissioning/accept-thresholds`: applies the suggested trip thresholds; token + confirm required
 - `POST /api/commissioning/rerun`: Service mode only; token + confirm required

@@ -75,10 +75,45 @@ The tests run with the spa full. Best done at dusk so the light is easy to see.
 | B3 | HIGH off | "Have the jets stopped?" |
 | B4 | UV / ozone with pump on | "Is the ozone / UV indicator on?" (skip if not visible) |
 | B5 | Light on | "Is the light on?" |
-| B6 | **Light colour count** | single step pulses, showing "Step 1, 2, 3…" → "Has it come back to the first colour?" Yes on step N sets `LIGHT_PROGRAM_COUNT` = N |
+| B6 | **Light colour decode** | single step pulses; at each step: "What is the light showing?" → pick from a colour list (see below). Builds the program → colour map and sets `LIGHT_PROGRAM_COUNT` |
 | B7 | **Light step timing** | tries off-times of 200 ms, 500 ms, 1 s, 1.5 s → "Did the colour change?" The shortest reliable time, plus a 200 ms margin, becomes `LIGHT_STEP_OFF_MS` |
 | B8 | **Light reset time** | steps to colour 2, then turns off for 5 s, 10 s, 15 s → "Is it back on the first colour?" The first Yes, plus a 5 s margin, becomes `LIGHT_RESET_OFF_S` |
 | B9 | Buttons | "Press each button once": each press is shown on screen, confirming wiring and debounce |
+
+### B6 — building the colour decode
+
+The topside is a colour display, so it shows the choices as swatches with names:
+
+| Choice | Notes |
+|---|---|
+| Red, Green, Blue, White, Yellow, Cyan, Magenta, Orange, Purple, Pink | solid colours |
+| Colour cycle (slow) | changing / fading program |
+| Colour cycle (fast) / flashing | |
+| Other | stored as "Program N" |
+| **Back to first colour** | ends the decode |
+
+On the topside: **Temp+ / Temp−** move through the swatches, **Jets** confirms, **Light** repeats the step pulse (if it was missed). The app shows the same list as a grid of buttons, so it can be answered from a phone standing at the spa.
+
+How it works:
+1. The light starts on program 1 (switched off long enough to reset first).
+2. "What is the light showing?" Choose. Saved as program 1.
+3. One step pulse, then the same question for program 2, and so on.
+4. When the user picks **Back to first colour**, the previous step was the last program: `LIGHT_PROGRAM_COUNT` = number of programs recorded. "Back to first colour" is an explicit choice rather than detected, because two programs can look alike.
+5. Saved decode, for example:
+
+| Program | Shown as |
+|---|---|
+| 1 | White |
+| 2 | Blue |
+| 3 | Green |
+| 4 | Red |
+| 5 | Colour cycle (slow) |
+
+The decode is used everywhere afterwards:
+- app colour picker shows named swatches instead of numbers; the controller works out the step pulses to reach the chosen one
+- topside long-press on Light shows the colour name of the program it steps to
+- Google Home / Matter can expose the named programs where practical
+- any entry can be renamed later in Settings → Light
 
 If the user skips B6–B8, the defaults stay (7 programs, 500 ms, 10 s) and can be adjusted later in Service settings.
 
