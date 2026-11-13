@@ -128,6 +128,7 @@ Implement selectable demo scenarios:
 14. temperature poll in progress
 15. filter cycle running
 16. time invalid (schedules suspended)
+17. first reading after power-up (`--.-°` with countdown)
 
 Scenario changes should update the complete UI coherently.
 

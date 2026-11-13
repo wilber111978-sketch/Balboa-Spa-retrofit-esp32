@@ -85,6 +85,8 @@ Hold **Temp +** and **Temp −** together for 5 s to reset a latched safety faul
 
 Default screen:
 - current water temperature (last valid reading; show its age, e.g. "12 min ago", once older than 5 min)
+  - while a reading is settling: keep the held value and show a small "reading…" icon
+  - after power-up / reboot (no valid reading yet): show `--.-°`, "Checking temperature…" and a countdown (e.g. "45 s"); never show the value from before the power loss
 - target temperature
 - heater status
 - pump/jets state

@@ -34,6 +34,8 @@ Example response:
     "water_c": 36.8,
     "water_valid": true,
     "water_age_s": 42,
+    "settling": false,
+    "settle_remaining_s": null,
     "target_c": 38.0,
     "target_min_c": 10.0,
     "target_max_c": 40.0,
@@ -168,6 +170,8 @@ Up to 2 cycles. `duration_min` 0–240; 0 disables a cycle.
 ## Field notes
 
 - `temperature.water_c` is the last **valid** water temperature (pump has run ≥ settle time). `water_age_s` is its age. UIs show the age once it exceeds 300 s.
+- After power-up, before the first valid reading: `water_valid: false`, `water_c: null`, `water_age_s: null`. UIs show `--.-°`.
+- `temperature.settling` (bool) and `temperature.settle_remaining_s` (int or null) report an in-progress settle period, for the "reading…" indicator and the power-up countdown.
 - `uv.reason`: `PUMP_RUNNING`, `PUMP_STOPPED`, `SPEED_CHANGEOVER`, `SETTLING`, `SERVICE`, `FAULT`.
 - `circulation.activity`: `IDLE`, `POLLING`, `FILTERING`, `HEATING`, `COOLDOWN`, `JETS_LOW`, `JETS_HIGH`.
 - `time.source`: `NTP`, `RTC`, `NONE`. When `valid` is false, schedules are suspended.

@@ -31,6 +31,8 @@ The UI must feel like a modern smart-home app, but the ESP32 remains the control
 Show:
 - current water temperature (last valid reading)
 - reading age when older than 5 min, e.g. "updated 12 min ago" — never present a stale value as live
+- "reading…" indicator while a new reading is settling
+- after controller power-up / reboot, before the first valid reading: `--.-°` with "Checking temperature…" and the settle countdown
 - target temperature
 - heating state
 - local/remote connection state
@@ -193,6 +195,7 @@ Initial demo scenarios:
 - temperature poll in progress
 - filter cycle running
 - time invalid (no RTC / NTP)
+- first reading after power-up (`--.-°` with countdown)
 
 Demo mode must never energize physical outputs.
 

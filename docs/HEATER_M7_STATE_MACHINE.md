@@ -64,6 +64,8 @@ Rules:
 4. If the age exceeds `POLL_INTERVAL_MIN`, enter POLLING (pump LOW for `POLL_RUN_S`). Skip polling while a filter cycle, heating or jets run is already in progress — those runs refresh the reading anyway.
 5. Heat demand is evaluated from water temperature only when it is valid and fresh (age < `POLL_INTERVAL_MIN`). A stale reading triggers a poll, not heating.
 6. Topside and web UI always show the last valid water temperature; if age > `STALE_DISPLAY_S`, show the age ("updated 12 min ago").
+7. While any settle period is running (poll, filter start, heat start, jets), UIs show a small "reading…" indicator so the held value does not look frozen.
+8. **After power-up / reboot there is no valid reading.** UIs show dashes (`--.-°`) with "Checking temperature…" and the settle countdown until the first valid reading. The value saved before a power loss is **not** shown — after a long outage it could be badly wrong.
 
 ---
 
@@ -134,7 +136,7 @@ Actions:
 - read RTC; mark time valid/invalid
 - initialize watchdog
 - clear non-latched transient state
-- water temperature marked stale (age = unknown)
+- water temperature marked unknown (`water_valid = false`, `water_c = null`); UIs show `--.-°` until the first valid reading
 
 Transition:
 - to POLLING when startup checks pass (to get a fresh temperature)
