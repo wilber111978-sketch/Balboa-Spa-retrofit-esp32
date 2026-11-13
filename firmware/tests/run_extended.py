@@ -6,7 +6,7 @@ names='service alloff off-semantics service-fault-exit service-save service-rebo
 results=[]
 for mode in (1,0):
  exe=root/f'extended-{mode}'
- subprocess.run(['g++','-std=c++17','-Wall','-Wextra','-Werror','-DSPA_WIFI_SSID="test-network"','-DSPA_WEB_PASS="test-password-only"',f'-DSPA_BENCH_DEMO={mode}','-I'+str(root),str(root/'extended.cpp'),'-o',str(exe)],check=True)
+ subprocess.run(['g++','-std=c++17','-Wall','-Wextra','-Werror','-DSPA_WIFI_SSID="test-network"','-DSPA_WEB_PASS="test-password-only"','-DSPA_TEMP_ADC_ADS1115=1',f'-DSPA_BENCH_DEMO={mode}','-I'+str(root),str(root/'extended.cpp'),'-o',str(exe)],check=True)
  for case in names:
   p=subprocess.run([str(exe),case,str(root.parent/f'logs/service-nvs-{mode}.txt')],capture_output=True,text=True,timeout=20)
   results.append(dict(build='Demo' if mode else 'Main',case=case,passed=p.returncode==0,output=p.stdout+p.stderr))

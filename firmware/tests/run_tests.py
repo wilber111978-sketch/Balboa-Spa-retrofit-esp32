@@ -6,7 +6,7 @@ cases={1:'startup heat hysteresis changeover fault-high sensor-b overtemp disagr
 results=[]
 for mode, names in cases.items():
  exe=root/f'test-{mode}'
- subprocess.run(['g++','-std=c++17','-Wall','-Wextra','-Werror','-DSPA_WIFI_SSID="test-network"','-DSPA_WEB_PASS="test-password-only"',f'-DSPA_BENCH_DEMO={mode}','-I'+str(root),str(root/'scenarios.cpp'),'-o',str(exe)],check=True)
+ subprocess.run(['g++','-std=c++17','-Wall','-Wextra','-Werror','-DSPA_WIFI_SSID="test-network"','-DSPA_WEB_PASS="test-password-only"','-DSPA_TEMP_ADC_ADS1115=1',f'-DSPA_BENCH_DEMO={mode}','-I'+str(root),str(root/'scenarios.cpp'),'-o',str(exe)],check=True)
  for case in names:
   assert re.search(r'test=="'+re.escape(case)+r'"', (root/"scenarios.cpp").read_text()), "Unknown scenario: "+case
   p=subprocess.run([str(exe),case,str(root.parent/"logs/power-nvs.txt")],capture_output=True,text=True)

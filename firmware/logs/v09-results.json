@@ -1,0 +1,236 @@
+[
+  {
+    "build": "Demo",
+    "case": "uv-both-speeds",
+    "passed": true,
+    "output": "PASS 1 uv-both-speeds\n"
+  },
+  {
+    "build": "Demo",
+    "case": "uv-changeover",
+    "passed": true,
+    "output": "PASS 1 uv-changeover\n"
+  },
+  {
+    "build": "Demo",
+    "case": "uv-stopped",
+    "passed": true,
+    "output": "PASS 1 uv-stopped\n"
+  },
+  {
+    "build": "Demo",
+    "case": "manual-low-timeout",
+    "passed": true,
+    "output": "PASS 1 manual-low-timeout\n"
+  },
+  {
+    "build": "Demo",
+    "case": "manual-low-high-still-20",
+    "passed": true,
+    "output": "PASS 1 manual-low-high-still-20\n"
+  },
+  {
+    "build": "Demo",
+    "case": "lockout-pump",
+    "passed": true,
+    "output": "PASS 1 lockout-pump\n"
+  },
+  {
+    "build": "Demo",
+    "case": "lockout-independent",
+    "passed": true,
+    "output": "PASS 1 lockout-independent\n"
+  },
+  {
+    "build": "Demo",
+    "case": "lockout-no-queue",
+    "passed": true,
+    "output": "PASS 1 lockout-no-queue\n"
+  },
+  {
+    "build": "Demo",
+    "case": "light-timeout",
+    "passed": true,
+    "output": "PASS 1 light-timeout\n"
+  },
+  {
+    "build": "Demo",
+    "case": "light-program",
+    "passed": true,
+    "output": "PASS 1 light-program\n"
+  },
+  {
+    "build": "Demo",
+    "case": "light-known-state",
+    "passed": true,
+    "output": "PASS 1 light-known-state\n"
+  },
+  {
+    "build": "Demo",
+    "case": "light-restore-after-timeout",
+    "passed": true,
+    "output": "PASS 1 light-restore-after-timeout\n"
+  },
+  {
+    "build": "Demo",
+    "case": "light-bad-program",
+    "passed": true,
+    "output": "PASS 1 light-bad-program\n"
+  },
+  {
+    "build": "Demo",
+    "case": "priming",
+    "passed": true,
+    "output": "PASS 1 priming\n"
+  },
+  {
+    "build": "Demo",
+    "case": "priming-jets",
+    "passed": true,
+    "output": "PASS 1 priming-jets\n"
+  },
+  {
+    "build": "Demo",
+    "case": "freeze",
+    "passed": true,
+    "output": "PASS 1 freeze\n"
+  },
+  {
+    "build": "Demo",
+    "case": "freeze-one-sensor-high",
+    "passed": true,
+    "output": "PASS 1 freeze-one-sensor-high\n"
+  },
+  {
+    "build": "Demo",
+    "case": "freeze-blind",
+    "passed": true,
+    "output": "PASS 1 freeze-blind\n"
+  },
+  {
+    "build": "Demo",
+    "case": "freeze-not-on-flow-fault",
+    "passed": true,
+    "output": "PASS 1 freeze-not-on-flow-fault\n"
+  },
+  {
+    "build": "Demo",
+    "case": "poll-heat-off",
+    "passed": true,
+    "output": "PASS 1 poll-heat-off\n"
+  },
+  {
+    "build": "Demo",
+    "case": "water-age",
+    "passed": true,
+    "output": "PASS 1 water-age\n"
+  },
+  {
+    "build": "Demo",
+    "case": "no-reading-before-circulation",
+    "passed": true,
+    "output": "PASS 1 no-reading-before-circulation\n"
+  },
+  {
+    "build": "Demo",
+    "case": "floor-heats",
+    "passed": true,
+    "output": "PASS 1 floor-heats\n"
+  },
+  {
+    "build": "Demo",
+    "case": "floor-not-above",
+    "passed": true,
+    "output": "PASS 1 floor-not-above\n"
+  },
+  {
+    "build": "Demo",
+    "case": "floor-window-setpoint",
+    "passed": true,
+    "output": "PASS 1 floor-window-setpoint\n"
+  },
+  {
+    "build": "Demo",
+    "case": "flow-retry",
+    "passed": true,
+    "output": "PASS 1 flow-retry\n"
+  },
+  {
+    "build": "Demo",
+    "case": "flow-latch",
+    "passed": true,
+    "output": "PASS 1 flow-latch\n"
+  },
+  {
+    "build": "Demo",
+    "case": "water-hot",
+    "passed": true,
+    "output": "PASS 1 water-hot\n"
+  },
+  {
+    "build": "Demo",
+    "case": "heater-overtemp-latches",
+    "passed": true,
+    "output": "PASS 1 heater-overtemp-latches\n"
+  },
+  {
+    "build": "Demo",
+    "case": "sensor-mismatch",
+    "passed": true,
+    "output": "PASS 1 sensor-mismatch\n"
+  },
+  {
+    "build": "Demo",
+    "case": "sensor-cap",
+    "passed": true,
+    "output": "PASS 1 sensor-cap\n"
+  },
+  {
+    "build": "Demo",
+    "case": "ssr-proof",
+    "passed": true,
+    "output": "PASS 1 ssr-proof\n"
+  },
+  {
+    "build": "Demo",
+    "case": "status-fields",
+    "passed": true,
+    "output": "PASS 1 status-fields\n"
+  },
+  {
+    "build": "MainOnboard",
+    "case": "onboard-ntc",
+    "passed": true,
+    "output": "PASS 0 onboard-ntc\n"
+  },
+  {
+    "build": "MainOnboard",
+    "case": "onboard-38c",
+    "passed": true,
+    "output": "PASS 0 onboard-38c\n"
+  },
+  {
+    "build": "MainOnboard",
+    "case": "onboard-open",
+    "passed": true,
+    "output": "PASS 0 onboard-open\n"
+  },
+  {
+    "build": "MainOnboard",
+    "case": "onboard-short",
+    "passed": true,
+    "output": "PASS 0 onboard-short\n"
+  },
+  {
+    "build": "MainOnboard",
+    "case": "onboard-no-i2c",
+    "passed": true,
+    "output": "PASS 0 onboard-no-i2c\n"
+  },
+  {
+    "build": "MainOnboard",
+    "case": "main-priming",
+    "passed": true,
+    "output": "PASS 0 main-priming\n"
+  }
+]

@@ -1,9 +1,9 @@
 #pragma once
 #ifndef SPA_LIVE_VERSION
-#define SPA_LIVE_VERSION "0.6.3-live"
+#define SPA_LIVE_VERSION "0.9.0-live"
 #endif
 #ifndef SPA_LIVE_BUILD
-#define SPA_LIVE_BUILD "live-api-1"
+#define SPA_LIVE_BUILD "live-api-2"
 #endif
 #include <LiveWebServer.h>
 // Include the frozen baseline once, substituting only its entry-point/server
@@ -70,10 +70,10 @@ void liveFaultJSON(JsonObject d,FaultCode code,const LiveEvent *record=nullptr){
 }
 void liveState(){JsonDocument d;
     auto c=d["controller"].to<JsonObject>();c["online"]=true;c["uptime_s"]=millis()/1000;c["firmware"]=SPA_BENCH_DEMO?SPA_LIVE_VERSION "-demo":SPA_LIVE_VERSION "-main";c["build"]=SPA_LIVE_BUILD;c["reset_reason"]=resetReason;c["watchdog_ok"]=controlWatchdog!=nullptr;
-    auto t=d["temperature"].to<JsonObject>();liveNumber(t["water_c"],spa.waterTemperature);t["target_c"]=config.setpointC;liveNumber(t["sensor_a_c"],tempA.filteredC);liveNumber(t["sensor_b_c"],tempB.filteredC);liveNumber(t["delta_t_c"],spa.tempDifference);liveNumber(t["rise_rate_c_min"],(tempA.rateCPerSec+tempB.rateCPerSec)*30);
+    auto t=d["temperature"].to<JsonObject>();liveNumber(t["water_c"],circulatingWaterValid?lastCirculatingWaterC:NAN);t["water_valid"]=circulatingWaterValid;if(circulatingWaterValid)t["water_age_s"]=(millis()-lastCirculatingWaterMs)/1000UL;else t["water_age_s"]=nullptr;liveNumber(t["probe_average_c"],spa.waterTemperature);t["target_c"]=config.setpointC;liveNumber(t["sensor_a_c"],tempA.filteredC);liveNumber(t["sensor_b_c"],tempB.filteredC);liveNumber(t["delta_t_c"],spa.tempDifference);liveNumber(t["rise_rate_c_min"],(tempA.rateCPerSec+tempB.rateCPerSec)*30);
     d["pump"]["requested"]=livePump(spa.requestedPump);d["pump"]["actual"]=livePump(spa.actualPump);
     d["heater"]["demand"]=spa.heaterDemand>0;d["heater"]["ssr_command"]=spa.heaterSSR;d["heater"]["safety_contactor"]=spa.heaterSafetyContactor;d["heater"]["allowed"]=false;
-    d["heater"]["physical_outputs_inhibited"]=true;d["uv"]["on"]=spa.uv;d["light"]["on"]=spa.light;
+    d["heater"]["physical_outputs_inhibited"]=true;d["uv"]["on"]=spa.uv;d["light"]["on"]=spa.light;d["light"]["program"]=lightProgram;d["light"]["program_count"]=LIGHT_PROGRAM_COUNT;if(lightOn)d["light"]["auto_off_s"]=(LIGHT_TIMEOUT_MS-(millis()-lightOnSinceMs))/1000UL;else d["light"]["auto_off_s"]=nullptr;auto v9=d["v09"].to<JsonObject>();v9["priming"]=primingActive;if(primingActive)v9["priming_s"]=(primingUntilMs-millis())/1000UL;else v9["priming_s"]=nullptr;v9["freeze_protect"]=freezeActive;v9["water_hot"]=spa.waterHot;v9["sensor_mismatch"]=spa.calibrationInhibit;v9["economy_floor_heat"]=floorHeatNeeded;v9["economy_floor_c"]=ECONOMY_FLOOR_C;v9["no_flow_retry"]=flowRetryPending;v9["temp_adc"]=SPA_TEMP_ADC_ADS1115?"ADS1115":"ONBOARD";
     d["m7"]["status"]=spa.fault==FaultCode::NONE?"CHECK":"FAULT";d["m7"]["flow_ok"]=false;d["m7"]["note"]="No independently proven flow input";
     d["mode"]["heating"]=liveMode();d["mode"]["service"]=serviceMode;d["mode"]["demo"]=(bool)SPA_BENCH_DEMO;
     d["schedule"]["enabled"]=solarStart!=solarEnd;d["schedule"]["start"]=liveTime(solarStart);d["schedule"]["end"]=liveTime(solarEnd);auto days=d["schedule"]["days"].to<JsonArray>();for(int i=1;i<=7;++i)days.add(i);
@@ -113,7 +113,12 @@ void liveCommand(const std::string &path){
         if(!liveFields(obj,",requested,",1)||!obj["requested"].is<const char*>()){liveReply(400,"Expected requested only");return;}
         std::string mode=obj["requested"].as<const char*>();if(mode!="OFF"&&mode!="LOW"&&mode!="HIGH"){liveReply(422,"Invalid requested speed");return;}command=mode=="OFF"?"off":mode=="LOW"?"low":"high";stop=mode=="OFF";
     }else if(path=="light"){
-        if(!liveFields(obj,",on,",1)||!obj["on"].is<bool>()){liveReply(400,"Expected boolean on only");return;}bool desired=obj["on"].as<bool>();stop=!desired;if(desired!=spa.light)command="light";
+        bool withProgram=obj.size()==2;
+        if(!(withProgram?liveFields(obj,",on,,program,",2):liveFields(obj,",on,",1))||!obj["on"].is<bool>()||(withProgram&&(!obj["program"].is<int>()||!obj["on"].as<bool>()))){liveReply(400,"Expected on, optional program with on:true");return;}
+        bool desired=obj["on"].as<bool>();stop=!desired;
+        if(withProgram){int p=obj["program"].as<int>();if(p<1||p>LIGHT_PROGRAM_COUNT){liveReply(422,"Invalid light program");return;}
+            if(!lightOn){lightWantedProgram=(uint8_t)p;command="light on";}else command="lightprog "+String(p);}
+        else if(desired!=spa.light)command=desired?"light on":"light off";
     }else if(path=="mode"){
         if(!liveFields(obj,",heating,",1)||!obj["heating"].is<const char*>()){liveReply(400,"Expected heating only");return;}
         std::string mode=obj["heating"].as<const char*>();if(mode!="OFF"&&mode!="SOLAR_PRIORITY"){liveReply(422,"NORMAL/manual override is not supported by this adapter");return;}command=mode=="OFF"?"heatmode off":"heatmode solar";stop=mode=="OFF";

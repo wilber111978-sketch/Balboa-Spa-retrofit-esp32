@@ -41,6 +41,7 @@ public:
 enum class Screen:uint8_t {Normal,Adjust,Fault,Service,Info};
 struct State {
     float water=NAN,target=38;bool valid=false,wifi=false,service=false,heatInhibited=true,logicalHeat=false;
+    int ageMin=-1,primingS=-1; // V0.9
     uint8_t pump=0;uint16_t fault=0;
     char faultId[32]={},description[64]={},mode[24]={},feedback[40]={};
 };
@@ -69,8 +70,12 @@ public:
         if(s.service){v.screen=Screen::Service;copy(v.heading,sizeof(v.heading),"SERVICE MODE");copy(v.large,sizeof(v.large),"STOPPED");copy(v.lines[1],sizeof(v.lines[1]),"HEATING INHIBITED");copy(v.lines[3],sizeof(v.lines[3]),"Use web confirmation to exit");copy(v.lines[5],sizeof(v.lines[5]),s.feedback);return v;}
         if(uint32_t(now-interaction)>=PreviewMs){adjusting=false;info=false;}
         if(adjusting){v.screen=Screen::Adjust;copy(v.heading,sizeof(v.heading),"TARGET TEMPERATURE");snprintf(v.large,sizeof(v.large),"%.1f C",s.target);copy(v.lines[1],sizeof(v.lines[1]),"UP / DOWN: 0.5 C");}
-        else if(info){v.screen=Screen::Info;copy(v.heading,sizeof(v.heading),"CONTROLLER INFO");copy(v.large,sizeof(v.large),"V0.8");copy(v.lines[1],sizeof(v.lines[1]),"Heater commissioning locked");copy(v.lines[3],sizeof(v.lines[3]),"Settings: use web dashboard");}
-        else {copy(v.heading,sizeof(v.heading),"SPA WATER");if(s.valid&&isfinite(s.water))snprintf(v.large,sizeof(v.large),"%.1f C",s.water);else copy(v.large,sizeof(v.large),"--.- C");snprintf(v.lines[0],sizeof(v.lines[0]),"Target %.1f C",s.target);}
+        else if(info){v.screen=Screen::Info;copy(v.heading,sizeof(v.heading),"CONTROLLER INFO");copy(v.large,sizeof(v.large),"V0.9");copy(v.lines[1],sizeof(v.lines[1]),"Heater commissioning locked");copy(v.lines[3],sizeof(v.lines[3]),"Settings: use web dashboard");}
+        else {copy(v.heading,sizeof(v.heading),"SPA WATER");if(s.valid&&isfinite(s.water))snprintf(v.large,sizeof(v.large),"%.1f C",s.water);else copy(v.large,sizeof(v.large),"--.- C");snprintf(v.lines[0],sizeof(v.lines[0]),"Target %.1f C",s.target);
+            // V0.9: reading age once >= 5 min; priming countdown.
+            if(s.primingS>=0)snprintf(v.lines[1],sizeof(v.lines[1]),"Priming %d:%02d - heater off",s.primingS/60,s.primingS%60);
+            else if(s.valid&&s.ageMin>=5)snprintf(v.lines[1],sizeof(v.lines[1]),"Updated %d min ago",s.ageMin);
+            else if(!s.valid&&s.ageMin<0)copy(v.lines[1],sizeof(v.lines[1]),"Checking temperature...");}
         snprintf(v.lines[2],sizeof(v.lines[2]),"Pump %s | Wi-Fi %s",s.pump==2?"HIGH":s.pump==1?"LOW":"OFF",s.wifi?"OK":"OFFLINE");
         snprintf(v.lines[4],sizeof(v.lines[4]),"Mode: %.24s",s.mode);
         copy(v.lines[5],sizeof(v.lines[5]),s.heatInhibited?(s.logicalHeat?"Demo demand / heat inhibited":"HEATING INHIBITED"):(s.logicalHeat?"Heating":"Heating idle"));
