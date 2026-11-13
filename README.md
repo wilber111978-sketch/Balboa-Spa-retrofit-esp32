@@ -57,7 +57,7 @@ This is the same load pattern the original GS100 ran for years on the same 10 A 
 | Priming after power-up: heater locked out ~4 min while air is purged | firmware |
 | Pump / light changes ignored for 2 s after each change (not queued) | firmware |
 | Light auto-off after 40 min; 2-wire RGB colour selected by power-interruption steps | firmware |
-| Freeze protection: pump LOW if a heater sensor reads < 5 °C | firmware |
+| Freeze protection: pump LOW if **either** heater sensor reads < 5 °C; one failed sensor cannot block it; timed circulation if both fail | firmware |
 
 ---
 

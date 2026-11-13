@@ -123,7 +123,19 @@ Pump LOW is the filtration jet.
 
 ## Freeze protection
 
-If either heater sensor reads below 5 °C (checked even with the pump stopped — the heater body is a good proxy for equipment-bay freeze risk), run pump LOW until water temperature is valid and ≥ 8 °C. Heating proceeds normally if the water is below setpoint. Logged as FREEZE_PROTECT. Not expected to trigger in the current install location, but costs nothing.
+Both sensors are checked independently, even with the pump stopped (the heater body is a good proxy for equipment-bay freeze risk). The rule is designed so that one failed or falsely reading sensor can never block freeze protection:
+
+| Condition | Action |
+|---|---|
+| **either** sensor reads < 5 °C (OR logic, never an average) | run pump LOW |
+| one sensor invalid (open / short / out of range) | judge freeze risk on the remaining valid sensor alone; sensor fault raised as normal |
+| one sensor reads falsely high (e.g. 30 °C while the other reads 3 °C) | the low sensor still triggers protection; SENSOR_MISMATCH raised |
+| one sensor reads falsely low | pump runs unnecessarily — harmless; SENSOR_MISMATCH raised |
+| **both** sensors invalid | freeze risk unknown → fail-safe circulation: pump LOW 15 min every hour until at least one sensor is valid again |
+
+Exit: after the pump has run ≥ `TEMP_SETTLE_S`, **every** valid sensor reads ≥ 8 °C.
+
+Freeze protection runs the pump only. It is allowed even in FAULT_LOCKOUT (heater stays locked out; pump-only faults such as suspected no-flow still take priority and stop the pump). Heating proceeds normally if the water is below setpoint and no fault is active. Logged as FREEZE_PROTECT. Not expected to trigger in the current install location, but costs nothing.
 
 ## Heat demand and heating mode
 

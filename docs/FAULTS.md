@@ -42,7 +42,7 @@ Every stored fault should include:
 | TIME_INVALID | No valid time from RTC or NTP; schedules suspended, NORMAL heating used | warning |
 | RTC_FAULT | DS3231 not responding on I²C | warning |
 | BUTTON_STUCK | Topside button held beyond stuck timeout; input ignored | warning |
-| FREEZE_PROTECT | Heater sensor below 5 °C; pump LOW running for freeze protection | warning |
+| FREEZE_PROTECT | A heater sensor (either one) reads below 5 °C, or both sensors are invalid; pump LOW running for freeze protection | warning |
 | FIRMWARE_ROLLBACK | New firmware failed its self-test and the previous version was restored | warning |
 | TEMP_STALE | No valid water temperature for longer than expected (poll failed or suppressed) | warning |
 
