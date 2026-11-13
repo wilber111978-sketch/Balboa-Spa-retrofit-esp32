@@ -16,10 +16,11 @@
 
   <path d="M700 150 V190 M700 190 H240 M700 190 H1160" class="line"/>
 
-  <rect x="90" y="220" width="300" height="110" class="box"/>
+  <rect x="90" y="220" width="300" height="135" class="box"/>
   <text x="240" y="255" text-anchor="middle" class="txt">Pump Power</text>
   <text x="240" y="285" text-anchor="middle" class="small">LOW + HIGH contactors</text>
   <text x="240" y="310" text-anchor="middle" class="small">hardware NC interlock</text>
+  <text x="240" y="335" text-anchor="middle" class="small">LOW spare poles = heater permissive</text>
 
   <rect x="550" y="220" width="300" height="110" class="box"/>
   <text x="700" y="255" text-anchor="middle" class="txt">Heater Power</text>
@@ -38,33 +39,35 @@
   <text x="1000" y="460" class="small">CH1 → LOW contactor</text>
   <text x="1000" y="487" class="small">CH2 → HIGH contactor</text>
   <text x="1000" y="514" class="small">CH3 → heater safety contactor</text>
-  <text x="1000" y="541" class="small">CH4 → UV / ozone</text>
+  <text x="1000" y="541" class="small">CH4 → UV / ozone (pump running)</text>
   <text x="1000" y="568" class="small">CH5 → light   CH6 → spare</text>
 
   <path d="M1160 330 V390" class="line"/>
 
-  <rect x="540" y="400" width="300" height="165" class="box"/>
+  <rect x="510" y="400" width="360" height="195" class="box"/>
   <text x="690" y="435" text-anchor="middle" class="txt">Heater Interface</text>
-  <text x="570" y="470" class="small">GPIO16 → transistor → SSR input</text>
-  <text x="570" y="497" class="small">CH3 → safety contactor</text>
-  <text x="570" y="524" class="small">independent high-limit</text>
+  <text x="530" y="470" class="small">GPIO16 → driver → LOW pole 2 → SSR</text>
+  <text x="530" y="497" class="small">high-limit → LOW pole 1 → CH3 → contactor</text>
+  <text x="530" y="524" class="small">heater only while LOW pulled in</text>
+  <text x="530" y="551" class="small">never with HIGH (hardware)</text>
 
-  <path d="M970 485 H840" class="dash"/>
+  <path d="M970 485 H870" class="dash"/>
   <path d="M690 400 V330" class="dash"/>
 
-  <rect x="80" y="405" width="370" height="155" class="box"/>
+  <rect x="80" y="405" width="370" height="175" class="box"/>
   <text x="265" y="440" text-anchor="middle" class="txt">OEM M7 Sensors</text>
   <text x="110" y="477" class="small">Sensor A + Sensor B</text>
   <text x="110" y="504" class="small">10 kΩ precision dividers</text>
-  <text x="110" y="531" class="small">ADS1115 → I²C GPIO8/9</text>
-  <path d="M450 485 H970" class="dash"/>
+  <text x="110" y="531" class="small">ADS1115 (A2 = 3.3 V ref) + DS3231 RTC</text>
+  <text x="110" y="555" class="small">I²C GPIO8 / GPIO9</text>
+  <path d="M450 485 H510" class="dash"/>
 
   <rect x="80" y="655" width="440" height="170" class="box"/>
-  <text x="300" y="690" text-anchor="middle" class="txt">Balboa MVP260 Topside</text>
-  <text x="110" y="727" class="small">DATA → GPIO10</text>
-  <text x="110" y="754" class="small">CLOCK → GPIO11</text>
-  <text x="110" y="781" class="small">WARM / COOL / JETS / LIGHT</text>
-  <text x="110" y="808" class="small">→ optocouplers → GPIO12–15</text>
+  <text x="300" y="690" text-anchor="middle" class="txt">GC9A01 Topside (≤ 400 mm)</text>
+  <text x="110" y="727" class="small">SPI: CS 10 · MOSI 11 · SCLK 12</text>
+  <text x="110" y="754" class="small">DC 13 · RST 14 · BL 15</text>
+  <text x="110" y="781" class="small">Buttons: Jets 4 · Light 5</text>
+  <text x="110" y="808" class="small">Temp+ 6 · Temp− 7</text>
   <path d="M520 740 H970" class="dash"/>
 
   <rect x="930" y="680" width="420" height="145" class="box"/>

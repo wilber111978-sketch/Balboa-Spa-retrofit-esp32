@@ -19,9 +19,9 @@
 - independent heater high-limit device
 - DIN terminal/distribution blocks
 - coil suppressors
-- MVP260 interface components
+- GC9A01 1.28-inch round TFT + 4 waterproof buttons (replacement topside)
 - ADS1115 module
-- 4-channel optocoupler module
+- DS3231 RTC module (board has no RTC)
 - low-side MOSFET module for SSR drive (existing farm-sensor spare may be reused after verification)
 
 ## Bench-layout note

@@ -9,7 +9,7 @@ Confirmed from the OEM board / photo:
 - 2 x 4-pin Molex-style spa connectors
 - 1 x 3-pin Molex-style spa connector
 - 1 x 2-pin Molex-style spa connector
-- MVP260 modular topside connector
+- VL260 (MVP260) modular topside connector — not reused; the GC9A01 replacement topside has its own cable
 
 ## Replacement cable-side housings
 
@@ -57,10 +57,11 @@ Waveshare CH1 -> 24 VDC LOW contactor coil
 Waveshare CH2 -> 24 VDC HIGH contactor coil
 
 ### Heater
-Waveshare CH3 -> heater permissive / SSR control logic
+- Waveshare CH3 -> heater safety contactor coil (fed via high-limit and LOW spare pole 1)
+- GPIO16 -> low-side driver -> SSR input (SSR +24 V fed via LOW spare pole 2)
 
 ### UV / ozone
-Waveshare CH4
+Waveshare CH4 (firmware runs it only while pump LOW or HIGH runs)
 
 ### Light
 Waveshare CH5
@@ -82,6 +83,19 @@ HIGH contactor coil path:
 
 This hard interlock is mandatory even though firmware also blocks simultaneous commands.
 
+## LOW contactor pole allocation
+
+Record the actual terminal numbers once wired.
+
+| LOW contactor pole | Terminals (fill in) | Use | Voltage |
+|---|---|---|---|
+| main pole (pump) | e.g. 1/L1 – 2/T1 | pump LOW winding active | 240 VAC |
+| spare pole 1 | e.g. 3/L2 – 4/T2 | heater safety contactor coil permissive | 24 VDC |
+| spare pole 2 | e.g. 5/L3 – 6/T3 | heater SSR input permissive | 24 VDC |
+| NC aux | 21 – 22 | HIGH coil interlock | 24 VDC |
+
+24 V conductors on this contactor must be mains-insulation-rated and labelled, because the adjacent pole carries 240 V.
+
 ## Verification checklist before mains
 
 - identify every OEM harness by function
@@ -91,4 +105,5 @@ This hard interlock is mandatory even though firmware also blocks simultaneous c
 - verify heater polarity / neutral routing
 - verify UV / ozone connector assignment
 - verify light voltage and connector assignment
+- verify heater permissive: no safety contactor / SSR operation unless LOW is pulled in
 - label each pigtail

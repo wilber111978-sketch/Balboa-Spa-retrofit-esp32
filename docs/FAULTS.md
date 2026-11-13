@@ -38,6 +38,19 @@ Every stored fault should include:
 | PUMP_SPEED_CONFLICT | LOW and HIGH requested together | service diagnostic |
 | HIGH_SPEED_HEATER_LOCKOUT | Heater request blocked because pump HIGH is active | normal protective state |
 | SSR_OVER_TEMP | Heater SSR temperature too high | service diagnostic |
+| SENSOR_RAIL_RANGE | ADC 3.3 V reference reading implausible; temperatures untrusted | Sn |
+| TIME_INVALID | No valid time from RTC or NTP; schedules suspended, NORMAL heating used | warning |
+| RTC_FAULT | DS3231 not responding on I²C | warning |
+| BUTTON_STUCK | Topside button held beyond stuck timeout; input ignored | warning |
+| TEMP_STALE | No valid water temperature for longer than expected (poll failed or suppressed) | warning |
+
+## Latch and reset policy
+
+| Class | Examples | Reset |
+|---|---|---|
+| Warning | TIME_INVALID, RTC_FAULT, BUTTON_STUCK, TEMP_STALE, HIGH_SPEED_HEATER_LOCKOUT | clears automatically when the condition clears |
+| Retryable fault | DELTA_T_HIGH, NO_FLOW_SUSPECTED (first occurrence) | timed retry if configured; web UI may request a reset |
+| Latched critical fault | OVER_TEMP, repeated NO_FLOW_SUSPECTED, SENSOR_*_RANGE persisting, HEAT_NO_RESPONSE | **local topside reset only** (hold Temp+ and Temp− for 5 s). Cannot be cleared from the web UI or Matter |
 
 ## Example: SENSOR_B_RANGE
 
@@ -75,6 +88,8 @@ Trigger context:
 Probable causes:
 - SSR failed open
 - safety contactor not closing
+- LOW contactor spare-pole permissive not making (worn contact, loose 24 V wire, SSR input current too low for the main pole)
+- hardware high-limit tripped (manual reset required)
 - failed heater element
 - open circuit
 - wiring fault

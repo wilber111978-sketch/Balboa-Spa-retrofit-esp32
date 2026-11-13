@@ -80,12 +80,16 @@ Use the Balboa published resistance table as the primary conversion reference.
 
 Recommended firmware method:
 
-1. read ADC voltage
-2. calculate thermistor resistance from the divider equation
+1. read ADC voltages for the sensor (A0/A1) and the 3.3 V rail reference (A2)
+2. calculate thermistor resistance ratiometrically: `R_ntc = 10 kΩ × V_sensor / (V_rail − V_sensor)` — this cancels 3.3 V rail drift, which the ADS1115's internal reference would otherwise pass straight into the temperature
 3. convert resistance to temperature using table interpolation
 4. retain raw resistance in diagnostics
 
 This is preferable to assuming an unknown Beta coefficient.
+
+## When the reading means "water temperature"
+
+The sensors are in the heater body, so they only represent tub temperature while water flows through the heater (pump LOW or HIGH, after a settle time). With the pump stopped they drift toward equipment-bay temperature. See the temperature sampling rules in [HEATER_M7_STATE_MACHINE.md](HEATER_M7_STATE_MACHINE.md).
 
 ## Sensor plausibility
 

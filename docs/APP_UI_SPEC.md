@@ -29,7 +29,8 @@ The UI must feel like a modern smart-home app, but the ESP32 remains the control
 
 ### Main temperature card
 Show:
-- current water temperature
+- current water temperature (last valid reading)
+- reading age when older than 5 min, e.g. "updated 12 min ago" — never present a stale value as live
 - target temperature
 - heating state
 - local/remote connection state
@@ -38,7 +39,7 @@ Show:
 Five compact tiles:
 - Pump: OFF / LOW / HIGH
 - Heater: OFF / ON / LOCKED
-- UV: OFF / ON
+- UV: OFF / ON (show reason when off, e.g. "pump stopped")
 - M7 Flow: OK / CHECK / FAULT
 - Fault: NONE / active code
 
@@ -56,6 +57,7 @@ Show:
 - target temperature
 - plus button
 - steps should follow firmware settings
+- range 10–40 °C; + button disabled at 40 °C
 - disable when service/fault state forbids setpoint changes
 
 ### Jets control
@@ -79,6 +81,9 @@ Show active schedule, for example:
 - 09:00–15:30
 - days enabled
 - enabled/disabled state
+- economy floor temperature
+- next filter cycle
+- warning if time is invalid (schedules suspended)
 
 ### Bottom navigation
 - Home
@@ -127,6 +132,7 @@ Show:
 - probable causes
 - recommended checks
 - reset/retry status
+- for latched critical faults: "Reset at the spa — hold Temp+ and Temp− for 5 s" (no remote reset button)
 
 ### Raw/service values
 Service-mode only:
@@ -142,8 +148,11 @@ Include:
 - target temperature limits
 - temperature units
 - heating mode
-- solar-priority schedule
-- UV schedule / behavior
+- solar-priority schedule and economy floor
+- filter cycles (2 × start time + duration)
+- UV / ozone behavior (read-only note: runs whenever the pump runs)
+- time source / RTC status
+- web app pairing token (entered once, stored in the browser)
 - display brightness or theme if useful
 - Wi-Fi configuration
 - Matter pairing/reset
@@ -180,6 +189,10 @@ Initial demo scenarios:
 - over-temperature
 - Wi-Fi disconnected
 - watchdog reboot recovered
+- pump stopped, temperature reading 25 min old (poll pending)
+- temperature poll in progress
+- filter cycle running
+- time invalid (no RTC / NTP)
 
 Demo mode must never energize physical outputs.
 

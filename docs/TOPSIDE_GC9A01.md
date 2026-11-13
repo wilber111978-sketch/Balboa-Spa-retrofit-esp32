@@ -22,9 +22,9 @@
 
 | Function | GPIO |
 |---|---:|
-| SCLK | GPIO10 |
+| CS | GPIO10 |
 | MOSI / DIN | GPIO11 |
-| CS | GPIO12 |
+| SCLK | GPIO12 |
 | DC | GPIO13 |
 | RESET | GPIO14 |
 | Backlight | GPIO15 |
@@ -43,15 +43,19 @@
 ### TFT
 - VCC -> 3.3 V
 - GND -> GND
-- SPI lines direct to ESP32-S3
-- add local decoupling near the display
+- SPI lines direct to ESP32-S3 (GPIO10/11/12 are the native FSPI IOMUX pins)
+- topside is ≤ 400 mm from the controller: start SPI at 20–40 MHz, reduce only if artefacts appear
+- run a GND conductor alongside SCLK in the cable
+- add local decoupling near the display (100 nF + optional 10 µF)
 - use a transistor/MOSFET for backlight if module current requires it
+- the display module is not waterproof: mount it behind a sealed clear window / gasketed bezel
 
 ### Buttons
 Recommended:
 - one side of each button -> GND
 - other side -> assigned GPIO
-- configure INPUT_PULLUP
+- external 10 kΩ pull-up to 3.3 V and 100 nF to GND at the controller end
+- INPUT_PULLUP may also be enabled (harmless in parallel)
 
 Pressed = LOW.
 
@@ -72,10 +76,15 @@ Increase setpoint by configured step.
 ### Temp -
 Decrease setpoint by configured step.
 
+Setpoint is clamped to 10–40 °C.
+
+### Local fault reset
+Hold **Temp +** and **Temp −** together for 5 s to reset a latched safety fault. This is the only way to clear latched critical faults — they cannot be cleared from the web UI or Matter.
+
 ## UI behavior
 
 Default screen:
-- current water temperature
+- current water temperature (last valid reading; show its age, e.g. "12 min ago", once older than 5 min)
 - target temperature
 - heater status
 - pump/jets state

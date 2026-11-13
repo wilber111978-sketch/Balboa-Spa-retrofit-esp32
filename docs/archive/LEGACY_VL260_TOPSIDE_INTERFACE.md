@@ -1,3 +1,5 @@
+> **RETIRED — reference only.** The production controller no longer uses the original VL260 (MVP260) topside. The replacement topside is a GC9A01 TFT with four buttons — see [../TOPSIDE_GC9A01.md](../TOPSIDE_GC9A01.md). Pin numbers in this file are historical and must not be used; the current pin map is [../MASTER_GPIO_MAP.md](../MASTER_GPIO_MAP.md).
+
 # MVP260 Interface Notes
 
 ## Goal

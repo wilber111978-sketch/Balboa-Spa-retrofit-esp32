@@ -8,6 +8,14 @@ The API exposes controller state and accepts safe high-level requests.
 
 It does not expose unrestricted GPIO or relay control.
 
+## Authentication
+
+- `GET` endpoints are readable on the LAN without a token.
+- Every state-changing `POST` requires header `Authorization: Bearer <token>`.
+- The token is generated on first boot and shown on the topside (Settings → Pair web app) or set during Wi-Fi provisioning. It can be rotated from the topside.
+- Missing/invalid token → `401`. Repeated failures are rate-limited.
+- Demo mode needs no token and never touches outputs.
+
 ## GET /api/state
 
 Example response:
@@ -24,7 +32,11 @@ Example response:
   },
   "temperature": {
     "water_c": 36.8,
+    "water_valid": true,
+    "water_age_s": 42,
     "target_c": 38.0,
+    "target_min_c": 10.0,
+    "target_max_c": 40.0,
     "sensor_a_c": 36.7,
     "sensor_b_c": 37.1,
     "delta_t_c": 0.4,
@@ -41,7 +53,13 @@ Example response:
     "allowed": true
   },
   "uv": {
-    "on": true
+    "on": true,
+    "reason": "PUMP_RUNNING"
+  },
+  "circulation": {
+    "activity": "HEATING",
+    "next_poll_in_s": null,
+    "filter_cycle_active": false
   },
   "light": {
     "on": false
@@ -59,7 +77,17 @@ Example response:
     "enabled": true,
     "start": "09:00",
     "end": "15:30",
-    "days": [1,2,3,4,5,6,7]
+    "days": [1,2,3,4,5,6,7],
+    "economy_floor_c": 33.0
+  },
+  "filter_cycles": [
+    {"start": "10:00", "duration_min": 120},
+    {"start": "20:00", "duration_min": 60}
+  ],
+  "time": {
+    "valid": true,
+    "source": "NTP",
+    "local": "2026-11-13T14:30:00+11:00"
   },
   "fault": {
     "active": false,
@@ -82,7 +110,7 @@ Request:
 {"target_c":38.0}
 ```
 
-Firmware validates allowed range before applying.
+Firmware clamps / rejects values outside 10–40 °C (`400` with the allowed range). 40 °C is a hard maximum, not a setting.
 
 ## POST /api/jets
 
@@ -125,6 +153,24 @@ Example:
   "days": [1,2,3,4,5,6,7]
 }
 ```
+
+## POST /api/filter-cycles
+
+```json
+[
+  {"start": "10:00", "duration_min": 120},
+  {"start": "20:00", "duration_min": 60}
+]
+```
+
+Up to 2 cycles. `duration_min` 0–240; 0 disables a cycle.
+
+## Field notes
+
+- `temperature.water_c` is the last **valid** water temperature (pump has run ≥ settle time). `water_age_s` is its age. UIs show the age once it exceeds 300 s.
+- `uv.reason`: `PUMP_RUNNING`, `PUMP_STOPPED`, `SPEED_CHANGEOVER`, `SETTLING`, `SERVICE`, `FAULT`.
+- `circulation.activity`: `IDLE`, `POLLING`, `FILTERING`, `HEATING`, `COOLDOWN`, `JETS_LOW`, `JETS_HIGH`.
+- `time.source`: `NTP`, `RTC`, `NONE`. When `valid` is false, schedules are suspended.
 
 ## GET /api/faults
 
@@ -177,7 +223,7 @@ Explicitly enable/disable persistent service mode.
 
 ## POST /api/fault-reset
 
-Attempts to clear only faults that firmware marks resettable.
+Attempts to clear only faults that firmware marks **remote-resettable** (warnings and retryable faults). Latched critical faults (e.g. OVER_TEMP) return `409` with `"local_reset_required": true` — they can only be reset at the topside.
 
 ## Security / validation
 
@@ -187,3 +233,5 @@ Attempts to clear only faults that firmware marks resettable.
 - Bound numeric values.
 - Rate-limit repeated commands.
 - Never let the browser become the source of truth.
+- All `POST` endpoints require the bearer token.
+- `/api/service-mode` and `/api/fault-reset` additionally require a confirmation field (`"confirm": true`).

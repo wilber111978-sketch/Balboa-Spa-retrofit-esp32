@@ -17,12 +17,26 @@ firmware/
       pump_control.h
       safety_manager.cpp
       safety_manager.h
+      circulation.cpp        # temperature polling + filter cycles
+      circulation.h
+      uv_ozone.cpp           # UV/ozone follows pump run state
+      uv_ozone.h
+      heating_schedule.cpp   # NORMAL / SOLAR_PRIORITY / economy floor
+      heating_schedule.h
 
     sensors/
-      heater_sensors.cpp
+      heater_sensors.cpp     # ADS1115 A0/A1 + A2 rail ratiometric, table interpolation
       heater_sensors.h
+      water_temperature.cpp  # validity, settle time, age
+      water_temperature.h
       current_monitor.cpp
       current_monitor.h
+
+    time/
+      rtc_ds3231.cpp
+      rtc_ds3231.h
+      time_service.cpp       # DS3231 + NTP, time-valid flag
+      time_service.h
 
     topside/
       gc9a01_display.cpp
@@ -65,6 +79,9 @@ firmware/
     test_sensor_validation.cpp
     test_topside_buttons.cpp
     test_topside_ui.cpp
+    test_circulation_polling.cpp
+    test_uv_ozone_rule.cpp
+    test_heater_off_sequence.cpp
 ```
 
 ## Architectural rules
@@ -93,6 +110,7 @@ Button handling must include:
 - debounce
 - stuck-button detection
 - optional long-press behavior
+- Temp+ and Temp− held together for 5 s = local reset of latched faults (the only path that can clear them)
 - no blocking delays
 
 The display renders controller state only; it is not the source of truth.
@@ -102,6 +120,9 @@ Maintain one central spa state model containing:
 - current mode
 - target temperature
 - measured temperatures
+- water temperature validity and age
+- time validity / source
+- filter-cycle status
 - pump state
 - heater state
 - light state
@@ -125,15 +146,21 @@ Use a compact ring-buffer / persistent log for:
 - manual resets
 - controller reboots
 
+### Hard limits (compile-time constants, not settings)
+- setpoint maximum 40 °C
+- LOW/HIGH dead-time minimum
+- heater-off sequence before any pump change
+- UV/ozone only while pump runs
+
 ### Matter
 Matter exposes only safe high-level controls:
-- setpoint
+- setpoint (clamped 10–40 °C)
 - jets
 - light
 - basic status
 
 ### Web UI
-The web UI exposes deeper diagnostics but routes all commands through the same safety layer.
+The web UI exposes deeper diagnostics but routes all commands through the same safety layer. State-changing endpoints require an auth token (see [API_CONTRACT.md](API_CONTRACT.md)).
 
 ### Testing
 State-machine, topside-button and fault logic should be unit-tested before mains commissioning.

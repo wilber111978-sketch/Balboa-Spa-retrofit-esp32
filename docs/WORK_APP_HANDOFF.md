@@ -23,6 +23,7 @@ Read these files before changing code:
 - docs/API_CONTRACT.md
 - docs/BOM.md
 - docs/HARDWARE_INVENTORY.md
+- docs/TOPSIDE_GC9A01.md
 
 Treat the safety architecture in those files as fixed unless a contradiction or dangerous defect is found.
 
@@ -101,7 +102,8 @@ Match the generated phone mockup:
 - recommended checks
 
 ### Settings
-- schedule editor
+- schedule editor (solar window + economy floor)
+- filter cycle editor
 - heating mode
 - service mode
 - Matter status placeholder
@@ -122,6 +124,10 @@ Implement selectable demo scenarios:
 10. over-temperature
 11. Wi-Fi disconnected
 12. watchdog recovered
+13. pump stopped, stale temperature (poll pending)
+14. temperature poll in progress
+15. filter cycle running
+16. time invalid (schedules suspended)
 
 Scenario changes should update the complete UI coherently.
 
