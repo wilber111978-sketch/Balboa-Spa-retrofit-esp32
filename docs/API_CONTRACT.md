@@ -12,7 +12,7 @@ It does not expose unrestricted GPIO or relay control.
 
 - `GET` endpoints are readable on the LAN without a token.
 - Every state-changing `POST` requires header `Authorization: Bearer <token>`.
-- The token is generated on first boot and shown on the topside (Settings → Pair web app) or set during Wi-Fi provisioning. It can be rotated from the topside.
+- The token is generated on first boot and shown as a QR code on the topside Setup screen (hold Jets + Light 3 s). It can be regenerated from the Setup screen. See [PROVISIONING_AND_UPDATES.md](PROVISIONING_AND_UPDATES.md).
 - Missing/invalid token → `401`. Repeated failures are rate-limited.
 - Demo mode needs no token and never touches outputs.
 
@@ -64,8 +64,16 @@ Example response:
     "filter_cycle_active": false
   },
   "light": {
-    "on": false
+    "on": false,
+    "program": 1,
+    "program_count": 7,
+    "auto_off_remaining_s": null
   },
+  "priming": {
+    "active": false,
+    "remaining_s": null
+  },
+  "input_lockout_ms": 0,
   "m7": {
     "status": "OK",
     "flow_ok": true
@@ -133,6 +141,32 @@ Firmware performs all heater shutdown / dead-time / interlock sequencing.
 ```json
 {"on":true}
 ```
+
+```json
+{"on":true, "program":4}
+```
+
+`program` (1…`program_count`) is optional. Firmware sends the power-interruption step pulses needed to reach it. Auto-off after 40 min.
+
+## Input lockout
+
+`POST /api/jets` and `POST /api/light` are ignored for 2 s after any pump or light state change, from any source. They are not queued. Response: `409` with
+
+```json
+{"error":"INPUT_LOCKOUT","lockout_remaining_ms":1400}
+```
+
+## POST /api/priming/end
+
+Ends priming early (same as pressing Temp+ / Temp− on the topside during priming). Requires `"confirm": true`.
+
+## Firmware update
+
+See [PROVISIONING_AND_UPDATES.md](PROVISIONING_AND_UPDATES.md).
+
+- `GET /api/firmware` — running version, build, partition, previous version available for rollback, last update result
+- `POST /api/firmware/update` — multipart upload of a firmware `.bin`; token + `"confirm": true` required; rejected (`409`) while heating, priming or in fault lockout
+- `POST /api/firmware/rollback` — boot the previous firmware; token + confirm required
 
 ## POST /api/mode
 

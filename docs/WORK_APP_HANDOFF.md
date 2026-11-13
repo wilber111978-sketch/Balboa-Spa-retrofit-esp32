@@ -129,6 +129,9 @@ Implement selectable demo scenarios:
 15. filter cycle running
 16. time invalid (schedules suspended)
 17. first reading after power-up (`--.-°` with countdown)
+18. priming in progress
+19. light on with colour program and auto-off countdown
+20. input lockout after a jets change
 
 Scenario changes should update the complete UI coherently.
 

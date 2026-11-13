@@ -46,7 +46,7 @@ Expected functions:
 ### Light
 Expected functions depend on the actual Fisher installation and voltage.
 
-Do not assume the light is 240 V.
+Do not assume the light is 240 V. It is a 2-wire RGB LED light — most likely 12 V AC, possibly supplied from a transformer on the GS100 itself. Measure before removing the GS100 (see [HARDWARE_INTERFACE.md](HARDWARE_INTERFACE.md) §8).
 
 ## New controller mapping
 

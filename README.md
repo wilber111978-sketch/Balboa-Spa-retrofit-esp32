@@ -54,6 +54,10 @@ This is the same load pattern the original GS100 ran for years on the same 10 A 
 | Water temperature sampled continuously; pump LOW polled on a timer when the pump is idle so the reading stays current | firmware |
 | Setpoint hard-limited to 10–40 °C | firmware |
 | Daily filter cycles run independently of heat demand | firmware |
+| Priming after power-up: heater locked out ~4 min while air is purged | firmware |
+| Pump / light changes ignored for 2 s after each change (not queued) | firmware |
+| Light auto-off after 40 min; 2-wire RGB colour selected by power-interruption steps | firmware |
+| Freeze protection: pump LOW if a heater sensor reads < 5 °C | firmware |
 
 ---
 
@@ -468,6 +472,7 @@ Minimum rules:
 - [Hardware inventory](docs/HARDWARE_INVENTORY.md)
 - [Firmware structure](docs/FIRMWARE_STRUCTURE.md)
 - [Web API contract](docs/API_CONTRACT.md)
+- [Provisioning, firmware updates and flash storage](docs/PROVISIONING_AND_UPDATES.md)
 - [Web app UI spec](docs/APP_UI_SPEC.md)
 - [Web app work handoff](docs/WORK_APP_HANDOFF.md)
 - [Archive: legacy VL260 topside interface](docs/archive/LEGACY_VL260_TOPSIDE_INTERFACE.md) — retired, reference only

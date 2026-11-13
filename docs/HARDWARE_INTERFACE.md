@@ -384,11 +384,37 @@ This is enforced in firmware.
 
 ## 8. Light output
 
-CH5 is reserved for the original spa light.
+CH5 is reserved for the original spa light: a **2-wire RGB LED light**.
 
-Do **not** wire this section until the original light voltage has been confirmed.
+### Supply — confirm before wiring
 
-Balboa installations can use low-voltage lighting, so the actual Fisher configuration must be measured / traced first.
+Do **not** wire this section until the original light voltage has been confirmed. 2-wire spa LED lights are normally **12 V AC** (some accept 12 V AC or DC), and on many Balboa boards that 12 V comes from a transformer **on the controller board itself**. If the GS100 supplied it, removing the GS100 removes the light supply.
+
+1. With the GS100 still running, measure the voltage on the light's 2-pin connector with the light on (AC and DC ranges).
+2. Check the light's label / datasheet for the accepted input.
+3. Provide a matching supply in the new enclosure (e.g. small 12 V AC safety transformer, or 12 V DC supply if the light accepts DC). Add to BOM once known.
+4. CH5 switches that low-voltage supply to the light.
+
+### Colour / program control
+
+A 2-wire light has no data line. Colour or program is selected by **briefly interrupting power**: each quick OFF→ON (typically < 1–2 s off) steps to the next colour/program; staying OFF longer resets it to the first program at next switch-on.
+
+Firmware drives this through CH5:
+- step pulse: OFF for `LIGHT_STEP_OFF_MS`, then ON for `LIGHT_STEP_ON_MS`
+- to select program N from a known program, send the required number of step pulses
+- firmware tracks the current program; after the light has been OFF longer than `LIGHT_RESET_OFF_S` it assumes program 1 at next switch-on
+- the light is OFF at boot, so the tracked program is always in sync after power-up
+
+Measure on the bench before setting defaults:
+
+| Parameter | Placeholder | Measure |
+|---|---|---|
+| `LIGHT_PROGRAM_COUNT` | 7 | count programs before it wraps |
+| `LIGHT_STEP_OFF_MS` | 500 ms | shortest off time that reliably steps |
+| `LIGHT_STEP_ON_MS` | 500 ms | on time needed before the next step |
+| `LIGHT_RESET_OFF_S` | 10 s | off time after which it restarts at program 1 |
+
+Relay wear: occasional colour changes are well within the CH5 relay's life. Firmware limits step sequences to one at a time (2 s lockout after each completed sequence).
 
 ---
 

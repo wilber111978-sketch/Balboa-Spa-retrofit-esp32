@@ -72,6 +72,14 @@ The UI submits a requested state only. Firmware performs all sequencing and inte
 
 ### Light
 - on/off toggle
+- colour / program picker (1…program count), shown while the light is on
+- auto-off time remaining (40 min timer)
+
+### Priming banner
+After controller power-up, show a banner across all screens: "Priming — heater off, 3:12 remaining", with an "End priming" button (confirm).
+
+### Input lockout
+After a jets or light change, those controls show a brief 2 s disabled state. Taps during it do nothing (no queueing).
 
 ### Heating mode
 At minimum:
@@ -161,6 +169,8 @@ Include:
 - fault history clear
 - service mode
 - firmware version / build info
+- firmware update: upload file, progress, result, "roll back to previous version" (see [PROVISIONING_AND_UPDATES.md](PROVISIONING_AND_UPDATES.md))
+- light: number of programs / step timing (service only)
 
 Dangerous operations must require confirmation.
 
@@ -196,6 +206,9 @@ Initial demo scenarios:
 - filter cycle running
 - time invalid (no RTC / NTP)
 - first reading after power-up (`--.-°` with countdown)
+- priming in progress
+- light on, program 4, 12 min remaining
+- input lockout active after a jets change
 
 Demo mode must never energize physical outputs.
 

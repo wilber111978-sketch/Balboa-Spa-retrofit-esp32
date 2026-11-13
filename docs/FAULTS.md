@@ -42,6 +42,8 @@ Every stored fault should include:
 | TIME_INVALID | No valid time from RTC or NTP; schedules suspended, NORMAL heating used | warning |
 | RTC_FAULT | DS3231 not responding on I²C | warning |
 | BUTTON_STUCK | Topside button held beyond stuck timeout; input ignored | warning |
+| FREEZE_PROTECT | Heater sensor below 5 °C; pump LOW running for freeze protection | warning |
+| FIRMWARE_ROLLBACK | New firmware failed its self-test and the previous version was restored | warning |
 | TEMP_STALE | No valid water temperature for longer than expected (poll failed or suppressed) | warning |
 
 ## Latch and reset policy
@@ -50,7 +52,7 @@ Every stored fault should include:
 |---|---|---|
 | Warning | TIME_INVALID, RTC_FAULT, BUTTON_STUCK, TEMP_STALE, HIGH_SPEED_HEATER_LOCKOUT | clears automatically when the condition clears |
 | Retryable fault | DELTA_T_HIGH, NO_FLOW_SUSPECTED (first occurrence) | timed retry if configured; web UI may request a reset |
-| Latched critical fault | OVER_TEMP, repeated NO_FLOW_SUSPECTED, SENSOR_*_RANGE persisting, HEAT_NO_RESPONSE | **local topside reset only** (hold Temp+ and Temp− for 5 s). Cannot be cleared from the web UI or Matter |
+| Latched critical fault | OVER_TEMP, repeated NO_FLOW_SUSPECTED, SENSOR_*_RANGE persisting, HEAT_NO_RESPONSE | **local topside reset only** (hold Temp+ and Temp− for 5 s). Cannot be cleared from the web UI or Matter. Stored in NVS, so a power cut does not clear it |
 
 ## Example: SENSOR_B_RANGE
 

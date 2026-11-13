@@ -32,6 +32,20 @@ firmware/
       current_monitor.cpp
       current_monitor.h
 
+    outputs/
+      light_control.cpp      # 40 min timer, RGB program stepping via CH5
+      light_control.h
+      input_lockout.cpp      # 2 s pump/light change lockout, all sources
+      input_lockout.h
+
+    system/
+      provisioning.cpp       # Matter Wi-Fi provisioning, fallback setup AP, token
+      provisioning.h
+      ota_update.cpp         # app upload, rollback, self-test
+      ota_update.h
+      persistence.cpp        # NVS settings, write debounce, latched-fault store
+      persistence.h
+
     time/
       rtc_ds3231.cpp
       rtc_ds3231.h

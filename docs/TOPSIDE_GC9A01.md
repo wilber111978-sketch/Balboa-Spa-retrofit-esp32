@@ -65,10 +65,24 @@ Pressed = LOW.
 Cycle:
 - OFF -> LOW -> HIGH -> OFF
 
-The safety state machine performs the actual sequencing.
+The safety state machine performs the actual sequencing. After each change, presses are ignored for 2 s (not queued); the pump icon briefly flashes to show the press was ignored.
 
 ### Light
-Toggle light request.
+- short press: light ON / OFF (2 s lockout applies)
+- long press (1 s) while ON: next colour / program
+- auto-off after 40 min
+
+### Button combinations
+
+| Combination | Hold | Action |
+|---|---|---|
+| Temp+ or Temp− during priming | press | end priming early |
+| Temp+ and Temp− | 5 s | reset latched safety fault |
+| Jets and Light | 3 s | open Setup screen (Wi-Fi status, address, app QR, Matter QR) |
+| Jets (on Setup screen) | 10 s | clear Wi-Fi and restart in setup access-point mode |
+| Temp− (on Setup screen) | 5 s | generate a new web app token |
+
+See [PROVISIONING_AND_UPDATES.md](PROVISIONING_AND_UPDATES.md).
 
 ### Temp +
 Increase setpoint by configured step.
@@ -96,6 +110,12 @@ Secondary indicators:
 - Wi-Fi
 - Matter
 - fault/warning icon
+
+During priming:
+- "Priming" with countdown; temperature shown as `--.-°` until the first valid reading
+
+Setup screen:
+- QR codes fit in the inscribed square of the round display (~170 × 170 px)
 
 On fault:
 - replace normal secondary content with clear fault title

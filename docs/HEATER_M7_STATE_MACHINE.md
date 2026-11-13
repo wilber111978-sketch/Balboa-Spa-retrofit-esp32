@@ -97,6 +97,34 @@ Rules:
 
 ---
 
+## Input lockout (all sources)
+
+After any pump or light state change, further pump or light change requests are **ignored for 2 s** (`INPUT_LOCKOUT_S`). They are not queued.
+
+- applies to topside buttons, web app and Matter alike
+- the pump's own LOW↔HIGH dead-time (0.5–1.0 s) happens inside this window
+- Temp+ / Temp− are not locked out (setpoint changes do not switch hardware)
+- topside gives brief visual feedback that the press was ignored; the API returns `409` with `lockout_remaining_ms`
+
+## Jets / pump run control
+
+Pump LOW is the filtration jet.
+
+- **Scheduled LOW** (filter cycles, solar heating window, heating, polls) starts and stops on its own.
+- **Manual LOW** (Jets button / app) has no separate timer. If selected during a scheduled run, LOW simply continues and stops when that run ends. If selected outside any scheduled run, it runs until the user selects OFF.
+- **Manual HIGH** has a maximum run time (default 20 min), then returns to the scheduled state (LOW if a filter cycle / heating run is active, otherwise OFF).
+- Jets button cycle: OFF → LOW → HIGH → OFF.
+
+## Light
+
+- Auto-off after `LIGHT_TIMEOUT_MIN` (default 40 min); the app shows time remaining
+- Light is OFF after power-up / reboot
+- 2-wire RGB colour/program selection by short power interruptions — see [HARDWARE_INTERFACE.md](HARDWARE_INTERFACE.md) §8
+
+## Freeze protection
+
+If either heater sensor reads below 5 °C (checked even with the pump stopped — the heater body is a good proxy for equipment-bay freeze risk), run pump LOW until water temperature is valid and ≥ 8 °C. Heating proceeds normally if the water is below setpoint. Logged as FREEZE_PROTECT. Not expected to trigger in the current install location, but costs nothing.
+
 ## Heat demand and heating mode
 
 - **NORMAL:** heat whenever water temperature < setpoint − hysteresis (placeholder 0.5 °C).
@@ -109,6 +137,7 @@ Rules:
 ## Core states
 
 - BOOT
+- PRIMING
 - IDLE
 - POLLING
 - FILTERING
@@ -128,7 +157,7 @@ Outputs:
 - LOW OFF
 - HIGH OFF
 - UV OFF
-- light restored to last user state only after initialization
+- light OFF
 
 Actions:
 - validate configuration
@@ -139,8 +168,27 @@ Actions:
 - water temperature marked unknown (`water_valid = false`, `water_c = null`); UIs show `--.-°` until the first valid reading
 
 Transition:
-- to POLLING when startup checks pass (to get a fresh temperature)
-- to FAULT_LOCKOUT on critical sensor / config failure
+- to PRIMING when startup checks pass **and** the reset was a power-on / brownout (water may have been drained, air may be trapped)
+- to POLLING when startup checks pass after any other reset (watchdog, OTA update, software restart) — the water was not drained, so priming is skipped
+- to FAULT_LOCKOUT on critical sensor / config failure, or if a latched critical fault was stored in NVS before the restart
+
+## PRIMING
+
+Purpose: purge air from the plumbing and heater after power-up, before any heating is possible. Equivalent to the OEM Balboa priming mode.
+
+Duration: `PRIMING_MIN` (default 4 min), shown as a countdown on the topside ("Priming 3:12") and in the app.
+
+Actions:
+- heater locked out for the whole period (SSR and safety contactor OFF)
+- pump LOW runs automatically
+- Jets button cycles OFF / LOW / HIGH to help purge air (2 s input lockout applies)
+- UV / ozone follows the normal pump rule
+- temperature sampling runs; the first valid reading appears after `TEMP_SETTLE_S` (display shows `--.-°` with countdown until then)
+- sensor range / mismatch checks still run; sensor faults go to FAULT_LOCKOUT
+
+Exit:
+- priming time elapses, or the user presses Temp+ or Temp− to end priming early (as on the OEM panel)
+- then to IDLE / FILTERING / CIRCULATING according to schedule and heat demand
 
 ## IDLE
 
@@ -269,7 +317,7 @@ Rules:
 - heater is prohibited (also impossible in hardware: LOW permissive poles are open)
 - LOW and HIGH can never overlap
 - temperature sampling continues; water temperature stays current after `TEMP_SETTLE_S`
-- jets HIGH has a configurable maximum run time (default 20 min), then returns to previous state
+- manual jets HIGH has a configurable maximum run time (default 20 min), then returns to the scheduled state
 
 Exit:
 - UV OFF
