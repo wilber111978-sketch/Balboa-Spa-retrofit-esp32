@@ -2024,6 +2024,26 @@ void processWeb() {
     if(WiFi.status()!=WL_CONNECTED && millis()-lastWifiAttempt>30000UL) {
         lastWifiAttempt=millis();WiFi.reconnect();
     }
+    // V0.9: report connection changes on the serial monitor.
+    static bool wifiWasConnected = false;
+    bool nowConnected = WiFi.status()==WL_CONNECTED;
+    if (nowConnected != wifiWasConnected) {
+        wifiWasConnected = nowConnected;
+        if (nowConnected) Serial.printf("WIFI CONNECTED: open http://%s/  (user spa)  signal %d dBm\n", WiFi.localIP().toString().c_str(), (int)WiFi.RSSI());
+        else Serial.println("WIFI DISCONNECTED: retrying every 30 s");
+    }
+}
+String wifiText() {
+    if (!strlen(WIFI_SSID)) return "WIFI OFF: no network name set (SPA_WIFI_SSID in the .ino)";
+    if (!strcmp(WEB_PASS,"CHANGE_THIS_LONG_PASSWORD")) return "WIFI OFF: web password not set (SPA_WEB_PASS in the .ino)";
+    int st = (int)WiFi.status();
+    if (st == WL_CONNECTED)
+        return "WIFI CONNECTED to " + String(WIFI_SSID) + "  IP " + WiFi.localIP().toString() + "  signal " + String((int)WiFi.RSSI()) + " dBm  (open http://" + WiFi.localIP().toString() + "/ user spa)";
+    const char *why = st == WL_NO_SSID_AVAIL ? "network not found (check name, 2.4 GHz only)" :
+                      st == WL_CONNECT_FAILED ? "connection failed (check password)" :
+                      st == WL_CONNECTION_LOST ? "connection lost" :
+                      st == WL_DISCONNECTED ? "not connected yet / wrong password" : "connecting";
+    return "WIFI NOT CONNECTED to " + String(WIFI_SSID) + ": " + why + " (status " + String(st) + ")";
 }
 
 // Shared serial/web commands. Bench-only injection is compiled out of Main.
@@ -2148,7 +2168,8 @@ String executeCommand(String line) {
 #endif
     else if (cmd == "events") return eventsText();
     else if (cmd == "status") { printStatus(); return statusJSON(); }
-    else if (cmd == "help") return "low high off alloff service on|off confirm heat setpoint N light [on|off] lightprog N primeend heatmode off|solar|manual window 11-16 ready standby afteruse filterstatus filtercleaned resetfault status events (demo: prime tempA N tempB N diff normal overtemp sensorafail sensorbfail highlimit)";
+    else if (cmd == "wifi") return wifiText();
+    else if (cmd == "help") return "low high off wifi alloff service on|off confirm heat setpoint N light [on|off] lightprog N primeend heatmode off|solar|manual window 11-16 ready standby afteruse filterstatus filtercleaned resetfault status events (demo: prime tempA N tempB N diff normal overtemp sensorafail sensorbfail highlimit)";
     else return "ERROR unknown command";
     if (!storageHealthy) return "ERROR: settings storage failure; outputs stopped";
     return "OK";
