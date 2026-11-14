@@ -5,7 +5,7 @@ import ast,subprocess,json,os
 root=Path(__file__).resolve().parents[1];repo=root.parent
 from config import arduinojson_source
 json_src=arduinojson_source(root)
-base=['g++','-std=c++17','-Wall','-Wextra','-Werror','-DSPA_WIFI_SSID="test-network"','-DSPA_WEB_PASS="test-password-only"']
+base=['g++','-std=c++17','-Wall','-Wextra','-Werror','-DSPA_WIFI_SSID="test-network"','-DSPA_WEB_PASS="test-password-only"','-DSPA_TEMP_ADC_ADS1115=1']
 for p in [root/'live-tests',root/'tests',root/'libraries/SpaLiveApi/src',root/'libraries/SpaTopside/src',root/'libraries/SpaController/src',json_src]:base+=['-I'+str(p)]
 base+=['-include',os.environ.get('SPA_TEST_WRAPPER','SpaLiveApi.h')];results=[]
 old=ast.parse((root/'tests/run_tests.py').read_text());node=next(n.value for n in old.body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='cases' for t in n.targets));cases={k.value:v.func.value.value.split() for k,v in zip(node.keys,node.values)}

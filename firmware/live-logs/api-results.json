@@ -108,6 +108,24 @@
     "output": "PASS 0 diagnostics\n"
   },
   {
+    "build": "Main",
+    "case": "v09-state",
+    "passed": true,
+    "output": "PASS 0 v09-state\n"
+  },
+  {
+    "build": "Main",
+    "case": "v09-light-program",
+    "passed": true,
+    "output": "PASS 0 v09-light-program\n"
+  },
+  {
+    "build": "Main",
+    "case": "v09-lockout",
+    "passed": true,
+    "output": "PASS 0 v09-lockout\n"
+  },
+  {
     "build": "Demo",
     "case": "state",
     "passed": true,
@@ -214,5 +232,23 @@
     "case": "diagnostics",
     "passed": true,
     "output": "PASS 1 diagnostics\n"
+  },
+  {
+    "build": "Demo",
+    "case": "v09-state",
+    "passed": true,
+    "output": "PASS 1 v09-state\n"
+  },
+  {
+    "build": "Demo",
+    "case": "v09-light-program",
+    "passed": true,
+    "output": "PASS 1 v09-light-program\n"
+  },
+  {
+    "build": "Demo",
+    "case": "v09-lockout",
+    "passed": true,
+    "output": "PASS 1 v09-lockout\n"
   }
 ]

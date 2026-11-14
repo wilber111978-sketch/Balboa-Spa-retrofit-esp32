@@ -1,7 +1,7 @@
 #pragma once
 /*
   BALBOA SPA RETROFIT - ESP32-S3
-  V0.6.2 PRE-FLASH REVIEW
+  V0.9 (V0.6.2 controller + V0.9 control additions; see docs/V0_9_CHANGES.md)
 
   Controller:
     Waveshare ESP32-S3 Relay 6CH
@@ -64,7 +64,11 @@ static constexpr uint8_t PIN_STATUS_RGB = 38;
 // ============================================================
 
 // Assign once interface board is finalised.
-static constexpr int PIN_HIGH_LIMIT_OK       = -1; // MAIN: must be physically implemented before live heater enable
+// MAIN: must be physically implemented before live heater enable (proposed GPIO16).
+#ifndef SPA_PIN_HIGH_LIMIT_OK
+#define SPA_PIN_HIGH_LIMIT_OK -1
+#endif
+static constexpr int PIN_HIGH_LIMIT_OK       = SPA_PIN_HIGH_LIMIT_OK;
 static constexpr int PIN_FB_PUMP_LOW         = -1;
 static constexpr int PIN_FB_PUMP_HIGH        = -1;
 static constexpr int PIN_FB_HEAT_CONTACTOR   = -1;
@@ -93,6 +97,24 @@ static constexpr float T0_KELVIN     = 298.15f; // 25 C
 // Precision divider resistor
 static constexpr float R_FIXED = 30000.0f;
 
+// V0.9: temperature ADC backend.
+//   0 = ESP32-S3 onboard ADC1 (default until an ADS1115 is fitted): sensors on GPIO8/GPIO9.
+//   1 = ADS1115 on I2C (SDA GPIO8, SCL GPIO9): sensors on A0/A1.
+#ifndef SPA_TEMP_ADC_ADS1115
+#define SPA_TEMP_ADC_ADS1115 0
+#endif
+static constexpr uint8_t PIN_TEMP_A_ADC = 8;    // onboard mode: ADC1_CH7
+static constexpr uint8_t PIN_TEMP_B_ADC = 9;    // onboard mode: ADC1_CH8
+static constexpr uint8_t ONBOARD_ADC_SAMPLES = 32;
+// Optional 3.3 V divider-rail reference for ratiometric conversion.
+//   onboard mode: GPIO3 (ADC1_CH2) through a 10k/10k divider; ADS1115 mode: A2 direct.
+static constexpr int  PIN_RAIL_REF_ADC = 3;
+static constexpr bool RAIL_REF_FITTED = false;   // set true only after the reference is wired
+// Optional 24 V supply monitor (ADS1115 mode only): A3 through 100k/10k (x11).
+static constexpr bool SUPPLY_MON_FITTED = false;
+static constexpr float SUPPLY_MON_RATIO = 11.0f;
+static constexpr float SUPPLY_SAG_V = 20.0f, SUPPLY_OK_V = 21.0f;
+
 // ADS1115 supply / divider supply
 static constexpr float SENSOR_VCC = 3.300f;
 
@@ -117,6 +139,8 @@ static constexpr float SENSOR_MAX_TEMP_C = 60.0f;
 // Raw divider fault thresholds
 static constexpr float SENSOR_SHORT_V = 0.15f;
 static constexpr float SENSOR_OPEN_V  = 3.10f;
+// Onboard ADC saturates near 3.1 V at 11 dB attenuation, so treat >= 3.00 V as open.
+static constexpr float SENSOR_OPEN_V_ONBOARD = 3.00f;
 
 // Dual sensor agreement
 static constexpr float TEMP_DIFF_WARNING_C = 0.75f;
@@ -157,7 +181,15 @@ static constexpr float HEATER_HYSTERESIS_C = 1.0f; // Dynamic standby/ready thre
 static constexpr uint32_t HEATER_CONTACTOR_SETTLE_MS = 1000;
 // Development lock: M7-inspired qualification and independent safety input
 // are not yet verified. Keep physical heater outputs DISABLED.
+#ifdef SPA_SIM_COMMISSIONED
+// Host plant simulation ONLY: lets the simulator exercise commissioned heater logic.
+#if defined(ESP_PLATFORM) || defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO)
+#error "SPA_SIM_COMMISSIONED is for host simulation only and must never be built for the ESP32"
+#endif
+static constexpr bool HEATER_OUTPUTS_COMMISSIONED = true;
+#else
 static constexpr bool HEATER_OUTPUTS_COMMISSIONED = false; // Live heater requires separate formal commissioning
+#endif
 static constexpr uint32_t M7_STABILISATION_MS = SPA_BENCH_DEMO ? 5000 : 120000;
 // Do NOT add an M7 heat pulse until validated for the OEM hardware.
 
@@ -340,6 +372,11 @@ struct SpaRuntime
     uint32_t tempDisagreementStartedMs = 0;
 
     uint32_t lastControlMs = 0;
+
+    // V0.9
+    bool waterHot = false;            // ambient over-temperature warning (auto-clears)
+    bool calibrationInhibit = false;  // sensors disagree >= 0.5 C at rest
+    bool supplySag = false;           // 24 V monitor (if fitted)
 };
 
 SpaRuntime spa;
@@ -364,6 +401,42 @@ static constexpr uint32_t FILTER_CLEAN_AGE_DAYS = 14UL;
 static constexpr float STANDBY_HYSTERESIS_C = 3.0f;
 static constexpr float READY_HYSTERESIS_C = 1.0f;
 
+// ============================================================
+// V0.9 CONTROL ADDITIONS - constants
+// ============================================================
+static constexpr uint32_t MANUAL_LOW_TIMEOUT_MS = 20UL * 60UL * 1000UL;   // manual LOW auto-off
+static constexpr float    ECONOMY_FLOOR_C = 35.0f;                        // solar mode, outside window
+static constexpr float    ECONOMY_FLOOR_HYST_C = 1.0f;
+static constexpr uint32_t WATER_SETTLE_MS = SPA_BENCH_DEMO ? 5000UL : 60000UL; // circulation before a reading counts
+static constexpr uint32_t PRIMING_MS = 4UL * 60UL * 1000UL;               // power-on priming, heater locked
+static constexpr float    FREEZE_ON_C = 5.0f, FREEZE_OFF_C = 8.0f;
+static constexpr bool     FREEZE_BLIND_RUN = true;                        // both sensors invalid -> 15 min/hour LOW
+static constexpr uint32_t FREEZE_BLIND_PERIOD_MS = 60UL * 60UL * 1000UL, FREEZE_BLIND_RUN_MS = 15UL * 60UL * 1000UL;
+static constexpr uint32_t INPUT_LOCKOUT_MS = 2000;                        // jets/light start changes; stops exempt
+static constexpr uint32_t UV_SETTLE_MS = 1000;                            // UV after pump (either speed) runs
+static constexpr uint32_t LIGHT_TIMEOUT_MS = 40UL * 60UL * 1000UL;
+static constexpr uint8_t  LIGHT_PROGRAM_COUNT = 7;                        // set from bench measurement
+static constexpr uint32_t LIGHT_STEP_OFF_MS = 500, LIGHT_STEP_ON_MS = 500;
+static constexpr uint32_t LIGHT_RESET_OFF_MS = 10000;                     // off this long -> light restarts at program 1
+static constexpr uint32_t FLOW_RETRY_DELAY_MS = 15UL * 60UL * 1000UL;     // OEM-style 'dr' wait
+static constexpr uint32_t FLOW_PURGE_MS = 30000;                          // HIGH purge before each retry
+static constexpr uint32_t FLOW_TRIP_WINDOW_MS = 24UL * 3600UL * 1000UL;
+static constexpr uint8_t  FLOW_TRIPS_TO_LATCH = 3;
+static constexpr uint32_t AMBIENT_HOT_SSR_OFF_MS = 10UL * 60UL * 1000UL;  // SSR off this long -> heat is ambient
+static constexpr float    WATER_HOT_CLEAR_C = 41.0f;
+static constexpr float    CAL_MISMATCH_C = 0.5f, CAL_MISMATCH_CLEAR_C = 0.4f;
+static constexpr uint32_t CAL_SETTLE_MS = 120000, CAL_PERSIST_MS = 60000;
+static constexpr float    HEATER_SENSOR_CAP_C = USER_MAX_SETPOINT_C + 1.0f; // either sensor -> heater off
+static constexpr uint32_t SSR_PROOF_MS = SPA_BENCH_DEMO ? 1000UL : 30000UL; // contactor on, SSR off, no rise
+static constexpr float    SSR_PROOF_RISE_C = 0.3f;
+static constexpr uint32_t SSR_PROOF_PERSIST_MS = 5000;                    // rise must persist (noise immunity)
+static constexpr uint32_t HEAT_RESPONSE_MS = 120000;                      // SSR on this long with flow...
+static constexpr float    HEAT_RESPONSE_MIN_DIFF_C = 0.25f;               // ...must show an outlet/inlet difference
+static constexpr uint32_t RISE_PERSIST_SSR_MS = SPA_BENCH_DEMO ? 0UL : 3000UL;   // noise immunity for rate checks
+static constexpr uint32_t RISE_PERSIST_FLOW_MS = 0UL;   // flow loss shows as a brief rate split: no persistence
+static constexpr uint32_t SENSOR_RECOVER_MS = 60000;                      // transient sensor fault auto-clears
+static constexpr uint8_t  SENSOR_FAULTS_TO_LATCH = 3;                     // ...unless 3 in 24 h
+
 // All times are commanded LOW-pump time until positive flow feedback exists.
 uint32_t dailyLowSec = 0, sinceCleanLowSec = 0;
 uint32_t lastRuntimeMs = 0, lastRuntimePersistMs = 0;
@@ -381,6 +454,37 @@ bool filteredTimeValid = false;
 int demoMinuteOfDay = -1, demoDay = 1;
 uint32_t demoClockBaseMs = 0;
 #endif
+
+// ============================================================
+// V0.9 CONTROL ADDITIONS - state
+// ============================================================
+float lastCirculatingWaterC = NAN;      // last reading taken with water circulating
+uint32_t lastCirculatingWaterMs = 0;
+bool circulatingWaterValid = false;
+uint32_t pumpRunStartMs = 0, pumpStoppedAtMs = 0, lastPumpChangeMs = 0;
+bool pumpWasRunning = false;
+PumpMode lastActualPumpSeen = PumpMode::OFF;
+uint32_t primingUntilMs = 0; bool primingActive = false; uint32_t v09BootMs = 0;
+bool freezeActive = false; uint32_t blindSinceMs = 0;
+uint32_t manualLowStartMs = 0;
+bool floorHeatNeeded = false;
+uint32_t pumpLockMs = 0, lightLockMs = 0; bool pumpLockSeen = false, lightLockSeen = false;
+bool lightOn = false; uint8_t lightProgram = 1, lightWantedProgram = 1;
+uint32_t lightOffSinceMs = 0, lightOnSinceMs = 0;
+struct LightStep { uint32_t at; bool on; };
+LightStep lightQueue[2 * LIGHT_PROGRAM_COUNT + 2]; uint8_t lightQueueLen = 0;
+uint32_t flowTripAt[FLOW_TRIPS_TO_LATCH] = {}; uint8_t flowTripCount = 0;
+bool flowRetryPending = false; uint32_t flowRetryAtMs = 0;
+bool purgeActive = false; uint32_t purgeUntilMs = 0;
+uint32_t calMismatchSinceMs = 0, calClearSinceMs = 0;
+float ssrProofBaseDiff = NAN; uint32_t ssrProofRiseSinceMs = 0; uint32_t unexpectedRiseSinceMs = 0, flowRiseSinceMs = 0;
+uint32_t sensorFaultAt[SENSOR_FAULTS_TO_LATCH] = {}; uint8_t sensorFaultCount = 0; uint32_t sensorHealthySinceMs = 0;
+float sensorSupplyV = 3.300f;           // ratiometric divider supply (measured if fitted)
+float supplyVolts = NAN; uint32_t supplyOkSinceMs = 0;
+void flowRetryTick(uint32_t now);
+void processLight(uint32_t now);
+void processSensorAgreement(uint32_t now);
+void lightSetOn(bool on, uint32_t now);
 
 bool spaClock(int &dayKey, int &minuteOfDay);
 void noteInteraction();
@@ -454,7 +558,10 @@ void forceShutdown() {
     spa.heaterDemand = 0;
     spa.uv = spa.light = false;
     relayWrite(PIN_RELAY_UV, false);
+    if (lightOn) lightOffSinceMs = millis();
+    lightOn = false; lightQueueLen = 0;
     relayWrite(PIN_RELAY_LIGHT, false);
+    purgeActive = false; primingActive = false;
 }
 void storageFailure() {
     forceShutdown();
@@ -531,8 +638,119 @@ uint32_t cleanAgeDays() {
     return (uint32_t)((now - cleanEpoch) / 86400);
 }
 
+// ============================================================
+// V0.9 CONTROL ADDITIONS - pump tracking, readings, freeze
+// ============================================================
+uint32_t pumpRunningMs(uint32_t now) {
+    return (spa.actualPump != PumpMode::OFF && pumpRunStartMs) ? now - pumpRunStartMs : 0;
+}
+// Track continuous circulation (either speed; a changeover dead-time does not
+// restart the clock) and capture the last reading taken with water moving.
+void trackPumpRun(uint32_t now) {
+    bool running = spa.actualPump != PumpMode::OFF;
+    if (running && !pumpWasRunning) {
+        if (!pumpRunStartMs || now - pumpStoppedAtMs > 5000UL) pumpRunStartMs = now;
+        lastPumpChangeMs = now;
+    } else if (!running && pumpWasRunning) {
+        pumpStoppedAtMs = now; lastPumpChangeMs = now;
+    } else if (running && spa.actualPump != lastActualPumpSeen) {
+        lastPumpChangeMs = now;
+    }
+    if (!running && pumpRunStartMs && now - pumpStoppedAtMs > 5000UL) pumpRunStartMs = 0;
+    pumpWasRunning = running; lastActualPumpSeen = spa.actualPump;
+    if (running && pumpRunningMs(now) >= WATER_SETTLE_MS &&
+        tempA.status == SensorStatus::OK && tempB.status == SensorStatus::OK &&
+        isfinite(spa.waterTemperature)) {
+        lastCirculatingWaterC = spa.waterTemperature;
+        lastCirculatingWaterMs = now;
+        circulatingWaterValid = true;
+    }
+}
+bool readingFresh(uint32_t now) {
+    return circulatingWaterValid && now - lastCirculatingWaterMs < SAMPLE_INTERVAL_MS;
+}
+bool freezeOverrideAllowed(FaultCode c) {
+    switch (c) {
+        case FaultCode::RAPID_TEMP_RISE: case FaultCode::FLOW_SUSPECT: case FaultCode::PUMP_INTERLOCK:
+        case FaultCode::LOW_CONTACTOR_FAULT: case FaultCode::HIGH_CONTACTOR_FAULT:
+        case FaultCode::CONFIG_CORRUPT: case FaultCode::WATCHDOG_RESET: case FaultCode::POWER_FAULT:
+            return false;
+        default: return true;
+    }
+}
+static constexpr uint32_t FREEZE_BLIND_DELAY_MS = 10UL * 60UL * 1000UL;
+bool blindFreezeRun(uint32_t now) {
+    if (!FREEZE_BLIND_RUN || !blindSinceMs || now - blindSinceMs < FREEZE_BLIND_DELAY_MS) return false;
+    return ((now - blindSinceMs - FREEZE_BLIND_DELAY_MS) % FREEZE_BLIND_PERIOD_MS) < FREEZE_BLIND_RUN_MS;
+}
+// Freeze protection may run pump LOW even during a non-flow fault/lockout.
+bool freezeOverrideActive() {
+    uint32_t now = millis();
+    return !serviceMode && storageHealthy && (freezeActive || blindFreezeRun(now)) &&
+        (spa.fault == FaultCode::NONE || freezeOverrideAllowed(spa.fault));
+}
+void processFreeze(uint32_t now) {
+    bool aOK = tempA.status == SensorStatus::OK && isfinite(tempA.filteredC);
+    bool bOK = tempB.status == SensorStatus::OK && isfinite(tempB.filteredC);
+    if (!aOK && !bOK) { if (!blindSinceMs) blindSinceMs = now ? now : 1; }
+    else blindSinceMs = 0;
+    // Either sensor below 5 C triggers: never averaged, so one failed-high probe cannot block it.
+    float coldest = aOK && bOK ? fmin(tempA.filteredC, tempB.filteredC) : aOK ? tempA.filteredC : bOK ? tempB.filteredC : NAN;
+    float warmestNeeded = coldest; // exit requires every valid sensor >= 8 C
+    if (isfinite(coldest) && coldest < FREEZE_ON_C && !freezeActive) {
+        freezeActive = true; logEvent("FREEZE PROTECT: pump LOW");
+    }
+    if (freezeActive && isfinite(warmestNeeded) && warmestNeeded >= FREEZE_OFF_C &&
+        pumpRunningMs(now) >= WATER_SETTLE_MS) {
+        freezeActive = false; logEvent("FREEZE PROTECT CLEARED");
+    }
+}
+bool solarWindowOpen(int minute) {
+    return solarStart != solarEnd && (solarStart < solarEnd ?
+        minute >= (int)solarStart * 60 && minute < (int)solarEnd * 60 :
+        minute >= (int)solarStart * 60 || minute < (int)solarEnd * 60);
+}
+
+bool transientSensorFault(FaultCode c) {
+    return c == FaultCode::TEMP_A_OPEN || c == FaultCode::TEMP_A_SHORT || c == FaultCode::TEMP_B_OPEN ||
+        c == FaultCode::TEMP_B_SHORT || c == FaultCode::TEMP_A_INVALID || c == FaultCode::TEMP_B_INVALID;
+}
+// V0.9.1: a brief sensor dropout (loose connector, splash) clears itself after the sensor
+// has read healthy for 60 s; the third occurrence within 24 h latches for service.
+void processSensorFaultRecovery(uint32_t now) {
+    static FaultCode lastSeen = FaultCode::NONE;
+    if (spa.lockedOut || !transientSensorFault(spa.fault)) { lastSeen = spa.fault; sensorHealthySinceMs = 0; return; }
+    if (lastSeen != spa.fault) {   // new occurrence
+        uint8_t n = 0;
+        for (uint8_t i = 0; i < sensorFaultCount; ++i) if (now - sensorFaultAt[i] < FLOW_TRIP_WINDOW_MS) sensorFaultAt[n++] = sensorFaultAt[i];
+        sensorFaultCount = n;
+        if (sensorFaultCount < SENSOR_FAULTS_TO_LATCH) sensorFaultAt[sensorFaultCount++] = now;
+        lastSeen = spa.fault;
+        if (sensorFaultCount >= SENSOR_FAULTS_TO_LATCH) {
+            spa.lockedOut = true; persistSafety();
+            logEvent("SENSOR FAULT 3 TIMES IN 24 H: LOCKOUT");
+            return;
+        }
+    }
+    bool healthy = tempA.status == SensorStatus::OK && tempB.status == SensorStatus::OK &&
+        isfinite(spa.waterTemperature) && fmax(tempA.filteredC, tempB.filteredC) < ABSOLUTE_TEMP_TRIP_C;
+    if (!healthy) { sensorHealthySinceMs = 0; return; }
+    if (!sensorHealthySinceMs) sensorHealthySinceMs = now ? now : 1;
+    if (now - sensorHealthySinceMs >= SENSOR_RECOVER_MS) {
+        logEvent("SENSOR FAULT CLEARED AUTOMATICALLY (healthy 60 s)");
+        spa.fault = FaultCode::NONE; lastSeen = FaultCode::NONE; sensorHealthySinceMs = 0; persistSafety();
+    }
+}
+
 void processCombinedCirculation() {
     const uint32_t now = millis();
+    processSensorFaultRecovery(now);
+    trackPumpRun(now);
+    processFreeze(now);
+    if (primingActive && (int32_t)(now - primingUntilMs) >= 0) {
+        primingActive = false; logEvent("PRIMING COMPLETE");
+    }
+    flowRetryTick(now);
     if (!lastRuntimeMs) lastRuntimeMs = now;
     const uint32_t deltaMs = now - lastRuntimeMs;
     lastRuntimeMs = now;
@@ -569,7 +787,7 @@ void processCombinedCirculation() {
 
     if (serviceMode) { forceShutdown(); return; }
 
-    if (spa.actualPump == PumpMode::HIGH_SPEED && !jetsRunningPreviously) {
+    if (spa.actualPump == PumpMode::HIGH_SPEED && !jetsRunningPreviously && !purgeActive) {
         jetsStartMs = now; jetsRunningPreviously = true;
         // Persist a conservative full after-use request in case jets lose power.
         afterUseRemainingMs = AFTER_USE_SEC * 1000UL;
@@ -586,6 +804,20 @@ void processCombinedCirculation() {
         requestPumpMode(PumpMode::OFF);
         logEvent("JETS AUTO TIMEOUT");
     }
+    // V0.9: OEM-style 30 s HIGH purge before a no-flow retry.
+    if (purgeActive) {
+        if ((int32_t)(now - purgeUntilMs) < 0 && !spa.lockedOut && spa.fault == FaultCode::NONE) {
+            if (spa.requestedPump != PumpMode::HIGH_SPEED) requestPumpMode(PumpMode::HIGH_SPEED);
+            return;
+        }
+        purgeActive = false;
+        if (spa.requestedPump == PumpMode::HIGH_SPEED) requestPumpMode(PumpMode::OFF);
+        logEvent("FLOW PURGE COMPLETE");
+    }
+    // V0.9: manual LOW auto-off.
+    if (manualPumpRequest && now - manualLowStartMs >= MANUAL_LOW_TIMEOUT_MS) {
+        manualPumpRequest = false; logEvent("MANUAL LOW AUTO TIMEOUT");
+    }
     // A jets request takes precedence over every LOW demand.
     if (spa.requestedPump == PumpMode::HIGH_SPEED && !spa.lockedOut && spa.fault == FaultCode::NONE) return;
 
@@ -595,24 +827,40 @@ void processCombinedCirculation() {
         minute >= (int)solarStart * 60 && minute < (int)solarEnd * 60 :
         minute >= (int)solarStart * 60 || minute < (int)solarEnd * 60);
     bool heatingAvailable = heatMode == 2 || (heatMode == 1 && authorisedWindow);
-    // Temperature sampling is needed when water has been stagnant.
-    bool sample = false;
-    if (heatingAvailable && spa.actualPump != PumpMode::LOW_SPEED &&
-        now - lastSampleMs >= SAMPLE_INTERVAL_MS) {
-        sampleStartMs = now;
-        lastSampleMs = now;
+    // V0.9: temperature sampling. Stagnant probes are not water temperature, so a
+    // reading only counts after WATER_SETTLE_MS of circulation (either speed).
+    // Polls run in every heating mode so displays and the economy floor stay current;
+    // when heating is available and no fresh reading exists, poll immediately.
+    bool fresh = readingFresh(now);
+    bool pumpIdle = spa.actualPump == PumpMode::OFF && spa.requestedPump == PumpMode::OFF;
+    bool pollDue = !fresh && (now - (circulatingWaterValid ? lastCirculatingWaterMs : v09BootMs) >= SAMPLE_INTERVAL_MS);
+    bool demandPoll = heatingAvailable && !fresh && (!lastSampleMs || now - lastSampleMs >= SAMPLE_INTERVAL_MS);
+    if (pumpIdle && (pollDue || demandPoll) && (!lastSampleMs || now - lastSampleMs >= SAMPLE_RUN_MS)) {
+        sampleStartMs = now ? now : 1;
+        lastSampleMs = sampleStartMs;
     }
-    if (sampleStartMs && now - sampleStartMs < SAMPLE_RUN_MS) sample = true;
+    // A poll ends at SAMPLE_RUN_MS, or earlier once a settled reading has been averaged.
+    bool sampleDone = circulatingWaterValid && lastCirculatingWaterMs - sampleStartMs >= WATER_SETTLE_MS + 5000UL &&
+        lastCirculatingWaterMs - sampleStartMs < SAMPLE_RUN_MS + WATER_SETTLE_MS;
+    bool sample = sampleStartMs && now - sampleStartMs < SAMPLE_RUN_MS && !sampleDone;
+    float w = fresh ? lastCirculatingWaterC : NAN;
 
     // Demand is computed only from a validated reading; it never grants
     // heater permission. Existing heater safety state machine still gates CH1/3.
     float restartAt = config.setpointC -
         (readyMode ? READY_HYSTERESIS_C : STANDBY_HYSTERESIS_C);
-    if (heatingAvailable && isfinite(spa.waterTemperature)) {
-        if (spa.waterTemperature <= restartAt) heatPumpNeeded = true;
-        if (spa.waterTemperature >= config.setpointC) heatPumpNeeded = false;
-    } else heatPumpNeeded = false;
+    if (heatingAvailable && isfinite(w)) {
+        if (w <= restartAt) heatPumpNeeded = true;
+        if (w >= config.setpointC) heatPumpNeeded = false;
+    } else if (!heatingAvailable || !spa.heaterSSR) heatPumpNeeded = false;
     if (!heatingAvailable) heatPumpNeeded = false;
+
+    // V0.9: solar mode keeps at least ECONOMY_FLOOR_C outside the window.
+    float floorTarget = fmin(ECONOMY_FLOOR_C, config.setpointC);
+    if (heatMode == 1 && !authorisedWindow && isfinite(w)) {
+        if (w <= floorTarget - ECONOMY_FLOOR_HYST_C) floorHeatNeeded = true;
+        if (w >= floorTarget) floorHeatNeeded = false;
+    } else if (heatMode != 1 || authorisedWindow) floorHeatNeeded = false;
 
     // Preferred windows 11-13 and 15-16; use 13-15 when required to
     // meet target. Never extend past the permitted window automatically.
@@ -636,8 +884,9 @@ void processCombinedCirculation() {
         postHeatRunonActive = false;
     bool runon = postHeatRunonActive;
     bool wantLow = manualPumpRequest || filtrationRequired ||
-        heatPumpNeeded || sample || runon || spa.heaterSSR || afterUseRemainingMs > 0;
-    if (spa.lockedOut || spa.fault != FaultCode::NONE) wantLow = false;
+        heatPumpNeeded || sample || runon || spa.heaterSSR || afterUseRemainingMs > 0 ||
+        primingActive || floorHeatNeeded || freezeActive || blindFreezeRun(now);
+    if (spa.lockedOut || spa.fault != FaultCode::NONE) wantLow = freezeOverrideActive();
     PumpMode desired = wantLow ? PumpMode::LOW_SPEED : PumpMode::OFF;
     if (spa.requestedPump != desired) requestPumpMode(desired);
 }
@@ -674,6 +923,103 @@ void allHeaterOutputsOff()
     heaterSafetyWrite(false);
 }
 
+// ============================================================
+// V0.9 CONTROL ADDITIONS - light, input lockout, no-flow retry, agreement
+// ============================================================
+bool inputLocked(bool pump) {
+    uint32_t t = pump ? pumpLockMs : lightLockMs; bool seen = pump ? pumpLockSeen : lightLockSeen;
+    return seen && millis() - t < INPUT_LOCKOUT_MS;
+}
+void noteInputChange(bool pump) {
+    if (pump) { pumpLockMs = millis(); pumpLockSeen = true; }
+    else { lightLockMs = millis(); lightLockSeen = true; }
+}
+// 2-wire RGB light: colour steps by brief power interruptions. Every switch-on
+// starts from a known program (light off >= LIGHT_RESET_OFF_MS -> program 1),
+// then steps to the last chosen program. After boot the light is OFF and is
+// assumed to restart at program 1.
+void lightQueueSteps(uint32_t t, uint8_t steps) {
+    for (uint8_t i = 0; i < steps && lightQueueLen + 2 <= (uint8_t)(sizeof(lightQueue) / sizeof(lightQueue[0])); ++i) {
+        lightQueue[lightQueueLen++] = {t, false}; t += LIGHT_STEP_OFF_MS;
+        lightQueue[lightQueueLen++] = {t, true};  t += LIGHT_STEP_ON_MS;
+    }
+}
+void processLight(uint32_t now) {
+    while (lightQueueLen && (int32_t)(now - lightQueue[0].at) >= 0) {
+        bool on = lightQueue[0].on && lightOn;
+        relayWrite(PIN_RELAY_LIGHT, on);
+        for (uint8_t i = 1; i < lightQueueLen; ++i) lightQueue[i - 1] = lightQueue[i];
+        --lightQueueLen;
+    }
+    if (lightOn && now - lightOnSinceMs >= LIGHT_TIMEOUT_MS) {
+        lightSetOn(false, now); logEvent("LIGHT AUTO OFF (40 min)");
+    }
+}
+void lightSetOn(bool on, uint32_t now) {
+    lightQueueLen = 0;
+    if (on) {
+        lightOn = spa.light = true; lightOnSinceMs = now;
+        uint32_t t = now;
+        if (lightOffSinceMs && now - lightOffSinceMs < LIGHT_RESET_OFF_MS)
+            t = lightOffSinceMs + LIGHT_RESET_OFF_MS;   // wait out the reset time: known program 1
+        lightQueue[lightQueueLen++] = {t, true};
+        lightQueueSteps(t + LIGHT_STEP_ON_MS, (lightWantedProgram + LIGHT_PROGRAM_COUNT - 1) % LIGHT_PROGRAM_COUNT);
+        lightProgram = lightWantedProgram;
+    } else {
+        if (lightOn) lightOffSinceMs = now ? now : 1;
+        lightOn = spa.light = false;
+        relayWrite(PIN_RELAY_LIGHT, false);
+    }
+    processLight(now);
+}
+void lightSelectProgram(uint8_t program, uint32_t now) {
+    lightWantedProgram = program;
+    if (!lightOn || lightQueueLen) return;   // applied at next switch-on
+    lightQueueSteps(now, (program + LIGHT_PROGRAM_COUNT - lightProgram) % LIGHT_PROGRAM_COUNT);
+    lightProgram = program;
+    processLight(now);
+}
+void flowTrip() {
+    uint32_t now = millis(); uint8_t n = 0;
+    for (uint8_t i = 0; i < flowTripCount; ++i) if (now - flowTripAt[i] < FLOW_TRIP_WINDOW_MS) flowTripAt[n++] = flowTripAt[i];
+    flowTripCount = n;
+    if (flowTripCount < FLOW_TRIPS_TO_LATCH) flowTripAt[flowTripCount++] = now;
+    bool latch = flowTripCount >= FLOW_TRIPS_TO_LATCH;
+    raiseFault(FaultCode::RAPID_TEMP_RISE, latch);
+    flowRetryPending = !latch;
+    flowRetryAtMs = now + FLOW_RETRY_DELAY_MS;
+    logEvent(latch ? String("NO-FLOW 3/3 IN 24 H: LOCKOUT") : "NO-FLOW " + String(flowTripCount) + "/3: retry in 15 min");
+}
+void flowRetryTick(uint32_t now) {
+    if (!flowRetryPending) return;
+    if (spa.lockedOut || spa.fault != FaultCode::RAPID_TEMP_RISE || serviceMode) { flowRetryPending = false; return; }
+    if ((int32_t)(now - flowRetryAtMs) < 0) return;
+    if (tempA.status != SensorStatus::OK || tempB.status != SensorStatus::OK ||
+        fmax(tempA.filteredC, tempB.filteredC) >= ABSOLUTE_TEMP_TRIP_C) { flowRetryAtMs = now + 60000UL; return; }
+    spa.fault = FaultCode::NONE; flowRetryPending = false; persistSafety();
+    purgeActive = true; purgeUntilMs = now + FLOW_PURGE_MS;
+    logEvent("NO-FLOW RETRY: 30 s HIGH purge");
+}
+void processSensorAgreement(uint32_t now) {
+    bool ok = tempA.status == SensorStatus::OK && tempB.status == SensorStatus::OK && isfinite(spa.tempDifference);
+    bool atRest = ok && pumpRunningMs(now) >= CAL_SETTLE_MS && !spa.heaterSSR &&
+        (lastSSRoffMs == 0 || now - lastSSRoffMs >= CAL_SETTLE_MS);
+    if (!atRest) { calMismatchSinceMs = calClearSinceMs = 0; return; }
+    if (spa.tempDifference >= CAL_MISMATCH_C) {
+        calClearSinceMs = 0;
+        if (!calMismatchSinceMs) calMismatchSinceMs = now ? now : 1;
+        if (!spa.calibrationInhibit && now - calMismatchSinceMs >= CAL_PERSIST_MS) {
+            spa.calibrationInhibit = true; logEvent("SENSOR MISMATCH >= 0.5 C AT REST: heating inhibited");
+        }
+    } else if (spa.tempDifference < CAL_MISMATCH_CLEAR_C) {
+        calMismatchSinceMs = 0;
+        if (spa.calibrationInhibit) {
+            if (!calClearSinceMs) calClearSinceMs = now ? now : 1;
+            if (now - calClearSinceMs >= CAL_PERSIST_MS) { spa.calibrationInhibit = false; logEvent("SENSOR MISMATCH CLEARED"); }
+        }
+    }
+}
+
 // Bounded diagnostic event log (RAM only; resets on power loss).
 static constexpr uint8_t EVENT_COUNT = 24;
 String eventLog[EVENT_COUNT];
@@ -702,12 +1048,15 @@ void raiseFault(FaultCode code, bool lockout)
     if (newFault) spa.fault = code;
 
     // Heater dies FIRST; all circulation and sanitiser outputs follow.
+    // V0.9: freeze protection keeps pump LOW running through non-flow faults.
     allHeaterOutputsOff();
-    pumpOutputsOff();
-    spa.requestedPump = PumpMode::OFF;
+    if (!(freezeOverrideActive() && freezeOverrideAllowed(code))) {
+        pumpOutputsOff();
+        spa.requestedPump = PumpMode::OFF;
+        pumpTransitionPending = false;
+    }
     manualPumpRequest = false;
     heatPumpNeeded = false;
-    pumpTransitionPending = false;
     spa.uv = false;
     relayWrite(PIN_RELAY_UV, false);
     if (newFault) {
@@ -743,7 +1092,7 @@ void raiseFault(FaultCode code, bool lockout)
 
 float voltageToResistance(float voltage)
 {
-    if (voltage <= 0.0f || voltage >= SENSOR_VCC)
+    if (voltage <= 0.0f || voltage >= sensorSupplyV)
         return NAN;
 
     /*
@@ -766,7 +1115,7 @@ float voltageToResistance(float voltage)
        Rntc = Rfixed * Vout / (Vcc - Vout)
     */
 
-    return R_FIXED * voltage / (SENSOR_VCC - voltage);
+    return R_FIXED * voltage / (sensorSupplyV - voltage);
 }
 
 float resistanceToTemperatureC(
@@ -796,7 +1145,7 @@ SensorStatus classifySensorVoltage(float voltage)
     if (voltage <= SENSOR_SHORT_V)
         return SensorStatus::SHORT;
 
-    if (voltage >= SENSOR_OPEN_V)
+    if (voltage >= (SPA_TEMP_ADC_ADS1115 ? SENSOR_OPEN_V : SENSOR_OPEN_V_ONBOARD))
         return SensorStatus::OPEN;
 
     return SensorStatus::OK;
@@ -806,6 +1155,7 @@ SensorStatus classifySensorVoltage(float voltage)
 // SENSOR UPDATE
 // ============================================================
 
+void updateTemperatureChannelVolts(TemperatureChannel &sensor, float voltage, float R25, float beta, float offset);
 void updateTemperatureChannel(
     TemperatureChannel &sensor,
     int16_t adcRaw,
@@ -814,11 +1164,18 @@ void updateTemperatureChannel(
     float offset
 )
 {
-    uint32_t now = millis();
-
     // ADS1115 GAIN_ONE = +/-4.096V
-    float voltage =
-        ads.computeVolts(adcRaw);
+    updateTemperatureChannelVolts(sensor, ads.computeVolts(adcRaw), R25, beta, offset);
+}
+void updateTemperatureChannelVolts(
+    TemperatureChannel &sensor,
+    float voltage,
+    float R25,
+    float beta,
+    float offset
+)
+{
+    uint32_t now = millis();
 
     sensor.voltage = voltage;
 
@@ -957,7 +1314,29 @@ void readTemperatureSensors()
     injectSimulatedTemp(tempA, demoTempA, demoSensorAFailed);
     injectSimulatedTemp(tempB, demoTempB, demoSensorBFailed);
 #else
+#if SPA_TEMP_ADC_ADS1115
     int16_t rawA = 0, rawB = 0;
+    if (RAIL_REF_FITTED) {
+        int16_t rawRail = 0;
+        if (adcAvailable && readADCChecked(ADS1X15_REG_CONFIG_MUX_SINGLE_2, rawRail)) {
+            float v = ads.computeVolts(rawRail);
+            sensorSupplyV = (v >= 3.15f && v <= 3.45f) ? v : SENSOR_VCC;
+        }
+    }
+    if (SUPPLY_MON_FITTED) {
+        int16_t raw24 = 0;
+        if (adcAvailable && readADCChecked(ADS1X15_REG_CONFIG_MUX_SINGLE_3, raw24)) {
+            supplyVolts = ads.computeVolts(raw24) * SUPPLY_MON_RATIO;
+            uint32_t now = millis();
+            if (supplyVolts < SUPPLY_SAG_V) {
+                if (!spa.supplySag) logEvent("24 V SUPPLY SAG: heater inhibited");
+                spa.supplySag = true; supplyOkSinceMs = 0; allHeaterOutputsOff();
+            } else if (spa.supplySag && supplyVolts >= SUPPLY_OK_V) {
+                if (!supplyOkSinceMs) supplyOkSinceMs = now ? now : 1;
+                if (now - supplyOkSinceMs >= 5000UL) { spa.supplySag = false; logEvent("24 V SUPPLY RECOVERED"); }
+            }
+        }
+    }
     if (!adcAvailable || !readADCChecked(ADS1X15_REG_CONFIG_MUX_SINGLE_0, rawA) ||
         !readADCChecked(ADS1X15_REG_CONFIG_MUX_SINGLE_1, rawB)) {
         tempA.status = tempB.status = SensorStatus::INVALID;
@@ -981,14 +1360,30 @@ void readTemperatureSensors()
         config.sensorBBeta,
         config.sensorBOffset
     );
-
+#else
+    // Onboard ADC1: average many calibrated millivolt readings (ADC2 is unusable with Wi-Fi).
+    auto readMv = [](int pin) -> float {
+        uint32_t sum = 0;
+        for (uint8_t i = 0; i < ONBOARD_ADC_SAMPLES; ++i) sum += analogReadMilliVolts(pin);
+        return sum / (ONBOARD_ADC_SAMPLES * 1000.0f);
+    };
+    if (RAIL_REF_FITTED) {
+        float v = readMv(PIN_RAIL_REF_ADC) * 2.0f;   // 10k/10k divider
+        sensorSupplyV = (v >= 3.15f && v <= 3.45f) ? v : SENSOR_VCC;
+    }
+    updateTemperatureChannelVolts(tempA, readMv(PIN_TEMP_A_ADC), config.sensorAR25, config.sensorABeta, config.sensorAOffset);
+    updateTemperatureChannelVolts(tempB, readMv(PIN_TEMP_B_ADC), config.sensorBR25, config.sensorBBeta, config.sensorBOffset);
+#endif
     #endif
     if (
         tempA.status == SensorStatus::OK &&
         tempB.status == SensorStatus::OK
     )
     {
-        spa.waterTemperature =
+        // V0.9.1: while the SSR heats, the warmer probe is the heater outlet; the cooler one
+        // (inlet, whichever way round they are wired) is the tub temperature.
+        spa.waterTemperature = spa.heaterSSR ?
+            fmin(tempA.filteredC, tempB.filteredC) :
             (tempA.filteredC + tempB.filteredC) * 0.5f;
 
         spa.tempDifference =
@@ -1051,8 +1446,22 @@ bool temperatureSystemHealthy()
     }
     if (fmax(tempA.rawC, tempB.rawC) >= ABSOLUTE_TEMP_TRIP_C ||
         fmax(tempA.filteredC, tempB.filteredC) >= ABSOLUTE_TEMP_TRIP_C) {
+        // V0.9: heat with the SSR off for >= 10 min (or never on since boot) is
+        // ambient/sun/pump heat: warning that clears itself below 41 C, heater inhibited.
+        bool ambient = !spa.heaterSSR &&
+            (lastSSRoffMs == 0 || millis() - lastSSRoffMs >= AMBIENT_HOT_SSR_OFF_MS);
+        if (ambient) {
+            if (!spa.waterHot) logEvent("WATER HOT (not heater): heating inhibited; clears below 41 C");
+            spa.waterHot = true;
+            allHeaterOutputsOff();
+            return false;
+        }
         raiseFault(FaultCode::OVERTEMP, true);
         return false;
+    }
+    if (spa.waterHot && fmax(tempA.rawC, tempB.rawC) < WATER_HOT_CLEAR_C &&
+        fmax(tempA.filteredC, tempB.filteredC) < WATER_HOT_CLEAR_C) {
+        spa.waterHot = false; logEvent("WATER HOT CLEARED");
     }
 
     uint32_t now = millis();
@@ -1129,7 +1538,8 @@ void requestPumpMode(PumpMode mode)
 
 void processPumpRequest()
 {
-    if (serviceMode || !storageHealthy || spa.lockedOut || spa.fault != FaultCode::NONE) {
+    bool freezeRun = freezeOverrideActive() && spa.requestedPump == PumpMode::LOW_SPEED;
+    if (serviceMode || !storageHealthy || ((spa.lockedOut || spa.fault != FaultCode::NONE) && !freezeRun)) {
         pumpOutputsOff(); pumpTransitionPending = false;
         return;
     }
@@ -1179,7 +1589,15 @@ bool heaterPermitted()
     if (spa.fault != FaultCode::NONE)
         return false;
 
+    // V0.9 inhibits: priming, ambient hot water, sensor mismatch at rest, 24 V sag.
+    if (primingActive || spa.waterHot || spa.calibrationInhibit || spa.supplySag)
+        return false;
+
     if (!temperatureSystemHealthy())
+        return false;
+
+    // V0.9: either sensor at setpoint ceiling + 1 C removes heat.
+    if (fmax(tempA.filteredC, tempB.filteredC) >= HEATER_SENSOR_CAP_C)
         return false;
 
     if (!hardwareHighLimitOK())
@@ -1271,21 +1689,42 @@ void monitorHeaterTemperatures()
 
     // A thermal anomaly suggests unintended heating, but isn't proof of SSR conduction.
     // Avoid immediate false positives from heat soak after switching OFF.
-    if (spa.unexpectedRiseWarning &&
+    // V0.9.1: the rise must persist (single noisy ADC steps are not SSR conduction).
+    bool unexpectedNow = spa.unexpectedRiseWarning &&
         millis() - lastSSRoffMs > 120000UL &&
-        millis() - spa.pumpLowStartedMs > 120000UL) {
-        raiseFault(FaultCode::HEATER_SSR_SUSPECT, true);
-        return;
+        millis() - spa.pumpLowStartedMs > 120000UL;
+    if (!unexpectedNow) unexpectedRiseSinceMs = 0;
+    else {
+        if (!unexpectedRiseSinceMs) unexpectedRiseSinceMs = millis() ? millis() : 1;
+        if (millis() - unexpectedRiseSinceMs >= RISE_PERSIST_SSR_MS) {
+            raiseFault(FaultCode::HEATER_SSR_SUSPECT, true);
+            return;
+        }
     }
     if (spa.heaterSSR &&
         millis() - spa.heaterStartedMs >= RATE_MONITOR_DELAY_MS)
     {
         float rateDifference = fabs(tempA.rateCPerSec - tempB.rateCPerSec);
-        if (tempA.rateCPerSec > MAX_SINGLE_SENSOR_RISE_C_PER_SEC ||
+        bool rising = tempA.rateCPerSec > MAX_SINGLE_SENSOR_RISE_C_PER_SEC ||
             tempB.rateCPerSec > MAX_SINGLE_SENSOR_RISE_C_PER_SEC ||
-            rateDifference > MAX_SENSOR_RATE_DIFFERENCE_C_SEC)
-            raiseFault(FaultCode::RAPID_TEMP_RISE, true);
+            rateDifference > MAX_SENSOR_RATE_DIFFERENCE_C_SEC;
+        if (!rising) flowRiseSinceMs = 0;
+        else {
+            if (!flowRiseSinceMs) flowRiseSinceMs = millis() ? millis() : 1;
+            if (millis() - flowRiseSinceMs >= RISE_PERSIST_FLOW_MS) { flowRiseSinceMs = 0; flowTrip(); } // V0.9: retry; 3 in 24 h latches
+        }
+    } else flowRiseSinceMs = 0;
+#if !SPA_BENCH_DEMO
+    // V0.9.1: with water flowing, a working 2 kW element always opens an outlet/inlet
+    // difference within two minutes. None means: element open, SSR/contactor/spare-pole
+    // not making, or frozen sensor readings. Demo injects temperatures, so Main only.
+    if (spa.heaterSSR && spa.actualPump == PumpMode::LOW_SPEED &&
+        millis() - spa.heaterStartedMs >= HEAT_RESPONSE_MS &&
+        isfinite(spa.tempDifference) && spa.tempDifference < HEAT_RESPONSE_MIN_DIFF_C) {
+        logEvent("NO HEAT RESPONSE: check element, SSR, contactor, LOW spare poles, sensors");
+        raiseFault(FaultCode::HEATER_CONTACTOR_FAULT, true);
     }
+#endif
 }
 
 void processHeater()
@@ -1315,7 +1754,18 @@ void processHeater()
         heaterSSRWrite(false);
         heaterSafetyWrite(true);
         spa.heatPermissionStartedMs = millis();
+        ssrProofBaseDiff = spa.tempDifference; ssrProofRiseSinceMs = 0;
     }
+    // V0.9 SSR proof: contactor closed, SSR off -> outlet must not rise.
+    if (!spa.heaterSSR && millis() - spa.heatPermissionStartedMs < SSR_PROOF_MS &&
+        isfinite(ssrProofBaseDiff) && isfinite(spa.tempDifference) &&
+        spa.tempDifference - ssrProofBaseDiff >= SSR_PROOF_RISE_C) {
+        if (!ssrProofRiseSinceMs) ssrProofRiseSinceMs = millis() ? millis() : 1;
+        if (millis() - ssrProofRiseSinceMs >= (SPA_BENCH_DEMO ? 0UL : SSR_PROOF_PERSIST_MS)) {
+            raiseFault(FaultCode::HEATER_SSR_SUSPECT, true);
+            return;
+        }
+    } else ssrProofRiseSinceMs = 0;
 
     // Use existing calibrated water temperature until lower-probe regulation
     // has been verified with both OEM probes and real circulation.
@@ -1327,13 +1777,18 @@ void processHeater()
         return;
     }
 
-    if (t >= config.setpointC)
+    // V0.9: outside the solar window the economy floor is the target.
+    int dayKey = 0, minuteOfDay = 0;
+    bool floorOnly = heatMode == 1 && !(spaClock(dayKey, minuteOfDay) && solarWindowOpen(minuteOfDay));
+    float target = floorOnly ? fmin(ECONOMY_FLOOR_C, config.setpointC) : config.setpointC;
+    float band = floorOnly ? ECONOMY_FLOOR_HYST_C : (readyMode ? READY_HYSTERESIS_C : STANDBY_HYSTERESIS_C);
+    if (t >= target)
         spa.thermostatHeating = false;
-    else if (t <= config.setpointC - (readyMode ? READY_HYSTERESIS_C : STANDBY_HYSTERESIS_C))
+    else if (t <= target - band && fmax(tempA.filteredC, tempB.filteredC) < USER_MAX_SETPOINT_C)
         spa.thermostatHeating = true;
 
     bool requestHeat = spa.thermostatHeating &&
-        millis() - spa.heatPermissionStartedMs >= HEATER_CONTACTOR_SETTLE_MS;
+        millis() - spa.heatPermissionStartedMs >= (SSR_PROOF_MS > HEATER_CONTACTOR_SETTLE_MS ? SSR_PROOF_MS : HEATER_CONTACTOR_SETTLE_MS);
     if (requestHeat && !spa.heaterSSR)
         spa.heaterStartedMs = millis();
     heaterSSRWrite(requestHeat);
@@ -1346,12 +1801,15 @@ void processHeater()
 
 void processUV()
 {
+    // V0.9: UV/ozone runs whenever the pump runs (LOW or HIGH), off when stopped
+    // or during changeover, after a short settle.
     bool permitted = !serviceMode && storageHealthy &&
-        spa.actualPump == PumpMode::LOW_SPEED &&
+        spa.actualPump != PumpMode::OFF && !pumpTransitionPending &&
+        millis() - lastPumpChangeMs >= UV_SETTLE_MS &&
         !spa.lockedOut &&
         spa.fault == FaultCode::NONE;
 
-    spa.uv = permitted && (afterUseRemainingMs > 0 || dailyLowSec < DAILY_FILTER_TARGET_SEC || heatPumpNeeded);
+    spa.uv = permitted;
 
     relayWrite(
         PIN_RELAY_UV,
@@ -1489,10 +1947,9 @@ bool schedulePermitsHeating() {
     if (heatMode == 0) return false;
     if (heatMode == 2) return true;
     int day, minute;
-    if (!spaClock(day, minute) || solarStart == solarEnd) return false;
-    return solarStart < solarEnd ?
-        minute >= solarStart * 60 && minute < solarEnd * 60 :
-        minute >= solarStart * 60 || minute < solarEnd * 60;
+    // V0.9: outside the window (or with no valid time) only the economy floor may heat.
+    if (!spaClock(day, minute) || solarStart == solarEnd) return floorHeatNeeded;
+    return solarWindowOpen(minute) || floorHeatNeeded;
 }
 String statusJSON() {
     String s="{\"demo\":"+String(SPA_BENCH_DEMO?"true":"false");
@@ -1515,6 +1972,19 @@ String statusJSON() {
     s+=",\"afterUseSeconds\":"+String(afterUseRemainingMs/1000UL);
     s+=",\"filterCleanDue\":"+String((sinceCleanLowSec >= FILTER_CLEAN_SEC || cleanAgeDays() >= FILTER_CLEAN_AGE_DAYS)?"true":"false");
     s+=",\"heatingCommissioned\":"+String(HEATER_OUTPUTS_COMMISSIONED?"true":"false");
+    uint32_t nowMs = millis();
+    s+=",\"water\":"+(circulatingWaterValid?String(lastCirculatingWaterC,2):String("null"));
+    s+=",\"waterAgeSeconds\":"+(circulatingWaterValid?String((nowMs-lastCirculatingWaterMs)/1000UL):String("null"));
+    s+=",\"uv\":"+String(spa.uv?"true":"false");
+    s+=",\"priming\":"+String(primingActive?"true":"false");
+    s+=",\"primingSeconds\":"+String(primingActive?(primingUntilMs-nowMs)/1000UL:0UL);
+    s+=",\"freeze\":"+String(freezeActive?"true":"false");
+    s+=",\"waterHot\":"+String(spa.waterHot?"true":"false");
+    s+=",\"sensorMismatch\":"+String(spa.calibrationInhibit?"true":"false");
+    s+=",\"floorHeat\":"+String(floorHeatNeeded?"true":"false");
+    s+=",\"flowRetrySeconds\":"+(flowRetryPending?String((flowRetryAtMs-nowMs)/1000UL):String("null"));
+    s+=",\"lightProgram\":"+String(lightProgram);
+    s+=",\"tempAdc\":\""+String(SPA_TEMP_ADC_ADS1115?"ADS1115":"ONBOARD")+"\"";
     s+="}"; return s;
 }
 bool webAuth() {
@@ -1572,17 +2042,34 @@ String executeCommand(String line) {
         return setServiceMode(false) ? "OK: SERVICE OFF; automatic control enabled" : "REJECTED: clear fault/settings failure first";
     }
     if (cmd == "service") return "ERROR use service on|off confirm";
-    if (serviceMode && (cmd == "low" || cmd == "high" || cmd == "heat" || cmd == "ready" || cmd == "afteruse" || cmd == "light"))
+    if (serviceMode && (cmd == "low" || cmd == "high" || cmd == "heat" || cmd == "ready" || cmd == "afteruse" || cmd == "light" || cmd == "lightprog"))
         return "REJECTED: Service Mode";
+    // V0.9: 2 s lockout between jets (pump) and light start changes; stops are never blocked.
+    bool pumpStart = cmd == "low" || cmd == "heat" || cmd == "high";
+    bool lightStart = (cmd == "light" && (value == "on" || (value.length() == 0 && !lightOn))) || cmd == "lightprog";
+    if ((pumpStart && spa.fault == FaultCode::NONE && inputLocked(true)) || (lightStart && inputLocked(false)))
+        return "REJECTED: input lockout (2 s)";
     if (spa.fault != FaultCode::NONE && (cmd == "low" || cmd == "high" || cmd == "heat" || cmd == "ready" || cmd == "afteruse"))
         return "REJECTED: active fault";
-    if (cmd == "low" || cmd == "heat") {noteInteraction(); manualPumpRequest = true; requestPumpMode(PumpMode::LOW_SPEED);}
-    else if (cmd == "high") {noteInteraction(); manualPumpRequest = false; requestPumpMode(PumpMode::HIGH_SPEED);}
+    if (cmd == "low" || cmd == "heat") {noteInteraction(); manualPumpRequest = true; manualLowStartMs = millis(); noteInputChange(true); requestPumpMode(PumpMode::LOW_SPEED);}
+    else if (cmd == "high") {noteInteraction(); manualPumpRequest = false; purgeActive = false; noteInputChange(true); requestPumpMode(PumpMode::HIGH_SPEED);}
     else if (cmd == "off") {noteInteraction(); manualPumpRequest = false; requestPumpMode(PumpMode::OFF); return "OK: manual pump OFF; automatic LOW/after-use may resume";}
     else if (cmd == "setpoint" && validNumber && f >= 20 && f <= USER_MAX_SETPOINT_C) {
         noteInteraction(); config.setpointC = f; if (!persistConfiguration()) return "ERROR: settings not saved; outputs stopped";
     }
-    else if (cmd == "light") { noteInteraction(); spa.light = !spa.light; relayWrite(PIN_RELAY_LIGHT,spa.light); }
+    else if (cmd == "light") {
+        if (value.length() && value != "on" && value != "off") return "ERROR use light [on|off]";
+        bool want = value == "on" ? true : value == "off" ? false : !lightOn;
+        noteInteraction(); if (want) noteInputChange(false); lightSetOn(want, millis());
+    }
+    else if (cmd == "lightprog") {
+        if (!validNumber || f < 1 || f > LIGHT_PROGRAM_COUNT || f != (float)(int)f) return "ERROR use lightprog 1-" + String(LIGHT_PROGRAM_COUNT);
+        noteInteraction(); noteInputChange(false); lightSelectProgram((uint8_t)f, millis());
+    }
+    else if (cmd == "primeend") {
+        if (!primingActive) return "OK: not priming";
+        primingActive = false; logEvent("PRIMING ENDED EARLY");
+    }
     else if (cmd == "heatmode") { // solar-window vs manual enable vs heating disabled
         if (value == "off") heatMode = 0;
         else if (value == "solar") heatMode = 1;
@@ -1621,6 +2108,7 @@ String executeCommand(String line) {
         requestPumpMode(PumpMode::OFF); logEvent("FAULT RESET"); return "OK: fault reset; pump OFF";
     }
 #if SPA_BENCH_DEMO
+    else if (cmd == "prime") { primingActive = true; primingUntilMs = millis() + PRIMING_MS; logEvent("PRIMING (demo)"); }
     else if (cmd == "tempa" && validNumber) demoTempA = f;
     else if (cmd == "tempb" && validNumber) demoTempB = f;
     else if (cmd == "sensorafail") demoSensorAFailed = true;
@@ -1660,7 +2148,7 @@ String executeCommand(String line) {
 #endif
     else if (cmd == "events") return eventsText();
     else if (cmd == "status") { printStatus(); return statusJSON(); }
-    else if (cmd == "help") return "low high off alloff service on|off confirm heat setpoint N light heatmode off|solar|manual window 11-16 ready standby afteruse filterstatus filtercleaned resetfault status events (demo: tempA N tempB N diff normal overtemp sensorafail sensorbfail highlimit)";
+    else if (cmd == "help") return "low high off alloff service on|off confirm heat setpoint N light [on|off] lightprog N primeend heatmode off|solar|manual window 11-16 ready standby afteruse filterstatus filtercleaned resetfault status events (demo: prime tempA N tempB N diff normal overtemp sensorafail sensorbfail highlimit)";
     else return "ERROR unknown command";
     if (!storageHealthy) return "ERROR: settings storage failure; outputs stopped";
     return "OK";
@@ -1686,6 +2174,7 @@ void processSerialCommands() {
 
 void setup()
 {
+    v09BootMs = millis();
     initialiseOutputs();
     Serial.begin(115200);
 
@@ -1710,11 +2199,18 @@ void setup()
     setupWatchdog();
     setupWeb();
 
+#if SPA_TEMP_ADC_ADS1115
     // Explicit free header pins: generic S3 defaults can conflict with board IO.
     Wire.begin(8, 9); // SDA GPIO8, SCL GPIO9: wire the ADS1115 accordingly.
     Wire.setTimeOut(50);
-
-    #if !SPA_BENCH_DEMO
+#endif
+    #if !SPA_BENCH_DEMO && !SPA_TEMP_ADC_ADS1115
+    // V0.9 onboard ADC1: GPIO8/GPIO9 analog inputs, 11 dB attenuation (~0.15-3.1 V).
+    analogReadResolution(12);
+    analogSetAttenuation(ADC_11db);
+    adcAvailable = true;
+    #endif
+    #if !SPA_BENCH_DEMO && SPA_TEMP_ADC_ADS1115
     if (!ads.begin())
     {
         Serial.println("ADS1115 FAILURE");
@@ -1746,11 +2242,16 @@ void setup()
         spa.state = serviceMode ? SpaState::SERVICE : SpaState::IDLE;
     }
 
+    // V0.9: priming after a genuine power-on (water may have been drained).
+    if (!SPA_BENCH_DEMO && resetReason == ESP_RST_POWERON && !serviceMode && spa.fault == FaultCode::NONE) {
+        primingActive = true; primingUntilMs = millis() + PRIMING_MS;
+        logEvent("PRIMING 4 MIN: heater locked out");
+    }
 #if SPA_BENCH_DEMO
-    Serial.println("V0.6.2 DEMO: CH1/CH3 PHYSICALLY INHIBITED; OTHER RELAYS LIVE");
+    Serial.println("V0.9 DEMO: CH1/CH3 PHYSICALLY INHIBITED; OTHER RELAYS LIVE");
     Serial.println("Type help. NEVER CONNECT THIS BUILD TO MAINS OR SPA HEATER.");
 #else
-    Serial.println("V0.6 MAIN: HEATER DISABLED PENDING INDEPENDENT SAFETY COMMISSIONING");
+    Serial.println("V0.9 MAIN: HEATER DISABLED PENDING INDEPENDENT SAFETY COMMISSIONING");
 #endif
 }
 
@@ -1802,10 +2303,13 @@ void loop()
             raiseFault(FaultCode::HIGH_LIMIT_OPEN, true);
         processCombinedCirculation();
         processPumpRequest();
+        trackPumpRun(millis());
+        processSensorAgreement(millis());
 
         processHeater();
 
         processUV();
+        processLight(millis());
 
         updateSpaState();
     }

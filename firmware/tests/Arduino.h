@@ -23,6 +23,12 @@ inline void delay(uint32_t x){fakeMs+=x;}
 inline void digitalWrite(int p,int v){if(p>=0) pins[p]=v;}
 inline int digitalRead(int p){return p>=0?pins[p]:0;}
 inline void pinMode(int,int){}
+// V0.9 onboard ADC mocks (millivolts per pin)
+#define ADC_11db 3
+inline uint32_t fakeMv[64]={};
+inline uint32_t analogReadMilliVolts(int p){return p>=0?fakeMv[p]:0;}
+inline void analogSetAttenuation(int){}
+inline void analogReadResolution(int){}
 template<class T> T constrain(T v,T a,T b){return std::min(std::max(v,a),b);}
 class String {
 public:

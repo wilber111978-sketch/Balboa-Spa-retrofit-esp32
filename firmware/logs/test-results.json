@@ -159,7 +159,7 @@
     "build": "Demo",
     "case": "json",
     "passed": true,
-    "output": "{\"demo\":true,\"tempA\":null,\"tempB\":36.00,\"setpoint\":38.0,\"pump\":0,\"requestedPump\":0,\"heaterPinsInhibited\":true,\"ch1\":false,\"ch3\":false,\"light\":false,\"fault\":5,\"lockout\":false,\"heatMode\":0,\"serviceMode\":false,\"settingsHealthy\":true,\"resetReason\":1,\"ready\":false,\"dailyLowSeconds\":0,\"afterUseSeconds\":0,\"filterCleanDue\":false,\"heatingCommissioned\":false}\nPASS 1 json\n"
+    "output": "{\"demo\":true,\"tempA\":null,\"tempB\":36.00,\"setpoint\":38.0,\"pump\":0,\"requestedPump\":0,\"heaterPinsInhibited\":true,\"ch1\":false,\"ch3\":false,\"light\":false,\"fault\":5,\"lockout\":false,\"heatMode\":0,\"serviceMode\":false,\"settingsHealthy\":true,\"resetReason\":1,\"ready\":false,\"dailyLowSeconds\":0,\"afterUseSeconds\":0,\"filterCleanDue\":false,\"heatingCommissioned\":false,\"water\":null,\"waterAgeSeconds\":null,\"uv\":false,\"priming\":false,\"primingSeconds\":0,\"freeze\":false,\"waterHot\":false,\"sensorMismatch\":false,\"floorHeat\":false,\"flowRetrySeconds\":null,\"lightProgram\":1,\"tempAdc\":\"ADS1115\"}\nPASS 1 json\n"
   },
   {
     "build": "Demo",

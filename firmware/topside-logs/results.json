@@ -126,6 +126,30 @@
     "output": "PASS schedule-unchanged\n"
   },
   {
+    "build": "Main",
+    "case": "v09-priming-end",
+    "passed": true,
+    "output": "PASS v09-priming-end\n"
+  },
+  {
+    "build": "Main",
+    "case": "v09-light-colour",
+    "passed": true,
+    "output": "PASS v09-light-colour\n"
+  },
+  {
+    "build": "Main",
+    "case": "v09-reading-age",
+    "passed": true,
+    "output": "PASS v09-reading-age\n"
+  },
+  {
+    "build": "Main",
+    "case": "v09-no-reading",
+    "passed": true,
+    "output": "PASS v09-no-reading\n"
+  },
+  {
     "build": "Demo",
     "case": "startup",
     "passed": true,
@@ -250,5 +274,29 @@
     "case": "schedule-unchanged",
     "passed": true,
     "output": "PASS schedule-unchanged\n"
+  },
+  {
+    "build": "Demo",
+    "case": "v09-priming-end",
+    "passed": true,
+    "output": "PASS v09-priming-end\n"
+  },
+  {
+    "build": "Demo",
+    "case": "v09-light-colour",
+    "passed": true,
+    "output": "PASS v09-light-colour\n"
+  },
+  {
+    "build": "Demo",
+    "case": "v09-reading-age",
+    "passed": true,
+    "output": "PASS v09-reading-age\n"
+  },
+  {
+    "build": "Demo",
+    "case": "v09-no-reading",
+    "passed": true,
+    "output": "PASS v09-no-reading\n"
   }
 ]

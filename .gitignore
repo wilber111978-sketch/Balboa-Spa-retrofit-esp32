@@ -14,3 +14,5 @@ firmware/live-tests/regression-*
 
 firmware/topside-logs/topside-*
 firmware/topside-logs/render-svg
+firmware/tests/v09-*
+firmware/sim/fw_sim
