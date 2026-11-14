@@ -38,7 +38,7 @@ assert all(r['passed'] for r in actual)
 
 # 6. V0.9 behaviour scenarios all pass.
 v09 = json.loads((root / 'logs/v09-results.json').read_text())
-assert len(v09) >= 39 and all(r['passed'] for r in v09), 'V0.9 scenario failure'
+assert len(v09) >= 42 and all(r['passed'] for r in v09), 'V0.9 scenario failure'
 
 print(f'PASS: relay GPIOs, scheduling constants, heater locks preserved; '
       f'{len(baseline)} baseline + {len(v09)} V0.9 scenarios pass')

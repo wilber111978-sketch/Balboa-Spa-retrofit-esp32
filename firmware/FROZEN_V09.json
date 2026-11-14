@@ -1,10 +1,10 @@
 {
  "version": "0.9.0",
- "based_on_commit": "7d7f61ef969e5bfb552a9f13661e11f404876b5c",
+ "based_on_commit": "f53e2ae1940ddb16736835bd62e6bbb884abea63",
  "note": "V0.9 pinned sources. FROZEN_V062.json is kept for history only.",
  "files": {
   "libraries/SpaController/src/BoundedWebServer.h": "3411eba1fc9c91975bcfae93375ac66a9bf871efd888a67ae0e1e855cee1ae4f",
-  "libraries/SpaController/src/SpaController.h": "9a398c00a55bd4dbd790c4aeb8e414f2cc8e755f8e525ebce9c668fb2a13385a",
+  "libraries/SpaController/src/SpaController.h": "ff42daea8f986344a84498b5ec44ca959199c7cdb0a5dd0efe20aa88703c1f2d",
   "libraries/SpaController/src/SpaPersistence.h": "d4a8c9341a865865b52400b00e2f11a79f78daca47c8306c79b443502bf6b3b7",
   "libraries/SpaLiveApi/src/LiveWebServer.h": "9bf8257c04f71a85c4e881f5d437dee0c70a1724736522f7b6267c93927e1f0a",
   "libraries/SpaLiveApi/src/SpaLiveApi.h": "323d03b31eb775b5a954d456372edb6421738ffcdce58da0b4ac4354e10e9f0c",
@@ -18,7 +18,7 @@
   "libraries/SpaTopside/library.properties": "1885c198d15b1bfca400c1c95a34c37ff0288fa3c8444b045dc837fcfbbcf4ea",
   "tests/extended.cpp": "63cea84884957f80a0bbdb01d92f618f760f30a0a16b2728083ebd83a0ec1a25",
   "tests/scenarios.cpp": "a56f360b04aed3bc5ad7454ac800b4289cc8724cc8aaf88e67e19233e52e542c",
-  "tests/v09.cpp": "2e6ea4f56dda0a102d058b81e0f2d698874c00ed6cc29aa7de3be9040dd37293",
+  "tests/v09.cpp": "eb14361b0699adc367462c9ba69c7f75fe93f9bc9f969d913ebe234b0a18ae47",
   "tests/Adafruit_ADS1X15.h": "4075d5a47d9ffdeb386cbc502cea0657c2764efe2a5f59d74b1a88fb4f4d4e2b",
   "tests/Arduino.h": "714ced4fe6f5bdd512a391c478688f53fd5583ad8a24507e4f1e84c471a8b0a0",
   "tests/Preferences.h": "0ff8cc5d7cf775d00bc80eced10cdb201dd90bbc83275babe1abd463dffb4588",
@@ -30,8 +30,8 @@
   "tests/run_all.py": "efebccd2fcb4f31467a1b76607c1c1f5e8a05b9d7dc0d8e5d0451669417bfca3",
   "tests/run_extended.py": "24699345a9e7d112d0b24c4a5881db4142ff56c3b08435fd6606062b5d19422f",
   "tests/run_tests.py": "d31dfb0ce34223ebccf959cd358e9632787a2f1cfdab3bd313913ad3f7922a1d",
-  "tests/run_v09.py": "e37d6dae5135d8b91fc82ed9de063765af16e64bc2e3f0e1ab5d5092a618409c",
-  "tests/verify_invariants.py": "ae5460b2ee4b900758d5eb36e59625ac9a54ee7181959f323424a0d43e6d87b4",
+  "tests/run_v09.py": "2e23fcf6843c21b755a4d1f0a754b9c7a41c8d9b2f7b72d275fdd36529545c1b",
+  "tests/verify_invariants.py": "ac8180e85d63f8d28bb4dbbae5db9bfae6aa95ffa4e664a6645ceda576ace17b",
   "live-tests/api.cpp": "4a51b124ac9b1bde03dd2a80cea61b755b429d49e643ab2956e3c9803ba2298e",
   "live-tests/bridge.cpp": "367b69dd019c0b19a23c54ffa718d317904008832676adb9d89eeea57a6d1496",
   "live-tests/WiFi.h": "7fea0e1de9b223280e27694a227b7dfc60b6e50cc120a362d8f4139a81b76885",
@@ -61,6 +61,9 @@
   "baseline/firmware_v061.txt": "28c6c08c72816e2f9d485c438e91fc845aa6e47e019fb04cf8957da6e5ad9be6",
   "baseline/run_tests.py": "f718cee9babaec8d441b8f0f5536a0efbac355ccc54456f5d73cbda36b5d5911",
   "baseline/scenarios.cpp": "b520f818a2e76a3192a914ff9cf676d1bdc742b9147b85500dfcfeef7fa2e00e",
-  "baseline/test-results-57.json": "b051c5267f48b7c1dd89436dbe50eebd1cd69884ae9c23de6dd5b21607aca9bf"
+  "baseline/test-results-57.json": "b051c5267f48b7c1dd89436dbe50eebd1cd69884ae9c23de6dd5b21607aca9bf",
+  "sim/fw_sim.cpp": "804cf6bb5d39271964ab061dee8f8e8904d35b4965facc69b135124913ae9703",
+  "sim/scenarios.inc": "c5858f790981100695580ab6e60500736e997c57a89fded24e8ef3fb2097d592",
+  "sim/run_sim.py": "a396b85c39e415764dc7f005efa9c5d9150597335e0a83c4344033bba16681d9"
  }
 }

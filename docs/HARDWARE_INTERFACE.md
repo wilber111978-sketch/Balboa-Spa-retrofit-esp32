@@ -198,7 +198,9 @@ The firmware converts voltage -> resistance -> temperature with the Beta model (
 | Sensor B | GPIO9 | ADC1_CH8 |
 | 3.3 V reference (optional, 10k/10k divider) | GPIO3 | ADC1_CH2 |
 
-ADC1 is used because ADC2 does not work reliably while Wi-Fi is active. Firmware averages 32 calibrated millivolt samples per reading. Do a one-point calibration against a reference thermometer (per-sensor offset). Expect a few tenths of a degree absolute error; the A/B difference used by the heater checks is better than that, because both sensors share the ADC.
+ADC1 is used because ADC2 does not work reliably while Wi-Fi is active.
+
+**Bench acceptance (onboard ADC):** with Wi-Fi connected, log both sensors at a steady temperature for 10 minutes. Readings must stay within ±0.1 °C, which is about 3 mV residual noise. Simulation shows the heater checks false-trip at about 6 mV. If the spread is larger, check the 1 kΩ / 100 nF filters and wiring, or fit the ADS1115. Firmware averages 32 calibrated millivolt samples per reading. Do a one-point calibration against a reference thermometer (per-sensor offset). Expect a few tenths of a degree absolute error; the A/B difference used by the heater checks is better than that, because both sensors share the ADC.
 
 ### 5.2 ADS1115 (recommended for the finished spa, `SPA_TEMP_ADC_ADS1115 1`)
 

@@ -64,7 +64,11 @@ static constexpr uint8_t PIN_STATUS_RGB = 38;
 // ============================================================
 
 // Assign once interface board is finalised.
-static constexpr int PIN_HIGH_LIMIT_OK       = -1; // MAIN: must be physically implemented before live heater enable
+// MAIN: must be physically implemented before live heater enable (proposed GPIO16).
+#ifndef SPA_PIN_HIGH_LIMIT_OK
+#define SPA_PIN_HIGH_LIMIT_OK -1
+#endif
+static constexpr int PIN_HIGH_LIMIT_OK       = SPA_PIN_HIGH_LIMIT_OK;
 static constexpr int PIN_FB_PUMP_LOW         = -1;
 static constexpr int PIN_FB_PUMP_HIGH        = -1;
 static constexpr int PIN_FB_HEAT_CONTACTOR   = -1;
@@ -177,7 +181,15 @@ static constexpr float HEATER_HYSTERESIS_C = 1.0f; // Dynamic standby/ready thre
 static constexpr uint32_t HEATER_CONTACTOR_SETTLE_MS = 1000;
 // Development lock: M7-inspired qualification and independent safety input
 // are not yet verified. Keep physical heater outputs DISABLED.
+#ifdef SPA_SIM_COMMISSIONED
+// Host plant simulation ONLY: lets the simulator exercise commissioned heater logic.
+#if defined(ESP_PLATFORM) || defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO)
+#error "SPA_SIM_COMMISSIONED is for host simulation only and must never be built for the ESP32"
+#endif
+static constexpr bool HEATER_OUTPUTS_COMMISSIONED = true;
+#else
 static constexpr bool HEATER_OUTPUTS_COMMISSIONED = false; // Live heater requires separate formal commissioning
+#endif
 static constexpr uint32_t M7_STABILISATION_MS = SPA_BENCH_DEMO ? 5000 : 120000;
 // Do NOT add an M7 heat pulse until validated for the OEM hardware.
 
@@ -417,6 +429,13 @@ static constexpr uint32_t CAL_SETTLE_MS = 120000, CAL_PERSIST_MS = 60000;
 static constexpr float    HEATER_SENSOR_CAP_C = USER_MAX_SETPOINT_C + 1.0f; // either sensor -> heater off
 static constexpr uint32_t SSR_PROOF_MS = SPA_BENCH_DEMO ? 1000UL : 30000UL; // contactor on, SSR off, no rise
 static constexpr float    SSR_PROOF_RISE_C = 0.3f;
+static constexpr uint32_t SSR_PROOF_PERSIST_MS = 5000;                    // rise must persist (noise immunity)
+static constexpr uint32_t HEAT_RESPONSE_MS = 120000;                      // SSR on this long with flow...
+static constexpr float    HEAT_RESPONSE_MIN_DIFF_C = 0.25f;               // ...must show an outlet/inlet difference
+static constexpr uint32_t RISE_PERSIST_SSR_MS = SPA_BENCH_DEMO ? 0UL : 3000UL;   // noise immunity for rate checks
+static constexpr uint32_t RISE_PERSIST_FLOW_MS = 0UL;   // flow loss shows as a brief rate split: no persistence
+static constexpr uint32_t SENSOR_RECOVER_MS = 60000;                      // transient sensor fault auto-clears
+static constexpr uint8_t  SENSOR_FAULTS_TO_LATCH = 3;                     // ...unless 3 in 24 h
 
 // All times are commanded LOW-pump time until positive flow feedback exists.
 uint32_t dailyLowSec = 0, sinceCleanLowSec = 0;
@@ -458,7 +477,8 @@ uint32_t flowTripAt[FLOW_TRIPS_TO_LATCH] = {}; uint8_t flowTripCount = 0;
 bool flowRetryPending = false; uint32_t flowRetryAtMs = 0;
 bool purgeActive = false; uint32_t purgeUntilMs = 0;
 uint32_t calMismatchSinceMs = 0, calClearSinceMs = 0;
-float ssrProofBaseDiff = NAN;
+float ssrProofBaseDiff = NAN; uint32_t ssrProofRiseSinceMs = 0; uint32_t unexpectedRiseSinceMs = 0, flowRiseSinceMs = 0;
+uint32_t sensorFaultAt[SENSOR_FAULTS_TO_LATCH] = {}; uint8_t sensorFaultCount = 0; uint32_t sensorHealthySinceMs = 0;
 float sensorSupplyV = 3.300f;           // ratiometric divider supply (measured if fitted)
 float supplyVolts = NAN; uint32_t supplyOkSinceMs = 0;
 void flowRetryTick(uint32_t now);
@@ -691,8 +711,40 @@ bool solarWindowOpen(int minute) {
         minute >= (int)solarStart * 60 || minute < (int)solarEnd * 60);
 }
 
+bool transientSensorFault(FaultCode c) {
+    return c == FaultCode::TEMP_A_OPEN || c == FaultCode::TEMP_A_SHORT || c == FaultCode::TEMP_B_OPEN ||
+        c == FaultCode::TEMP_B_SHORT || c == FaultCode::TEMP_A_INVALID || c == FaultCode::TEMP_B_INVALID;
+}
+// V0.9.1: a brief sensor dropout (loose connector, splash) clears itself after the sensor
+// has read healthy for 60 s; the third occurrence within 24 h latches for service.
+void processSensorFaultRecovery(uint32_t now) {
+    static FaultCode lastSeen = FaultCode::NONE;
+    if (spa.lockedOut || !transientSensorFault(spa.fault)) { lastSeen = spa.fault; sensorHealthySinceMs = 0; return; }
+    if (lastSeen != spa.fault) {   // new occurrence
+        uint8_t n = 0;
+        for (uint8_t i = 0; i < sensorFaultCount; ++i) if (now - sensorFaultAt[i] < FLOW_TRIP_WINDOW_MS) sensorFaultAt[n++] = sensorFaultAt[i];
+        sensorFaultCount = n;
+        if (sensorFaultCount < SENSOR_FAULTS_TO_LATCH) sensorFaultAt[sensorFaultCount++] = now;
+        lastSeen = spa.fault;
+        if (sensorFaultCount >= SENSOR_FAULTS_TO_LATCH) {
+            spa.lockedOut = true; persistSafety();
+            logEvent("SENSOR FAULT 3 TIMES IN 24 H: LOCKOUT");
+            return;
+        }
+    }
+    bool healthy = tempA.status == SensorStatus::OK && tempB.status == SensorStatus::OK &&
+        isfinite(spa.waterTemperature) && fmax(tempA.filteredC, tempB.filteredC) < ABSOLUTE_TEMP_TRIP_C;
+    if (!healthy) { sensorHealthySinceMs = 0; return; }
+    if (!sensorHealthySinceMs) sensorHealthySinceMs = now ? now : 1;
+    if (now - sensorHealthySinceMs >= SENSOR_RECOVER_MS) {
+        logEvent("SENSOR FAULT CLEARED AUTOMATICALLY (healthy 60 s)");
+        spa.fault = FaultCode::NONE; lastSeen = FaultCode::NONE; sensorHealthySinceMs = 0; persistSafety();
+    }
+}
+
 void processCombinedCirculation() {
     const uint32_t now = millis();
+    processSensorFaultRecovery(now);
     trackPumpRun(now);
     processFreeze(now);
     if (primingActive && (int32_t)(now - primingUntilMs) >= 0) {
@@ -1328,7 +1380,10 @@ void readTemperatureSensors()
         tempB.status == SensorStatus::OK
     )
     {
-        spa.waterTemperature =
+        // V0.9.1: while the SSR heats, the warmer probe is the heater outlet; the cooler one
+        // (inlet, whichever way round they are wired) is the tub temperature.
+        spa.waterTemperature = spa.heaterSSR ?
+            fmin(tempA.filteredC, tempB.filteredC) :
             (tempA.filteredC + tempB.filteredC) * 0.5f;
 
         spa.tempDifference =
@@ -1634,21 +1689,42 @@ void monitorHeaterTemperatures()
 
     // A thermal anomaly suggests unintended heating, but isn't proof of SSR conduction.
     // Avoid immediate false positives from heat soak after switching OFF.
-    if (spa.unexpectedRiseWarning &&
+    // V0.9.1: the rise must persist (single noisy ADC steps are not SSR conduction).
+    bool unexpectedNow = spa.unexpectedRiseWarning &&
         millis() - lastSSRoffMs > 120000UL &&
-        millis() - spa.pumpLowStartedMs > 120000UL) {
-        raiseFault(FaultCode::HEATER_SSR_SUSPECT, true);
-        return;
+        millis() - spa.pumpLowStartedMs > 120000UL;
+    if (!unexpectedNow) unexpectedRiseSinceMs = 0;
+    else {
+        if (!unexpectedRiseSinceMs) unexpectedRiseSinceMs = millis() ? millis() : 1;
+        if (millis() - unexpectedRiseSinceMs >= RISE_PERSIST_SSR_MS) {
+            raiseFault(FaultCode::HEATER_SSR_SUSPECT, true);
+            return;
+        }
     }
     if (spa.heaterSSR &&
         millis() - spa.heaterStartedMs >= RATE_MONITOR_DELAY_MS)
     {
         float rateDifference = fabs(tempA.rateCPerSec - tempB.rateCPerSec);
-        if (tempA.rateCPerSec > MAX_SINGLE_SENSOR_RISE_C_PER_SEC ||
+        bool rising = tempA.rateCPerSec > MAX_SINGLE_SENSOR_RISE_C_PER_SEC ||
             tempB.rateCPerSec > MAX_SINGLE_SENSOR_RISE_C_PER_SEC ||
-            rateDifference > MAX_SENSOR_RATE_DIFFERENCE_C_SEC)
-            flowTrip();   // V0.9: 15 min retry with HIGH purge; 3 in 24 h latches
+            rateDifference > MAX_SENSOR_RATE_DIFFERENCE_C_SEC;
+        if (!rising) flowRiseSinceMs = 0;
+        else {
+            if (!flowRiseSinceMs) flowRiseSinceMs = millis() ? millis() : 1;
+            if (millis() - flowRiseSinceMs >= RISE_PERSIST_FLOW_MS) { flowRiseSinceMs = 0; flowTrip(); } // V0.9: retry; 3 in 24 h latches
+        }
+    } else flowRiseSinceMs = 0;
+#if !SPA_BENCH_DEMO
+    // V0.9.1: with water flowing, a working 2 kW element always opens an outlet/inlet
+    // difference within two minutes. None means: element open, SSR/contactor/spare-pole
+    // not making, or frozen sensor readings. Demo injects temperatures, so Main only.
+    if (spa.heaterSSR && spa.actualPump == PumpMode::LOW_SPEED &&
+        millis() - spa.heaterStartedMs >= HEAT_RESPONSE_MS &&
+        isfinite(spa.tempDifference) && spa.tempDifference < HEAT_RESPONSE_MIN_DIFF_C) {
+        logEvent("NO HEAT RESPONSE: check element, SSR, contactor, LOW spare poles, sensors");
+        raiseFault(FaultCode::HEATER_CONTACTOR_FAULT, true);
     }
+#endif
 }
 
 void processHeater()
@@ -1678,15 +1754,18 @@ void processHeater()
         heaterSSRWrite(false);
         heaterSafetyWrite(true);
         spa.heatPermissionStartedMs = millis();
-        ssrProofBaseDiff = spa.tempDifference;
+        ssrProofBaseDiff = spa.tempDifference; ssrProofRiseSinceMs = 0;
     }
     // V0.9 SSR proof: contactor closed, SSR off -> outlet must not rise.
     if (!spa.heaterSSR && millis() - spa.heatPermissionStartedMs < SSR_PROOF_MS &&
         isfinite(ssrProofBaseDiff) && isfinite(spa.tempDifference) &&
         spa.tempDifference - ssrProofBaseDiff >= SSR_PROOF_RISE_C) {
-        raiseFault(FaultCode::HEATER_SSR_SUSPECT, true);
-        return;
-    }
+        if (!ssrProofRiseSinceMs) ssrProofRiseSinceMs = millis() ? millis() : 1;
+        if (millis() - ssrProofRiseSinceMs >= (SPA_BENCH_DEMO ? 0UL : SSR_PROOF_PERSIST_MS)) {
+            raiseFault(FaultCode::HEATER_SSR_SUSPECT, true);
+            return;
+        }
+    } else ssrProofRiseSinceMs = 0;
 
     // Use existing calibrated water temperature until lower-probe regulation
     // has been verified with both OEM probes and real circulation.

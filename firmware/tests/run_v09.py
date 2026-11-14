@@ -5,7 +5,7 @@ import subprocess, json, re
 root = Path(__file__).resolve().parent
 src = (root / 'v09.cpp').read_text()
 groups = {
-    ('Demo', '1', '0'): 'uv-both-speeds uv-changeover uv-stopped manual-low-timeout manual-low-high-still-20 lockout-pump lockout-independent lockout-no-queue light-timeout light-program light-known-state light-restore-after-timeout light-bad-program priming priming-jets freeze freeze-one-sensor-high freeze-blind freeze-not-on-flow-fault poll-heat-off water-age no-reading-before-circulation floor-heats floor-not-above floor-window-setpoint flow-retry flow-latch water-hot heater-overtemp-latches sensor-mismatch sensor-cap ssr-proof status-fields'.split(),
+    ('Demo', '1', '0'): 'uv-both-speeds uv-changeover uv-stopped manual-low-timeout manual-low-high-still-20 lockout-pump lockout-independent lockout-no-queue light-timeout light-program light-known-state light-restore-after-timeout light-bad-program priming priming-jets freeze freeze-one-sensor-high freeze-blind freeze-not-on-flow-fault poll-heat-off water-age no-reading-before-circulation floor-heats floor-not-above floor-window-setpoint flow-retry flow-latch water-hot heater-overtemp-latches sensor-mismatch sensor-cap ssr-proof status-fields thermostat-uses-inlet-while-heating sensor-fault-auto-recovers sensor-fault-third-latches'.split(),
     ('MainOnboard', '0', '0'): 'onboard-ntc onboard-38c onboard-open onboard-short onboard-no-i2c main-priming'.split(),
 }
 results = []

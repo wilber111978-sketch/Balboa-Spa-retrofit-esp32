@@ -198,6 +198,24 @@
     "output": "PASS 1 status-fields\n"
   },
   {
+    "build": "Demo",
+    "case": "thermostat-uses-inlet-while-heating",
+    "passed": true,
+    "output": "PASS 1 thermostat-uses-inlet-while-heating\n"
+  },
+  {
+    "build": "Demo",
+    "case": "sensor-fault-auto-recovers",
+    "passed": true,
+    "output": "PASS 1 sensor-fault-auto-recovers\n"
+  },
+  {
+    "build": "Demo",
+    "case": "sensor-fault-third-latches",
+    "passed": true,
+    "output": "PASS 1 sensor-fault-third-latches\n"
+  },
+  {
     "build": "MainOnboard",
     "case": "onboard-ntc",
     "passed": true,

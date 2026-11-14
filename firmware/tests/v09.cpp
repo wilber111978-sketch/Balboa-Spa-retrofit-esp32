@@ -73,6 +73,11 @@ int main(int argc,char**argv){
  else if(test=="sensor-cap"){executeCommand("setpoint 40");executeCommand("heatmode manual");executeCommand("ready");demoTempA=39.0;demoTempB=40.2;run(15000);require(!spa.heaterSSR,"no new heat with a sensor >= 40 C");}
  else if(test=="ssr-proof"){executeCommand("heatmode manual");executeCommand("ready");uint32_t w=until([]{return spa.heaterSafetyContactor;},20000);require(w!=UINT32_MAX&&!spa.heaterSSR,"contactor closes first");
    demoTempB+=0.4f;step();require(spa.fault==FaultCode::HEATER_SSR_SUSPECT&&spa.lockedOut,"rise with SSR off during proof window");}
+ else if(test=="thermostat-uses-inlet-while-heating"){executeCommand("heatmode manual");executeCommand("ready");run(15000);require(spa.heaterSSR,"heating");
+   for(int k=0;k<7;k++){demoTempB+=0.1f;run(2000);}run(6000);require(fabs(spa.waterTemperature-36.0f)<0.05&&spa.tempDifference>0.6f,"cooler probe (36.0) is the tub reading, not the 36.35 average");
+   for(int k=0;k<21;k++){demoTempA+=0.1f;demoTempB+=0.1f;run(2000);}run(6000);require(!spa.heaterSSR&&spa.fault==FaultCode::NONE,"stops when the inlet reaches 38");}
+ else if(test=="sensor-fault-auto-recovers"){executeCommand("sensorafail");run(2000);require(spa.fault==FaultCode::TEMP_A_INVALID,"fault raised");executeCommand("normal");run(SENSOR_RECOVER_MS+3000);require(spa.fault==FaultCode::NONE&&!spa.lockedOut,"clears after 60 s healthy");}
+ else if(test=="sensor-fault-third-latches"){for(int k=0;k<3;k++){executeCommand("sensorafail");run(2000);executeCommand("normal");run(SENSOR_RECOVER_MS+3000);}require(spa.lockedOut,"third occurrence in 24 h latches");}
  else if(test=="status-fields"){std::string j=statusJSON().s;for(const char*k:{"\"water\":","\"waterAgeSeconds\":","\"uv\":","\"priming\":","\"freeze\":","\"waterHot\":","\"sensorMismatch\":","\"floorHeat\":","\"lightProgram\":","\"tempAdc\":"})require(j.find(k)!=std::string::npos,k);}
 #endif
  else {std::cerr<<"unknown test "<<test<<"\n";return 2;}

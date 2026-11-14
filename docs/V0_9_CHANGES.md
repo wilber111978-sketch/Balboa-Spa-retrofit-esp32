@@ -84,6 +84,52 @@ These existing tests were changed on purpose, because V0.9 changes the behaviour
 
 `verify_invariants.py` was rewritten for V0.9. It still pins the relay GPIOs, the scheduling constants and the heater locks. It also requires all 57 reviewed baseline scenarios to be present and passing, and requires the V0.9 scenarios to pass. `FROZEN_V09.json` / `verify_frozen.py` now pin the V0.9 sources; `FROZEN_V062.json` is kept for history.
 
+## Revision 2 — firmware-in-the-loop simulation round
+
+V0.9 was then tested the same way the earlier design was. The **real** `SpaController.h` (Main build, onboard-ADC path) was compiled against a physical spa model (`firmware/sim/`). The model covers:
+- an 800 L tub, a 2 kW heater, and the M7 sensors following the Balboa table
+- 2-speed pump flow and the contactors with the NC interlock
+- the LOW spare-pole heater locks, the 44 °C high-limit feeding both 24 V heater branches, and the thermal fuse
+- the 2-wire light and the 24 V supply
+- power cuts as real reboots, with flash memory kept
+
+The safety rules are checked every 100 ms. The harness uses `SPA_SIM_COMMISSIONED`, which refuses to compile for the ESP32, and follows the firmware's logical heater commands. The physical CH1/CH3 lock in shipping code is unchanged.
+
+**Result:** 103 / 103 scenarios pass, including 60 randomised fuzz runs (random commands, button mashing, sensor glitches, flow dips and 24 V sags over 6 h each). Across every single-fault scenario, the simulation never saw:
+- LOW and HIGH together
+- the heater without LOW, or with HIGH
+- the heater during priming
+- UV running without the pump (except during 24 V sags, see below)
+
+### Firmware fixes from this round
+
+| Finding (simulation) | Fix |
+|---|---|
+| Thermostat stopped ~0.35 °C below setpoint (37.68 for 38): while heating, the average includes the heater outlet | While the SSR heats, water temperature = the **cooler** probe (the inlet, whichever way round the sensors are wired) |
+| Frozen readings, open element, failed SSR/contactor/spare pole were **silent** (frozen readings heated the tub to 43 °C until the high-limit) | **No heat response**: SSR on 2 min with LOW flowing and outlet/inlet difference < 0.25 °C → `HEATER_CONTACTOR_FAULT` lockout (caught at 390 s; frozen case held at 30.2 °C) |
+| A 1 s sensor dropout stopped the spa until a manual reset | Transient sensor faults **auto-clear** after 60 s healthy; 3 in 24 h latch |
+| ADC noise false-tripped the V0.8 "rise with SSR off" check → SSR lockout | The rise must persist 3 s (a stuck SSR gives a sustained rise; noise does not). V0.9 SSR proof window also uses persistence. |
+
+A 2 s persistence on the no-flow rate check was tried and **rejected**: flow loss shows as a brief rate split between the probes, and persistence let it go undetected (35–53 s dry). The no-flow check is unchanged.
+
+### Known limits (documented, not firmware bugs)
+
+- **Onboard ADC noise:** clean at 3 mV residual noise after averaging. At 6 mV, false no-flow trips lock out. Bench acceptance: log both sensors at a steady temperature for 10 min; the reading spread must stay within ±0.1 °C. Otherwise improve filtering or fit the ADS1115.
+- **24 V sag in the onboard build:** UV/ozone stays on for the length of the sag while the pump contactors drop out. In the ADS1115 build, the A3 supply monitor sees the sag.
+- **Light:** if the real reset time is longer than `LIGHT_RESET_OFF_MS`, or the light remembers its colour, the firmware's idea of the colour drifts. Measure on the bench.
+- **Manual heat mode is not resumed after a restart** (V0.6.2 policy). Solar mode is resumed.
+- **Hot weather:** water that reaches ~44 °C from sun/ambient trips the hardware high-limit (manual reset). The firmware warns from 42 °C and does not latch on its own.
+- **Main has no heater-qualification procedure yet** (V0.8 "NOT implemented"). The simulator grants it from the high-limit input, as the demo does. It must be implemented before commissioning.
+- **Not detectable without feedback contacts:** a welded safety contactor, a welded LOW contactor (jets HIGH silently unavailable).
+
+### Updated test totals
+
+| Suite | Result |
+|---|---|
+| Core + V0.9 scenarios | 183 / 183 (141 original + 42 V0.9) |
+| Firmware-in-the-loop simulation (`firmware/sim/run_sim.py`) | 103 / 103 |
+| Live API / regressions (both wrappers) / topside / web app | 42 / 141 / 50 / 40 — all pass |
+
 ## Not verified here
 
 - **ESP32 compile.** The toolchain download servers were not reachable from the build environment. Run `firmware/build.sh` and `firmware/build-live.sh` locally before flashing.
