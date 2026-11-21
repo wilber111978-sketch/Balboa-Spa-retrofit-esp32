@@ -31,7 +31,7 @@ Waveshare ESP32-S3-Relay-6CH. The onboard GPIOs below match the Waveshare wiki c
 | GPIO3 | V0.9 optional 3.3 V divider-rail reference, onboard-ADC build (ADC1_CH2, 10k/10k); strapping pin, input only | OPTIONAL, `RAIL_REF_FITTED=false` |
 | GPIO10/11 | V0.8 GC9A01 SCLK/MOSI | IMPLEMENTED; electrical validation pending |
 | GPIO12/13/14 | V0.8 display CS/DC/RESET | IMPLEMENTED; electrical validation pending |
-| GPIO15 | V0.8 external backlight driver ENABLE | DEFAULT OFF; never LED current supply |
+| GPIO15 | Display backlight ENABLE (module BLK, onboard Q2) | Default OFF at boot; logic enable only, never LED current supply |
 | GPIO4/5/6/7 | V0.8 Jets/Light/Temp UP/Temp DOWN | IMPLEMENTED; active LOW inputs |
 | GPIO16 | Proposed high-limit status input (`PIN_HIGH_LIMIT_OK`, isolated, 10k pull-down) | PROPOSED; firmware `-1` until wired and tested |
 | GPIO47/48 | Proposed DS3231 RTC I2C (onboard-ADC build only; ADS1115 build shares GPIO8/9) | PLANNED |

@@ -20,5 +20,5 @@ static constexpr unsigned PreviewMs=5000,RefreshMs=200;
 #define SPA_TOPSIDE_HARDWARE (!SPA_BENCH_DEMO)
 #endif
 #ifndef SPA_TOPSIDE_BACKLIGHT_VERIFIED
-#define SPA_TOPSIDE_BACKLIGHT_VERIFIED 0
+#define SPA_TOPSIDE_BACKLIGHT_VERIFIED 1 // fitted 1.28in GC9A01 V1.0 module has onboard Q2: BLK is a logic enable
 #endif

@@ -130,6 +130,15 @@ A 2 s persistence on the no-flow rate check was tried and **rejected**: flow los
 | Firmware-in-the-loop simulation (`firmware/sim/run_sim.py`) | 103 / 103 |
 | Live API / regressions (both wrappers) / topside / web app | 42 / 141 / 50 / 40 — all pass |
 
+## Topside update (Nov 2026)
+
+- Screen blackout: display panel and backlight turn off after `SPA_TOPSIDE_SCREEN_TIMEOUT_MS` (default 1 hour) without a button press. The waking press only wakes the screen. Fault and Service wake it and keep it lit.
+- `SPA_TOPSIDE_ROTATION` selects the display rotation (set to 3 for the fitted panel).
+- `SPA_TOPSIDE_BACKLIGHT_VERIFIED` set to 1 after inspecting the fitted module (onboard Q2 enable transistor).
+- Hardware decisions recorded in `TOPSIDE_V08_HARDWARE.md` (12-pin topside cable), `M7_SENSOR_INTERFACE.md` (sensor front end) and `HARDWARE_INTERFACE.md` §4.4–4.5 (tube-mounted high-limit and thermal fuse).
+- Enclosure print files in `stl/`.
+- Blackout logic host-tested only; not compiled for ESP32 or run on hardware.
+
 ## Not verified here
 
 - **ESP32 compile.** The toolchain download servers were not reachable from the build environment. Run `firmware/build.sh` and `firmware/build-live.sh` locally before flashing.

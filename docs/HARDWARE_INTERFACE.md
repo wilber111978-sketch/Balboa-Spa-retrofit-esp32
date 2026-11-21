@@ -162,9 +162,11 @@ The firmware requires a high-limit status input before any live heating (`PIN_HI
 
 Simulation of a firmware fault that leaves the heater on showed water reaching ~47 °C with a typical 48 °C high-limit, and ~43 °C with 44 °C. At a 40 °C setpoint the heater outlet runs ~40.7 °C (~42 °C with a 70 % blocked filter), so 44 °C leaves margin against nuisance trips. Fit a **manual-reset high-limit, 44 °C, sensing the heater outlet/body**. Confirm no nuisance trips during wet commissioning at 40 °C.
 
+Mounting (Nov 2026): no new penetration of the water path. Use a normally-closed, manual-reset bimetal disc thermostat (KSD301 type) clamped to the outside of the stainless heater tube near the outlet, with thermal paste under the disc and a little insulation over it. Use 44 °C; if only 45 °C is available, use that and confirm the behaviour during wet commissioning. High-temperature wire and insulated spade connectors on the tabs.
+
 ### 4.5 Thermal fuse — last resort
 
-If the SSR fails shorted **and** the safety contactor welds, nothing in the control circuit can stop the element (simulation: heater body >150 °C). Fit a **mains-rated one-shot thermal fuse (~70–75 °C, rated for the element current) clamped to the heater body, in series with the element**. It never operates in normal use.
+If the SSR fails shorted **and** the safety contactor welds, nothing in the control circuit can stop the element (simulation: heater body >150 °C). Fit a **mains-rated one-shot thermal fuse (~70–75 °C, rated for the element current) clamped to the heater body, in series with the element**. It never operates in normal use. Mount it on the outside of the heater tube like the high-limit, a little further along. The heater feed leaves the controller on a plug that mates with the OEM heater connector.
 
 ### 4.6 Heater mains path
 

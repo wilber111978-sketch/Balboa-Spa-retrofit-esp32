@@ -23,6 +23,31 @@ Central definitions: `firmware/libraries/SpaTopside/src/TopsideConfig.h`. Hardwa
 
 Backlight: GPIO15 cannot supply LED current. Use a correctly rated external transistor/MOSFET/current-limited backlight driver with default-OFF pull-down, suitable gate/base resistor and the module's specified LED current limit. If the module has a built-in enable transistor, verify its ratings/polarity first. V0.8 initializes GPIO15 LOW and leaves it LOW unless built with `SPA_TOPSIDE_BACKLIGHT_VERIFIED=1`. That flag assumes an externally verified active-HIGH ENABLE input. It never authorizes direct LED supply. Verify no backfeeding when either controller or display is unpowered. Exact circuit/current values are intentionally unresolved until the actual module is inspected.
 
+**Update (Nov 2026), fitted module inspected.** The display is the 1.28" TFT V1.0 (GC9A01, 240×240) with an onboard backlight transistor Q2 (R1–R3, C1 on the back). BLK is therefore a logic enable: GPIO15 connects directly to BLK and `SPA_TOPSIDE_BACKLIGHT_VERIFIED` is now 1. The module has no voltage regulator, so VCC must be 3.3 V. Fit a 100 µF electrolytic across VCC/GND at the display end of the cable.
+
+## Fitted topside wiring (Nov 2026)
+
+12-core cable, 12-pin plug. Button LEDs are always lit (not switched), powered from the display's 3.3 V.
+
+| Plug pin | Signal | ESP32 end |
+|---:|---|---|
+|1|3V3: display VCC and button LED +|Header 3V3|
+|2|GND: display GND, button switch commons, button LED −|Header GPIO GND|
+|3|SCL|GPIO10|
+|4|SDA|GPIO11|
+|5|CS|GPIO12|
+|6|DC|GPIO13|
+|7|RES|GPIO14|
+|8|BLK|GPIO15|
+|9|Jets button (NO)|GPIO4|
+|10|Light button (NO)|GPIO5|
+|11|Temp up button (NO)|GPIO6|
+|12|Temp down button (NO)|GPIO7|
+
+Buttons are 12 mm ring-lit momentary switches: the two NO pins are the switch (GPIO and GND), + and − are the LED. Check the LED draw at 3.3 V on the bench (expect 10–20 mA each); if higher, move the LEDs to their own supply with series resistors. If the cable is longer than about 1–2 m, consider lowering the SPI clock and adding 47–100 Ω series resistors on SCL/SDA at the ESP32 end.
+
+Firmware settings in `TopsideConfig.h`: `SPA_TOPSIDE_ROTATION 3` (display mounted turned 270°; use 1 if the picture is the wrong way), `SPA_TOPSIDE_SCREEN_TIMEOUT_MS` 1 hour (display and backlight off after 1 hour without a press; the waking press only wakes the screen; Fault/Service keep it lit; 0 disables).
+
 Buttons use internal INPUT_PULLUP and active LOW. Add suitable external3.3V pull-ups, protection/conditioning and shielding for a wet-environment cable after noise testing. The switch contact circuit is separate from any illuminated button's LED terminals. Never connect12/24V LED wiring to GPIO; use an appropriately protected separate LED circuit. No5V/24V signals may reach S3 GPIOs. Confirm waterproof rating and mounting/sealing of the complete assembly independently of the switch advertisement.
 
 ## Unchanged relay assignments and protections
