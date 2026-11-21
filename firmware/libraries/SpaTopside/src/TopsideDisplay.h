@@ -42,13 +42,23 @@ static void displayTask(void*){
     Adafruit_GC9A01A lcd(&spi,Dc,Cs,Reset);
     GFXcanvas16 strip(240,8); // 3840 bytes; allocated once, no full framebuffer
     if(!strip.getBuffer()){vTaskDelete(nullptr);return;}
-    lcd.begin(24000000);lcd.setRotation(0);
+    lcd.begin(24000000);lcd.setRotation(SPA_TOPSIDE_ROTATION&3);
+    auto backlight=[](bool on){
 #if SPA_TOPSIDE_BACKLIGHT_VERIFIED
-    digitalWrite(Backlight,HIGH); // external driver ENABLE only; never LED current
+        digitalWrite(Backlight,on?HIGH:LOW); // logic ENABLE input only; never LED current
+#else
+        (void)on;
 #endif
-    View last={};bool first=true;
+    };
+    backlight(true);
+    View last={};bool first=true,dark=false;
     for(;;){
         uint32_t generation;View v=readView(generation);
+        if(v.blank){
+            // Blackout: backlight off, then panel display off (0x28). RAM keeps its contents.
+            if(!dark){backlight(false);lcd.sendCommand(0x28);dark=true;}
+            last=v;first=false;vTaskDelay(pdMS_TO_TICKS(RefreshMs));continue;
+        }
         if(first||memcmp(&last,&v,sizeof(v))){
             for(int y=0;y<240;y+=8){
                 uint32_t currentGeneration;View current=readView(currentGeneration);
@@ -58,6 +68,8 @@ static void displayTask(void*){
                 vTaskDelay(1); // yield between bounded strips; no core/controller locks
             }
             last=v;first=false;
+            // Wake: the fresh frame is already painted, so turn the panel on (0x29), then the backlight.
+            if(dark){lcd.sendCommand(0x29);backlight(true);dark=false;}
         }
         vTaskDelay(pdMS_TO_TICKS(RefreshMs));
     }

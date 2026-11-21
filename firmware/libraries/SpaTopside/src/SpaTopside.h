@@ -7,6 +7,7 @@
 #include "TopsideDisplay.h"
 static topside::Buttons topsideButtons;
 static topside::Model topsideModel;
+static topside::Screensaver topsideScreensaver;
 static char topsideFeedback[40]={};static uint32_t topsideFeedbackAt=0;
 static void topsideMessage(const char*text){topside::copy(topsideFeedback,sizeof(topsideFeedback),text);topsideFeedbackAt=millis();}
 static bool topsideCommand(topside::Event e){
@@ -42,7 +43,10 @@ static bool topsideCommand(topside::Event e){
     topsideMessage("Request accepted");liveRecord("TOPSIDE_REQUEST",command.c_str());return true;
 }
 inline void topsideInputs(uint32_t now,uint8_t pressed){
-    auto event=topsideButtons.poll(now,pressed);
+    // A press while the screen is dark only wakes it: the button handler never sees it.
+    // Fault/Service keep the screen lit.
+    bool wakeOnly=topsideScreensaver.input(now,pressed,serviceMode||spa.fault!=FaultCode::NONE);
+    auto event=topsideButtons.poll(now,wakeOnly?0:pressed);
     if(topsideButtons.stuck)topsideMessage("Button stuck: release all buttons");
     else topsideCommand(event);
 }
@@ -74,5 +78,6 @@ void loop(){
     topsideInputs(millis(),pressed);
 #endif
     // Only small value copies here; no display.begin(), SPI, waits or rendering.
-    topside::publish(topsideModel.view(topsideState(),millis()));
+    topside::View view=topsideModel.view(topsideState(),millis());view.blank=topsideScreensaver.dark();
+    topside::publish(view);
 }

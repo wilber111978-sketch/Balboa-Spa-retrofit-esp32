@@ -45,8 +45,27 @@ struct State {
     uint8_t pump=0;uint16_t fault=0;
     char faultId[32]={},description[64]={},mode[24]={},feedback[40]={};
 };
-struct View {Screen screen=Screen::Normal;char heading[32]={},large[24]={},lines[7][40]={};};
+struct View {Screen screen=Screen::Normal;char heading[32]={},large[24]={},lines[7][40]={};bool blank=false;};
 inline void copy(char*dest,size_t size,const char*source){snprintf(dest,size,"%s",source);}
+// Screen blackout. Goes dark after SPA_TOPSIDE_SCREEN_TIMEOUT_MS with no new button press.
+// The press that wakes the screen only wakes it: the caller passes 0 to the button handler
+// until every button has been released for 100 ms. Fault or Service wakes it and keeps it lit.
+class Screensaver {
+    bool asleep=false,swallow=false,started=false;uint8_t previous=0;uint32_t last=0,releasedAt=0;
+public:
+    bool dark()const{return asleep;}
+    // Call every loop with the raw button mask. Returns true when this sample must be ignored.
+    bool input(uint32_t now,uint8_t pressed,bool urgent,uint32_t timeoutMs=SPA_TOPSIDE_SCREEN_TIMEOUT_MS){
+        pressed&=15;
+        if(!started){started=true;last=now;}
+        bool newPress=(pressed&~previous)!=0;previous=pressed;
+        if(newPress){if(asleep){asleep=false;swallow=true;releasedAt=now;}last=now;}
+        if(urgent){asleep=false;last=now;}
+        if(swallow){if(pressed)releasedAt=now;else if(uint32_t(now-releasedAt)>=100)swallow=false;}
+        if(!asleep&&timeoutMs&&uint32_t(now-last)>=timeoutMs)asleep=true;
+        return swallow;
+    }
+};
 class Model {
     bool adjusting=false,info=false;uint32_t interaction=0;
 public:
