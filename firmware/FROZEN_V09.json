@@ -62,11 +62,12 @@
     "baseline/run_tests.py": "f718cee9babaec8d441b8f0f5536a0efbac355ccc54456f5d73cbda36b5d5911",
     "baseline/scenarios.cpp": "b520f818a2e76a3192a914ff9cf676d1bdc742b9147b85500dfcfeef7fa2e00e",
     "baseline/test-results-57.json": "b051c5267f48b7c1dd89436dbe50eebd1cd69884ae9c23de6dd5b21607aca9bf",
-    "sim/fw_sim.cpp": "67fb2730fab4bd8f49e26be7ba8d5b3adc4dd22b960aac5c42f401a0ddc263e5",
+    "sim/fw_sim.cpp": "d086b3a09d1456c63e1a0016866d3e76a829915c08857a354533dec65a8ed7b5",
     "sim/scenarios.inc": "b3760f7182eeb64d3f408ab033b6f9e24092fafeccddce3748a371fb655dad7e",
-    "sim/run_sim.py": "a396b85c39e415764dc7f005efa9c5d9150597335e0a83c4344033bba16681d9",
+    "sim/run_sim.py": "6997ad0c72d1157827ce1bc1c4ebc24f9a3af03f3c945bffe3410ec755bea7aa",
     "libraries/SpaController/src/M7HeaterCycle.h": "1f063cb96a799914dca36ef148f64c023fff1708bcff24309d1b18b969af3bc1",
-    "libraries/SpaController/src/M7Qualification.h": "7bf14b8382fc6f22a9fe76beb167c3d85c893d78ea350510044b3be64756a529",
-    "libraries/SpaLiveApi/src/SpaFirmwareUpdate.h": "5149df1687b3bb9593ac424a4e2ac5bf379746602ad67f72cdeb485e465951db"
+    "libraries/SpaController/src/M7Qualification.h": "15c5ea87db0075ba2803455a2d6dd098c9a7e13854442f52a5eadfb7c9334551",
+    "libraries/SpaLiveApi/src/SpaFirmwareUpdate.h": "5149df1687b3bb9593ac424a4e2ac5bf379746602ad67f72cdeb485e465951db",
+    "sim/scenarios_live.inc": "835327ddde3cbf3e0fc6f7de1a53729b95d2c05060c0a28bce6cc918946630dd"
   }
 }

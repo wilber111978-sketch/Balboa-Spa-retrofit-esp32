@@ -3,7 +3,18 @@
 // physical spa model. HOST ONLY: SPA_SIM_COMMISSIONED refuses ESP32 builds.
 #define SPA_BENCH_DEMO 0
 #define SPA_TEMP_ADC_ADS1115 0
+#ifdef FWSIM_LIVE_M7
+// Live M7 variant: exercises the real commissioning-profile heater path (M7HeaterCycle).
+// ARDUINO_ARCH_ESP32 is defined ONLY to satisfy the profile's build gate; no ESP32 code is used.
+#define ARDUINO_ARCH_ESP32 1
+#define SPA_M7_INDEPENDENT_CUTOFF_VERIFIED 1
+#ifdef FWSIM_NORMAL
+#define SPA_M7_NORMAL_HEATING_VERIFIED 1
+#endif
+#define SPA_M7_COMMISSIONING_LIMITS SPA_M7_FIRST_PROFILE
+#else
 #define SPA_SIM_COMMISSIONED 1
+#endif
 #define SPA_PIN_HIGH_LIMIT_OK 16
 #include "../libraries/SpaController/src/SpaController.h"
 #include <cstdio>
@@ -42,6 +53,7 @@ struct Metrics {
   bool lockoutSeen=false, waterHotSeen=false, mismatchSeen=false, freezeSeen=false, floorSeen=false, primingSeen=false, flowRetrySeen=false;
   double tStart=0; double tub0=0;
   double heaterOnMark=0, heldDelta=-1;
+  bool livePassed=false, liveFailed=false; double livePassT=-1;
 };
 Plant P; Metrics M; std::mt19937 rng(7);
 double simT=0;
@@ -183,6 +195,10 @@ int main(int argc,char**argv){
     // exactly as the demo build does: from the high-limit status input.
     if(!P.hung){fakeMs=msAt(simT);setClock();spa.heatQualificationPassed=pins[16]!=0;loop();}
     plantStep(dt); invariants(dt);
+#if SPA_LIVE_M7
+    if(liveM7Cycle.phase()==m7::Phase::Passed&&!M.livePassed){M.livePassed=true;M.livePassT=simT;}
+    if(liveM7Cycle.phase()==m7::Phase::Failed)M.liveFailed=true;
+#endif
     if(getenv("SIM_PROBE")&&fmod(simT,600.0)<dt*0.5)fprintf(stderr,"t=%.0f ms=%u prime=%d permit=%d fault=%d lock=%d hl=%d A=%.2f B=%.2f stA=%d stB=%d hm=%d ready=%d heatNeed=%d contactor=%d ssr=%d act=%d\n",simT,(unsigned)millis(),primingActive,heaterPermitted(),(int)spa.fault,spa.lockedOut,hardwareHighLimitOK(),tempA.filteredC,tempB.filteredC,(int)tempA.status,(int)tempB.status,heatMode,readyMode,heatPumpNeeded,spa.heaterSafetyContactor,spa.heaterSSR,(int)spa.actualPump);
     if(getenv("SIM_PROBE")&&fmod(simT,600.0)<dt*0.5)fprintf(stderr,"   req=%d lowStart=%u qual=%d healthy=%d diff=%.2f thermo=%d sched=%d commissioned=%d svc=%d stor=%d\n",(int)spa.requestedPump,(unsigned)spa.pumpLowStartedMs,heaterQualificationReady(),temperatureSystemHealthy(),spa.tempDifference,spa.thermostatHeating,schedulePermitsHeating(),HEATER_OUTPUTS_COMMISSIONED,serviceMode,storageHealthy);
   }
@@ -198,4 +214,8 @@ int main(int argc,char**argv){
     P.hlTripped?"true":"false",P.fuseBlown?"true":"false");
   return v.rfind("PASS",0)==0?0:1;
 }
+#ifdef FWSIM_LIVE_M7
+#include "scenarios_live.inc"
+#else
 #include "scenarios.inc"
+#endif

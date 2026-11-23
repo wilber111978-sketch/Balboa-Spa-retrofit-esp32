@@ -16,6 +16,8 @@ firmware/topside-logs/topside-*
 firmware/topside-logs/render-svg
 firmware/tests/v09-*
 firmware/sim/fw_sim
+firmware/sim/fw_sim_live
+firmware/sim/fw_sim_live_normal
 
 # Local secrets (Arduino sketchbook)
 **/SpaOtaCredentials.h
