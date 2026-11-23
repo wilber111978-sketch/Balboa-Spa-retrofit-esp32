@@ -1,6 +1,6 @@
 #pragma once
 #ifndef SPA_LIVE_VERSION
-#define SPA_LIVE_VERSION "0.9.0-live"
+#define SPA_LIVE_VERSION "0.9.2-live"
 #endif
 #ifndef SPA_LIVE_BUILD
 #define SPA_LIVE_BUILD "live-api-2"
@@ -72,17 +72,35 @@ void liveState(){JsonDocument d;
     auto c=d["controller"].to<JsonObject>();c["online"]=true;c["uptime_s"]=millis()/1000;c["firmware"]=SPA_BENCH_DEMO?SPA_LIVE_VERSION "-demo":SPA_LIVE_VERSION "-main";c["build"]=SPA_LIVE_BUILD;c["reset_reason"]=resetReason;c["watchdog_ok"]=controlWatchdog!=nullptr;
     auto t=d["temperature"].to<JsonObject>();liveNumber(t["water_c"],circulatingWaterValid?lastCirculatingWaterC:NAN);t["water_valid"]=circulatingWaterValid;if(circulatingWaterValid)t["water_age_s"]=(millis()-lastCirculatingWaterMs)/1000UL;else t["water_age_s"]=nullptr;liveNumber(t["probe_average_c"],spa.waterTemperature);t["target_c"]=config.setpointC;liveNumber(t["sensor_a_c"],tempA.filteredC);liveNumber(t["sensor_b_c"],tempB.filteredC);liveNumber(t["delta_t_c"],spa.tempDifference);liveNumber(t["rise_rate_c_min"],(tempA.rateCPerSec+tempB.rateCPerSec)*30);
     d["pump"]["requested"]=livePump(spa.requestedPump);d["pump"]["actual"]=livePump(spa.actualPump);
-    d["heater"]["demand"]=spa.heaterDemand>0;d["heater"]["ssr_command"]=spa.heaterSSR;d["heater"]["safety_contactor"]=spa.heaterSafetyContactor;d["heater"]["allowed"]=false;
-    d["heater"]["physical_outputs_inhibited"]=true;d["uv"]["on"]=spa.uv;d["light"]["on"]=spa.light;d["light"]["program"]=lightProgram;d["light"]["program_count"]=LIGHT_PROGRAM_COUNT;if(lightOn)d["light"]["auto_off_s"]=(LIGHT_TIMEOUT_MS-(millis()-lightOnSinceMs))/1000UL;else d["light"]["auto_off_s"]=nullptr;auto v9=d["v09"].to<JsonObject>();v9["priming"]=primingActive;if(primingActive)v9["priming_s"]=(primingUntilMs-millis())/1000UL;else v9["priming_s"]=nullptr;v9["freeze_protect"]=freezeActive;v9["water_hot"]=spa.waterHot;v9["sensor_mismatch"]=spa.calibrationInhibit;v9["economy_floor_heat"]=floorHeatNeeded;v9["economy_floor_c"]=ECONOMY_FLOOR_C;v9["no_flow_retry"]=flowRetryPending;v9["temp_adc"]=SPA_TEMP_ADC_ADS1115?"ADS1115":"ONBOARD";
-    d["m7"]["status"]=spa.fault==FaultCode::NONE?"CHECK":"FAULT";d["m7"]["flow_ok"]=false;d["m7"]["note"]="No independently proven flow input";
+    d["heater"]["demand"]=spa.heaterDemand>0;d["heater"]["ssr_command"]=spa.heaterSSR;d["heater"]["safety_contactor"]=spa.heaterSafetyContactor;d["heater"]["allowed"]=LIVE_M7_NORMAL_HEATING&&spa.heatQualificationPassed;
+    d["heater"]["physical_outputs_inhibited"]=!LIVE_M7_PROFILE_FITTED;d["heater"]["restart_hold"]=heaterRestartHold;d["uv"]["on"]=spa.uv;d["light"]["on"]=spa.light;d["light"]["program"]=lightProgram;d["light"]["program_count"]=LIGHT_PROGRAM_COUNT;if(lightOn)d["light"]["auto_off_s"]=(LIGHT_TIMEOUT_MS-(millis()-lightOnSinceMs))/1000UL;else d["light"]["auto_off_s"]=nullptr;auto v9=d["v09"].to<JsonObject>();v9["priming"]=primingActive;if(primingActive)v9["priming_s"]=(primingUntilMs-millis())/1000UL;else v9["priming_s"]=nullptr;v9["freeze_protect"]=freezeActive;v9["water_hot"]=spa.waterHot;v9["sensor_mismatch"]=spa.calibrationInhibit;v9["economy_floor_heat"]=floorHeatNeeded;v9["economy_floor_c"]=ECONOMY_FLOOR_C;v9["no_flow_retry"]=flowRetryPending;v9["temp_adc"]=SPA_TEMP_ADC_ADS1115?"ADS1115":"ONBOARD";
+    d["m7"]["status"]=spa.fault==FaultCode::NONE?"CHECK":"FAULT";d["m7"]["flow_ok"]=LIVE_M7_PROFILE_FITTED&&spa.heatQualificationPassed;d["m7"]["note"]=SPA_BENCH_DEMO?"Simulated probe inputs":"Live two-probe qualification is unavailable in this build";
+#if SPA_LIVE_M7
+    switch(liveM7Cycle.phase()){
+      case m7::Phase::Idle: d["m7"]["note"]="Awaiting heat demand";break;
+      case m7::Phase::Circulating: d["m7"]["note"]="Circulating and checking for unintended heat";break;
+      case m7::Phase::Pulse: d["m7"]["note"]="Timed heater pulse";break;
+      case m7::Phase::Observing: d["m7"]["note"]="Heater off; observing both probes";break;
+      case m7::Phase::Passed: d["m7"]["note"]="Qualification passed";break;
+      case m7::Phase::Failed: d["m7"]["note"]="Qualification failed";break;
+    }
+#endif
+    d["m7"]["high_limit_input_configured"]=PIN_HIGH_LIMIT_OK>=0;
+    d["m7"]["rail_reference_configured"]=RAIL_REF_FITTED;
+    d["m7"]["supply_monitor_configured"]=SUPPLY_MON_FITTED;
+    if(!SPA_BENCH_DEMO&&PIN_HIGH_LIMIT_OK>=0)d["m7"]["high_limit_ok"]=hardwareHighLimitOK();
     d["mode"]["heating"]=liveMode();d["mode"]["service"]=serviceMode;d["mode"]["demo"]=(bool)SPA_BENCH_DEMO;
     d["schedule"]["enabled"]=solarStart!=solarEnd;d["schedule"]["start"]=liveTime(solarStart);d["schedule"]["end"]=liveTime(solarEnd);auto days=d["schedule"]["days"].to<JsonArray>();for(int i=1;i<=7;++i)days.add(i);
     d["fault"]["active"]=spa.fault!=FaultCode::NONE;if(spa.fault!=FaultCode::NONE){const LiveEvent *record=nullptr;for(uint8_t n=0;n<liveEventCount;++n){const auto &r=liveEvents[(liveEventHead+7-n)%8];if(r.fault==spa.fault){record=&r;break;}}liveFaultJSON(d["fault"].as<JsonObject>(),spa.fault,record);}else{d["fault"]["id"]="";d["fault"]["panel_code"]="";d["fault"]["title"]="";}
     d["network"]["wifi_connected"]=WiFi.status()==WL_CONNECTED;d["network"]["rssi_dbm"]=WiFi.RSSI();d["network"]["matter_paired"]=false;liveSend(200,d);
 }
-void liveCapabilities(){JsonDocument d;d["api_version"]=1;d["heater_commissioned"]=false;d["target"]["min"]=20;d["target"]["max"]=40;d["target"]["step"]=0.5;auto modes=d["heating_modes"].to<JsonArray>();modes.add("OFF");modes.add("SOLAR_PRIORITY");d["schedule"]["precision_minutes"]=60;d["schedule"]["weekdays_editable"]=false;d["schedule"]["enabled_by_window"]=true;d["events_max"]=8;d["simulation_inputs"]=(bool)SPA_BENCH_DEMO;liveSend(200,d);}
+void liveCapabilities(){JsonDocument d;d["api_version"]=1;d["heater_commissioned"]=false;
+#if defined(ARDUINO) && defined(SPA_OTA_PASSWORD)
+    d["wifi_update"]=true;
+#endif
+    d["target"]["min"]=20;d["target"]["max"]=40;d["target"]["step"]=0.5;auto modes=d["heating_modes"].to<JsonArray>();modes.add("OFF");modes.add("SOLAR_PRIORITY");d["schedule"]["precision_minutes"]=60;d["schedule"]["weekdays_editable"]=false;d["schedule"]["enabled_by_window"]=true;d["events_max"]=8;d["simulation_inputs"]=(bool)SPA_BENCH_DEMO;liveSend(200,d);}
 void liveHistory(){JsonDocument d;auto list=d.to<JsonArray>();size_t size=2;for(uint8_t n=0;n<liveEventCount;++n){auto &r=liveEvents[(liveEventHead+7-n)%8];JsonDocument item;auto obj=item.to<JsonObject>();if(r.fault!=FaultCode::NONE)liveFaultJSON(obj,r.fault,&r);else{obj["id"]=r.id;obj["title"]=r.title;obj["severity"]="INFO";obj["timestamp"]=nullptr;obj["uptime_ms"]=r.at;}size_t next=measureJson(item)+1;if(size+next>3500)break;list.add(obj);size+=next;}liveSend(200,d);}
-void liveDiagnostics(){JsonDocument d;d["raw_adc"]=nullptr;d["note"]="Raw ADC samples not retained by baseline; logical commands are not feedback.";d["heater_pins_inhibited"]=true;d["settings_healthy"]=storageHealthy;if(serviceMode){liveNumber(d["resistance_ohms"]["a"],tempA.resistance);liveNumber(d["resistance_ohms"]["b"],tempB.resistance);d["permissives"]["sensors_valid"]=liveInputsSafe();d["permissives"]["flow_ok"]=false;d["permissives"]["heater_allowed"]=false;}liveSend(200,d);}
+void liveDiagnostics(){JsonDocument d;d["raw_adc"]=nullptr;d["note"]="Raw ADC samples not retained by baseline; logical commands are not feedback.";d["heater_pins_inhibited"]=!LIVE_M7_PROFILE_FITTED;d["settings_healthy"]=storageHealthy;if(serviceMode){liveNumber(d["resistance_ohms"]["a"],tempA.resistance);liveNumber(d["resistance_ohms"]["b"],tempB.resistance);d["permissives"]["sensors_valid"]=liveInputsSafe();d["permissives"]["flow_ok"]=false;d["permissives"]["heater_allowed"]=false;}liveSend(200,d);}
 bool liveFields(JsonObject obj,const char *fields,size_t count){if(obj.size()!=count)return false;for(auto kv:obj){std::string key=","+std::string(kv.key().c_str())+",";if(std::string(fields).find(key)==std::string::npos)return false;}return true;}
 // ArduinoJson accepts duplicate keys/trailing text by design. Reject both
 // before parsing commands; field names must be literal, not escaped aliases.
@@ -102,10 +120,39 @@ bool liveStrictObject(const std::string &raw){
     return ended&&!quoted&&!escape&&depth==0;
 }
 
+#if defined(ARDUINO) && defined(SPA_OTA_PASSWORD)
+#include "SpaFirmwareUpdate.h"
+#endif
+
 void liveCommand(const std::string &path){
     JsonDocument d;auto error=deserializeJson(d,web.jsonBody(),DeserializationOption::NestingLimit(3));
     if(error||!liveStrictObject(web.jsonBody())||!d.is<JsonObject>()){liveReply(400,"Malformed JSON object");return;}
     auto obj=d.as<JsonObject>();String command;bool stop=false;
+#if defined(ARDUINO) && defined(SPA_OTA_PASSWORD)
+    if(path=="firmware-arm"){
+        if(!liveFields(obj,",confirm,",1)||!obj["confirm"].is<bool>()||!obj["confirm"].as<bool>()){
+            liveReply(400,"Expected confirm:true");return;
+        }
+        if(!spaUpdate::arm()){
+            liveReply(409,"Update requires Service Mode, healthy probes and Wi-Fi, a free OTA slot, and no update already armed");return;
+        }
+        liveReply(200,"Wi-Fi upload ready for up to 10 minutes",true);return;
+    }
+#endif
+    if(path=="heater-restart-ack"){
+        if(!liveFields(obj,",confirm,",1)||!obj["confirm"].is<bool>()||!obj["confirm"].as<bool>()){
+            liveReply(400,"Expected confirm:true");return;
+        }
+        if(SPA_BENCH_DEMO||serviceMode||primingActive||spa.lockedOut||spa.fault!=FaultCode::NONE||
+           !controlWatchdog||!liveInputsSafe()||spa.waterHot||spa.supplySag||spa.calibrationInhibit){
+            liveReply(409,"Finish priming and clear any fault or Service Mode before acknowledging");return;
+        }
+        if(heaterRestartHold){
+            heaterRestartHold=false;
+            liveRecord("HEATER_RESTART_ACK","Heater restart hold acknowledged");
+        }
+        liveReply(200,"Restart hold acknowledged; other heater checks still apply",true);return;
+    }
     if(path=="target"){
         if(!liveFields(obj,",target_c,",1)||!obj["target_c"].is<double>()){liveReply(400,"Expected numeric target_c only");return;}
         double value=obj["target_c"].as<double>();if(!isfinite(value)||value<20||value>40||fabs(value*2-round(value*2))>1e-6){liveReply(422,"Target must be 20–40C in 0.5C UI steps");return;}command="setpoint "+String((float)value,1);
@@ -141,15 +188,35 @@ void liveCommand(const std::string &path){
     liveRecord("API_REQUEST",command.c_str());liveObserveFault();liveReply(200,result.c_str(),true);
 }
 void liveRoutes(){
+#if defined(ARDUINO) && defined(SPA_OTA_PASSWORD)
+    web.on("/api/firmware-arm",HTTP_POST,[](){if(webAuth())liveCommand("firmware-arm");});
+#endif
     for(const auto &asset:spaAssets){const SpaAsset *p=&asset;web.on(asset.path,HTTP_GET,[p](){if(webAuth())web.sendAsset(p->type,p->data,p->size);});}
     web.on("/",HTTP_GET,[](){if(!webAuth())return;for(const auto &a:spaAssets)if(!strcmp(a.path,"/index.html")){web.sendAsset(a.type,a.data,a.size);return;}});
     web.on("/runtime.js",HTTP_GET,[](){if(webAuth())web.send(200,"text/javascript","export const runtime=Object.freeze({mode:'live',apiVersion:1});");});
     web.on("/api/state",HTTP_GET,[](){if(webAuth())liveState();});web.on("/api/capabilities",HTTP_GET,[](){if(webAuth())liveCapabilities();});
     web.on("/api/faults",HTTP_GET,[](){if(webAuth())liveHistory();});web.on("/api/diagnostics",HTTP_GET,[](){if(webAuth())liveDiagnostics();});
-    for(const char *name:{"target","jets","light","mode","schedule","service-mode","fault-reset"}){std::string route=name;web.on(("/api/"+route).c_str(),HTTP_POST,[route](){if(webAuth())liveCommand(route);});}
+    for(const char *name:{"target","jets","light","mode","schedule","service-mode","fault-reset","heater-restart-ack"}){std::string route=name;web.on(("/api/"+route).c_str(),HTTP_POST,[route](){if(webAuth())liveCommand(route);});}
 }
-void spaLiveSetup(){spa062Setup();liveRoutes();liveRecord("LIVE_API_STARTED","Live API adapter started; heater outputs inhibited");liveObserveFault();}
-void spaLiveLoop(){spa062Loop();liveObserveFault();}
+void spaLiveSetup(){
+    spa062Setup();
+#if defined(ARDUINO) && defined(SPA_OTA_PASSWORD)
+    spaUpdate::beginVerification();
+#endif
+    liveRoutes();liveRecord("LIVE_API_STARTED",LIVE_M7_PROFILE_FITTED?"Live M7 commissioning profile present":"Live API started; heater outputs inhibited");
+    if(heaterRestartHold){
+        liveRecord("HEATER_RESTART_HOLD",resetReason==ESP_RST_POWERON||resetReason==ESP_RST_UNKNOWN
+            ?"Heater restart hold; power-loss cause unknown"
+            :"Heater restart hold; see controller reset reason");
+    }
+    liveObserveFault();
+}
+void spaLiveLoop(){
+    spa062Loop();liveObserveFault();
+#if defined(ARDUINO) && defined(SPA_OTA_PASSWORD)
+    spaUpdate::verifyAfterLoop();
+#endif
+}
 #ifndef SPA_LIVE_EXTERNAL_ENTRYPOINTS
 void setup(){spaLiveSetup();}
 void loop(){spaLiveLoop();}

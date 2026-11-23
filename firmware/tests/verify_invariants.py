@@ -25,7 +25,18 @@ assert 'floorHeatNeeded' in pred and 'solarWindowOpen(minute)' in pred
 
 # 4. Physical heater outputs still locked pending commissioning.
 assert 'static constexpr bool HEATER_OUTPUTS_COMMISSIONED = false;' in new
-assert 'pin == PIN_RELAY_HEAT_SAFE || pin == PIN_RELAY_HEAT_SSR) on = false;' in new
+# V0.9.2: CH1/CH3 can only be driven when a live M7 commissioning profile is
+# compiled in, and that requires a Main ESP32 build with the cutoff verified.
+start = new.index('void relayWrite(uint8_t pin, bool on)\n{')
+relay = new[start:new.index('void heaterSSRWrite(bool on)\n{', start)]
+assert 'if (pin == PIN_RELAY_HEAT_SAFE || pin == PIN_RELAY_HEAT_SSR) {' in relay
+assert relay.count('#else\n        on = false;\n#endif') == 1, 'non-commissioned heater pins must be forced off'
+assert '#if defined(SPA_M7_COMMISSIONING_LIMITS)' in new
+assert 'SPA_BENCH_DEMO || SPA_M7_INDEPENDENT_CUTOFF_VERIFIED != 1' in new and '#error' in new
+assert '!heaterRestartHold' in relay
+for sketch in ('SpaMain_Live', 'SpaDemo_Live'):
+    text = (root / sketch / f'{sketch}.ino').read_text()
+    assert 'SPA_M7_COMMISSIONING_LIMITS' not in text, f'{sketch} must not enable a live heater profile'
 
 # 5. Every one of the 57 reviewed baseline scenarios is still present and passing.
 baseline = json.loads((root / 'baseline/test-results-57.json').read_text())

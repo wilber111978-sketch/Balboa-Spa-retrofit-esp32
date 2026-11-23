@@ -31,6 +31,7 @@ struct Plant {
   int startMin=8*60; bool clockValid=true;
   bool LOWK=false, HIGHK=false, SAFETY=false, SSR=false, heater=false; double flow=0; int speed=0;
   double current=0;
+  bool holdNoAck=false;   // V0.9.2: owner does NOT acknowledge the heater restart hold automatically
 };
 struct Metrics {
   long lowHigh=0, heatNoLow=0, heatHigh=0, loadBreak=0, chatter=0;
@@ -40,6 +41,7 @@ struct Metrics {
   int firstFaultCode=0; double firstFaultT=-1; int faultsSeen[32]={}; double faultFirstT[32]={};
   bool lockoutSeen=false, waterHotSeen=false, mismatchSeen=false, freezeSeen=false, floorSeen=false, primingSeen=false, flowRetrySeen=false;
   double tStart=0; double tub0=0;
+  double heaterOnMark=0, heldDelta=-1;
 };
 Plant P; Metrics M; std::mt19937 rng(7);
 double simT=0;
@@ -164,6 +166,9 @@ int main(int argc,char**argv){
   }
   { for(int p=0;p<64;p++)pins[p]=0; double keep=P.Ttub; plantStep(1e-6); P.Ttub=keep; }  // sensor voltages valid before boot
   fakeMs=msAt(simT); setClock(); setup();
+  // V0.9.2 restart hold: model the owner acknowledging it in the dashboard after every boot,
+  // except in scenarios that test the hold itself.
+  if(!P.holdNoAck) heaterRestartHold=false;
   if(fakeMs>msAt(simT)) msOffset+=fakeMs-msAt(simT);   // boot delays consume real time
   size_t ai=0; while(ai<sc->acts.size()&&sc->acts[ai].t<simT-1e-9)ai++;
   const double dt=sc->dt;

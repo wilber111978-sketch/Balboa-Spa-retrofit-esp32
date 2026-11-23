@@ -1,7 +1,7 @@
 #pragma once
 #define SPA_LIVE_EXTERNAL_ENTRYPOINTS 1
-#define SPA_LIVE_VERSION "0.9.0-topside"
-#define SPA_LIVE_BUILD "gc9a01-ui-2"
+#define SPA_LIVE_VERSION "0.9.2-topside"
+#define SPA_LIVE_BUILD "gc9a01-ui-4"
 #include <SpaLiveApi.h>
 #include "TopsideModel.h"
 #include "TopsideDisplay.h"
@@ -59,8 +59,8 @@ static topside::State topsideState(){
     s.primingS=primingActive?int((primingUntilMs-millis())/1000UL):-1;
     s.service=serviceMode;s.fault=(uint16_t)spa.fault;s.logicalHeat=spa.heaterSSR;
     s.pump=spa.actualPump==PumpMode::HIGH_SPEED?2:spa.actualPump==PumpMode::LOW_SPEED?1:0;
-    // Physical CH1/CH3 remain inhibited in BOTH builds. Never decide heat safety here.
-    s.heatInhibited=true;
+    // Display only. The main controller decides heater permission.
+    s.heatInhibited=!LIVE_M7_PROFILE_FITTED||heaterRestartHold;
     auto f=liveFaultInfo(spa.fault);topside::copy(s.faultId,sizeof(s.faultId),f.id);topside::copy(s.description,sizeof(s.description),f.title);
     topside::copy(s.mode,sizeof(s.mode),heatMode==1?"Solar Priority":heatMode==2?"Manual request":"Heating OFF");
     if(uint32_t(millis()-topsideFeedbackAt)<3000)topside::copy(s.feedback,sizeof(s.feedback),topsideFeedback);

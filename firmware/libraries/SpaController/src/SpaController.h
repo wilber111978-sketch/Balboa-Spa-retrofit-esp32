@@ -33,10 +33,29 @@
 #include <WiFi.h>
 #include "BoundedWebServer.h"
 #include <esp_task_wdt.h>
+#if defined(ARDUINO) && defined(SPA_OTA_PASSWORD)
+#include <atomic>
+#endif
 #include <esp_system.h>
 #include <cstddef>
 #include <time.h>
 #include <algorithm>
+
+#if defined(SPA_M7_COMMISSIONING_LIMITS)
+#if !defined(ARDUINO_ARCH_ESP32) || SPA_BENCH_DEMO || SPA_M7_INDEPENDENT_CUTOFF_VERIFIED != 1
+#error "Live M7 requires a Main ESP32 build and a verified independent heater cutoff."
+#endif
+#include "M7HeaterCycle.h"
+#define SPA_LIVE_M7 1
+#else
+#define SPA_LIVE_M7 0
+#endif
+static constexpr bool LIVE_M7_PROFILE_FITTED = SPA_LIVE_M7 != 0;
+#if SPA_LIVE_M7 && SPA_M7_NORMAL_HEATING_VERIFIED == 1
+static constexpr bool LIVE_M7_NORMAL_HEATING = true;
+#else
+static constexpr bool LIVE_M7_NORMAL_HEATING = false;
+#endif
 
 // ============================================================
 // PIN MAP - WAVESHARE ESP32-S3 RELAY 6CH
@@ -109,7 +128,10 @@ static constexpr uint8_t ONBOARD_ADC_SAMPLES = 32;
 // Optional 3.3 V divider-rail reference for ratiometric conversion.
 //   onboard mode: GPIO3 (ADC1_CH2) through a 10k/10k divider; ADS1115 mode: A2 direct.
 static constexpr int  PIN_RAIL_REF_ADC = 3;
-static constexpr bool RAIL_REF_FITTED = false;   // set true only after the reference is wired
+#ifndef SPA_RAIL_REF_FITTED
+#define SPA_RAIL_REF_FITTED 0   // set to 1 in the sketch only after the reference is wired
+#endif
+static constexpr bool RAIL_REF_FITTED = SPA_RAIL_REF_FITTED != 0;
 // Optional 24 V supply monitor (ADS1115 mode only): A3 through 100k/10k (x11).
 static constexpr bool SUPPLY_MON_FITTED = false;
 static constexpr float SUPPLY_MON_RATIO = 11.0f;
@@ -191,7 +213,7 @@ static constexpr bool HEATER_OUTPUTS_COMMISSIONED = true;
 static constexpr bool HEATER_OUTPUTS_COMMISSIONED = false; // Live heater requires separate formal commissioning
 #endif
 static constexpr uint32_t M7_STABILISATION_MS = SPA_BENCH_DEMO ? 5000 : 120000;
-// Do NOT add an M7 heat pulse until validated for the OEM hardware.
+// The Main relay gate requires a separately reviewed live commissioning profile.
 
 
 // ============================================================
@@ -332,6 +354,7 @@ static constexpr uint32_t SENSOR_STALE_MS = 2000;
 static constexpr uint32_t WATCHDOG_TIMEOUT_MS = 5000;
 esp_task_wdt_user_handle_t controlWatchdog = nullptr;
 int resetReason = 0;
+bool heaterRestartHold = !SPA_BENCH_DEMO;
 uint8_t heatMode = 0; // 0=off, 1=time window, 2=manual
 uint8_t solarStart = 11, solarEnd = 16;
 
@@ -572,7 +595,13 @@ void storageFailure() {
     spa.state = SpaState::LOCKOUT;
     logEvent("SETTINGS IO/INTEGRITY FAILURE; SERVICE REQUIRED");
 }
+#if defined(ARDUINO) && defined(SPA_OTA_PASSWORD)
+static std::atomic<bool> firmwareUpdateHold{false};
+#endif
 bool setServiceMode(bool enabled) {
+#if defined(ARDUINO) && defined(SPA_OTA_PASSWORD)
+    if (!enabled && firmwareUpdateHold.load()) return false;
+#endif
     // Stop first, even when the persistence medium has failed.
     forceShutdown();
     readyMode = false;
@@ -895,11 +924,21 @@ void processCombinedCirculation() {
 // SAFE OUTPUT HELPERS
 // ============================================================
 
+#if SPA_LIVE_M7
+static m7::Outputs liveM7WritePermission;
+#endif
+
 void relayWrite(uint8_t pin, bool on)
 {
-    // Neither shipping build can energise CH1/CH3. Demo exposes logical
-    // heater state in status, while these physical pins are always OFF.
-    if (serviceMode || !storageHealthy || pin == PIN_RELAY_HEAT_SAFE || pin == PIN_RELAY_HEAT_SSR) on = false;
+    if (serviceMode || !storageHealthy) on = false;
+    if (pin == PIN_RELAY_HEAT_SAFE || pin == PIN_RELAY_HEAT_SSR) {
+#if SPA_LIVE_M7
+        const bool requested = pin == PIN_RELAY_HEAT_SAFE ? liveM7WritePermission.contactor : liveM7WritePermission.ssr;
+        on = on && requested && !heaterRestartHold && spa.fault == FaultCode::NONE && !spa.lockedOut;
+#else
+        on = false;
+#endif
+    }
     digitalWrite(pin, on ? RELAY_ON : RELAY_OFF);
 }
 
@@ -1582,7 +1621,8 @@ void processPumpRequest()
 bool schedulePermitsHeating();
 bool heaterPermitted()
 {
-    if (serviceMode || !storageHealthy || (!SPA_BENCH_DEMO && !HEATER_OUTPUTS_COMMISSIONED) || !schedulePermitsHeating()) return false;
+    if (heaterRestartHold) return false;
+    if (serviceMode || !storageHealthy || (!SPA_BENCH_DEMO && !HEATER_OUTPUTS_COMMISSIONED && !LIVE_M7_PROFILE_FITTED) || !schedulePermitsHeating()) return false;
     if (spa.lockedOut)
         return false;
 
@@ -1600,7 +1640,9 @@ bool heaterPermitted()
     if (fmax(tempA.filteredC, tempB.filteredC) >= HEATER_SENSOR_CAP_C)
         return false;
 
-    if (!hardwareHighLimitOK())
+    // With a verified series cutoff that stops the board itself, a separate
+    // status input is optional. If fitted, it remains an additional gate.
+    if ((!LIVE_M7_PROFILE_FITTED || PIN_HIGH_LIMIT_OK >= 0) && !hardwareHighLimitOK())
     {
         raiseFault(
             FaultCode::HIGH_LIMIT_OPEN,
@@ -1727,9 +1769,65 @@ void monitorHeaterTemperatures()
 #endif
 }
 
+#if SPA_LIVE_M7
+static m7::HeaterCycle liveM7Cycle(SPA_M7_COMMISSIONING_LIMITS,
+                                 SSR_PROOF_MS, HEATER_CONTACTOR_SETTLE_MS, SSR_PROOF_RISE_C);
+
+static void processLiveM7()
+{
+    const uint32_t now = millis();
+    const bool permitted = controlWatchdog && heaterPermitted();
+    const m7::Phase previous = liveM7Cycle.phase();
+    if (!permitted && spa.fault == FaultCode::NONE &&
+        (previous == m7::Phase::Pulse || previous == m7::Phase::Observing) &&
+        (spa.waterHot || spa.calibrationInhibit || spa.supplySag || spa.tempDifference >= TEMP_DIFF_INHIBIT_C ||
+         fmax(tempA.filteredC, tempB.filteredC) >= HEATER_SENSOR_CAP_C)) {
+        raiseFault(FaultCode::FLOW_SUSPECT, true);
+        liveM7Cycle.update({now, 0, 0, false, false}, false);
+        return;
+    }
+    const float waterC = spa.waterTemperature;
+    int day = 0, minute = 0;
+    const bool floorOnly = heatMode == 1 && !(spaClock(day, minute) && solarWindowOpen(minute));
+    const float target = floorOnly ? fmin(ECONOMY_FLOOR_C, config.setpointC) : config.setpointC;
+    const float hysteresis = floorOnly ? ECONOMY_FLOOR_HYST_C :
+        (readyMode ? READY_HYSTERESIS_C : STANDBY_HYSTERESIS_C);
+    if (!permitted || !isfinite(waterC) || waterC >= target)
+        spa.thermostatHeating = false;
+    else if (waterC <= target - hysteresis)
+        spa.thermostatHeating = true;
+
+    const bool fresh = sensorsAcquired && now - tempA.lastUpdateMs <= SENSOR_STALE_MS &&
+        now - tempB.lastUpdateMs <= SENSOR_STALE_MS;
+    m7::Outputs output = liveM7Cycle.update(
+        {now, tempA.filteredC, tempB.filteredC, fresh, permitted}, spa.thermostatHeating);
+    if (output.fault != m7::Shutdown::None) {
+        raiseFault(output.fault == m7::Shutdown::UnexpectedHeat
+            ? FaultCode::HEATER_SSR_SUSPECT : FaultCode::FLOW_SUSPECT, true);
+        return;
+    }
+    // First powered commissioning can observe a qualification result without
+    // allowing it to become a thermostat heating cycle.
+    if (!LIVE_M7_NORMAL_HEATING && liveM7Cycle.phase() == m7::Phase::Passed) output = {};
+    if (!output.ssr) heaterSSRWrite(false);
+    liveM7WritePermission = output;
+    heaterSafetyWrite(output.contactor);
+    if (output.ssr) {
+        if (!spa.heaterSSR) spa.heaterStartedMs = now;
+        heaterSSRWrite(true);
+    }
+    liveM7WritePermission = {};
+    spa.heatQualificationPassed = liveM7Cycle.phase() == m7::Phase::Passed;
+    spa.heaterDemand = output.ssr ? 1.0f : 0.0f;
+}
+#endif
+
 void processHeater()
 {
     monitorHeaterTemperatures();
+#if SPA_LIVE_M7
+    processLiveM7();
+#else
     if (spa.fault != FaultCode::NONE || spa.lockedOut)
     {
         allHeaterOutputsOff();
@@ -1793,6 +1891,7 @@ void processHeater()
         spa.heaterStartedMs = millis();
     heaterSSRWrite(requestHeat);
     spa.heaterDemand = requestHeat ? 1.0f : 0.0f;
+#endif
 }
 
 // ============================================================
@@ -2210,6 +2309,7 @@ void setup()
     loadConfiguration();
     loadRuntime();
     resetReason = (int)esp_reset_reason();
+    heaterRestartHold = !SPA_BENCH_DEMO;
     if (resetReason == ESP_RST_TASK_WDT || resetReason == ESP_RST_INT_WDT ||
         resetReason == ESP_RST_WDT || resetReason == ESP_RST_PANIC || resetReason == ESP_RST_BROWNOUT) {
         serviceMode = true;

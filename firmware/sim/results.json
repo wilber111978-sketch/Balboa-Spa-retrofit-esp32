@@ -1178,6 +1178,44 @@
   "fuse": false
  },
  {
+  "scenario": "P05-restart-hold-blocks-heat-until-ack",
+  "verdict": "PASS: heater-on during unacknowledged hold 0.0s; heater-on after ack 5650s; max 38.01; inv lowHigh=0 heatNoLow=0 heatHigh=0 chatter=0 uvNoPump=0.0s heatPriming=0.0s",
+  "inv": {
+   "lowHigh": 0,
+   "heatNoLow": 0,
+   "heatHigh": 0,
+   "loadBreak": 0,
+   "chatter": 0,
+   "uvNoPump_s": 0.0,
+   "uvDuring24VSag_s": 0.0,
+   "heatDuringPriming_s": 0.0
+  },
+  "tub": [
+   34.0,
+   37.96,
+   34.0,
+   38.01
+  ],
+  "maxHeater": 38.7,
+  "dry_s": 0.0,
+  "heaterOn_h": 1.83,
+  "low_h": 2.58,
+  "high_min": 0.0,
+  "uv_h": 2.58,
+  "pumpStarts": 2,
+  "safetyOps": 4,
+  "ssrOps": 4,
+  "maxAmps": 11.03,
+  "over10A_min": 109.7,
+  "maxDispErr": 0.29,
+  "lightDesync_s": 0.0,
+  "faults": "",
+  "lockout": false,
+  "flags": "P",
+  "hl": false,
+  "fuse": false
+ },
+ {
   "scenario": "S01-sensorA-open-heating",
   "verdict": "PASS: fault at 1201s; inv lowHigh=0 heatNoLow=0 heatHigh=0 chatter=0 uvNoPump=0.0s heatPriming=0.0s",
   "inv": {

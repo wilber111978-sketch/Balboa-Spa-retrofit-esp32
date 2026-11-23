@@ -57,6 +57,10 @@ void defineScenarios(){
  S.push_back({"P03-24V-sag-while-heating", 2*H_, 0.1, []{P.Ttub=34;},
   {AT(1, heatManual(38)), AT(60*MIN_, P.v24=14), AT(60*MIN_+5, P.v24=24)},
   []{return expect(cleanInv()&&!M.lockoutSeen, F("UV on during sag %.1fs (hardware limit, no 24 V monitor in onboard build); contactors dropped and recovered; uncontrolled load breaks %ld; faults %d; final %.2f; %s", M.uvNoPumpSag, M.loadBreak, M.firstFaultCode, P.Ttub, inv().c_str()));}});
+ S.push_back({"P05-restart-hold-blocks-heat-until-ack", 3*H_, 0.1, []{P.Ttub=34;P.holdNoAck=true;},
+  {AT(1, heaterRestartHold=false), AT(1, heatManual(38)), AT(20*MIN_, P.mains=false; outageEnd=simT+3),
+   AT(21*MIN_, M.heaterOnMark=M.heaterOn), AT(21*MIN_+1, heatManual(38)), AT(60*MIN_, M.heldDelta=M.heaterOn-M.heaterOnMark; heaterRestartHold=false), AT(60*MIN_+1, heatManual(38))},
+  []{return expect(cleanInv()&&M.heldDelta==0&&M.heaterOn>M.heaterOnMark+600, F("heater-on during unacknowledged hold %.1fs; heater-on after ack %.0fs; max %.2f; %s", M.heldDelta, M.heaterOn-M.heaterOnMark, M.maxTub, inv().c_str()));}});
  S.push_back({"P04-power-cut-keeps-latched-lockout", 2*H_, 0.1, []{P.Ttub=36;},
   {AT(1, heatManual(38)), AT(30*MIN_, P.sB={4,7.0}), AT(45*MIN_, P.mains=false; outageEnd=simT+5)},
   []{return expect(spa.lockedOut&&seen(FaultCode::OVERTEMP), F("lockout after reboot=%d fault=%d", spa.lockedOut, (int)spa.fault));}});

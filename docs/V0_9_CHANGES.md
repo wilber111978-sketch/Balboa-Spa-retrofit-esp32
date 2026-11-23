@@ -130,6 +130,16 @@ A 2 s persistence on the no-flow rate check was tried and **rejected**: flow los
 | Firmware-in-the-loop simulation (`firmware/sim/run_sim.py`) | 103 / 103 |
 | Live API / regressions (both wrappers) / topside / web app | 42 / 141 / 50 / 40 — all pass |
 
+## V0.9.2 (Nov 2026)
+
+- **Wi-Fi firmware update.** With `SPA_OTA_PASSWORD` defined (sketchbook file `SpaOtaCredentials.h`, never committed), Service Mode → Settings → Firmware update opens a 10-minute ArduinoOTA window (host `fisher-spa`). Requires Arduino ESP32 core 3.3.12+ with app rollback, and the 16M (3MB APP/9.9MB FATFS) partition scheme (two 3 MB app slots). A new image must come up in Service Mode with healthy probes, watchdog and Wi-Fi within 60 s, or it rolls back.
+- **Heater restart hold.** After every restart (power loss, 45 °C cut-off trip, OTA), heating stays held until acknowledged in the dashboard (`POST /api/heater-restart-ack`). The 45 °C manual-reset cut-off interrupts all 24 V including the ESP32, so a trip cannot be distinguished from a power cut.
+- **Live M7 heater path, still locked.** `M7Qualification.h` and `M7HeaterCycle.h` implement 3-minute circulation, a 30 s contactor-only SSR proof, a timed pulse and a 90 s heater-off observation. CH1/CH3 can only be driven when the sketch defines `SPA_M7_COMMISSIONING_LIMITS` and `SPA_M7_INDEPENDENT_CUTOFF_VERIFIED 1` (compile error otherwise); normal thermostat heating needs `SPA_M7_NORMAL_HEATING_VERIFIED 1` as well. The shipped sketches define none of these, so both heater outputs stay physically off.
+- `SPA_RAIL_REF_FITTED` can now be set from the sketch (for the ADS1115 rail reference on A2).
+- Dashboard: numbered light programs, 10-minute A/B probe log download, restart-hold acknowledgement, firmware-update window.
+- Heater element corrected to 1500 W.
+- Tests: host stub gains `ESP_RST_UNKNOWN`; `verify_invariants.py` checks the new heater gate; the plant simulator acknowledges the restart hold after each boot and new scenario P05 proves heating stays off until acknowledged.
+
 ## Topside update (Nov 2026)
 
 - Screen blackout: display panel and backlight turn off after `SPA_TOPSIDE_SCREEN_TIMEOUT_MS` (default 1 hour) without a button press. The waking press only wakes the screen. Fault and Service wake it and keep it lit.
