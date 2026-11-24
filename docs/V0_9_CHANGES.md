@@ -142,6 +142,20 @@ A 2 s persistence on the no-flow rate check was tried and **rejected**: flow los
 - Heater element corrected to 1500 W.
 - Tests: host stub gains `ESP_RST_UNKNOWN`; `verify_invariants.py` checks the new heater gate; the plant simulator acknowledges the restart hold after each boot and new scenario P05 proves heating stays off until acknowledged.
 
+## Google Home (optional, Matter) — Nov 2026
+
+Off unless the sketch defines `SPA_MATTER 1` (Main build, ESP32 core 3.1+ Matter library). Exposes three Matter endpoints only:
+
+| Google Home | Matter type | Controller action |
+|---|---|---|
+| Spa temperature | Temperature Sensor (read-only) | water temperature, every 10 s while valid |
+| Spa light | On/Off Light | `light on` / `light off` |
+| Spa wake up | On/Off Plug | `ready` (1 °C band for 2 h, within the heat mode) / leave Ready |
+
+No setpoint, jets, heater, Service Mode, fault reset, restart-hold or firmware control. Matter callbacks only queue the request; the loop task applies it through `executeCommand()` with the dashboard's Service/fault/settings lockout and mirrors the real state back (a refused request snaps back; the Ready timeout shows as off). Host tests: `live-tests/matter.cpp` with a stand-in for the Matter library (9 cases, part of `run_live.py`).
+
+Setup: add `#define SPA_MATTER 1` to `SpaMain_Live.ino`, keep the 16M (3MB APP/9.9MB FATFS) scheme and check Verify reports the sketch fits the 3 MB app slot (it is not yet known whether the full firmware plus Matter fits). Needs a Google hub on the home Wi-Fi (Nest Mini/Audio/Hub, Google TV Streamer), 2.4 GHz Wi-Fi with IPv6, and a Google Home Developer Console test device with VID 0xFFF1 / PID 0x8000. The pairing code is printed on Serial and recorded once in the dashboard event history (`MATTER_PAIRING`).
+
 ## Topside update (Nov 2026)
 
 - Screen blackout: display panel and backlight turn off after `SPA_TOPSIDE_SCREEN_TIMEOUT_MS` (default 1 hour) without a button press. The waking press only wakes the screen. Fault and Service wake it and keep it lit.

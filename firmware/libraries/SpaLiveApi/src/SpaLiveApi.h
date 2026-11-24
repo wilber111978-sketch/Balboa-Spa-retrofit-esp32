@@ -198,6 +198,10 @@ void liveRoutes(){
     web.on("/api/faults",HTTP_GET,[](){if(webAuth())liveHistory();});web.on("/api/diagnostics",HTTP_GET,[](){if(webAuth())liveDiagnostics();});
     for(const char *name:{"target","jets","light","mode","schedule","service-mode","fault-reset","heater-restart-ack"}){std::string route=name;web.on(("/api/"+route).c_str(),HTTP_POST,[route](){if(webAuth())liveCommand(route);});}
 }
+#ifndef SPA_MATTER
+#define SPA_MATTER 0
+#endif
+#include "SpaMatter.h"
 void spaLiveSetup(){
     spa062Setup();
 #if defined(ARDUINO) && defined(SPA_OTA_PASSWORD)
@@ -210,11 +214,17 @@ void spaLiveSetup(){
             :"Heater restart hold; see controller reset reason");
     }
     liveObserveFault();
+#if SPA_MATTER_ACTIVE
+    spaMatter::begin();
+#endif
 }
 void spaLiveLoop(){
     spa062Loop();liveObserveFault();
 #if defined(ARDUINO) && defined(SPA_OTA_PASSWORD)
     spaUpdate::verifyAfterLoop();
+#endif
+#if SPA_MATTER_ACTIVE
+    spaMatter::loop();
 #endif
 }
 #ifndef SPA_LIVE_EXTERNAL_ENTRYPOINTS

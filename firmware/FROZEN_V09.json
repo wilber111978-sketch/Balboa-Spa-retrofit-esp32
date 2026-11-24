@@ -7,7 +7,7 @@
     "libraries/SpaController/src/SpaController.h": "7e4d9a06c8121d9dc0fa6c2af36e0852152c7a48431a243638e623ef2681f9c5",
     "libraries/SpaController/src/SpaPersistence.h": "d4a8c9341a865865b52400b00e2f11a79f78daca47c8306c79b443502bf6b3b7",
     "libraries/SpaLiveApi/src/LiveWebServer.h": "9bf8257c04f71a85c4e881f5d437dee0c70a1724736522f7b6267c93927e1f0a",
-    "libraries/SpaLiveApi/src/SpaLiveApi.h": "d18aae89b9b9f4734ace115c5fb5cf7e4e65ea0ff954b4cac6350654e85170b2",
+    "libraries/SpaLiveApi/src/SpaLiveApi.h": "602943498e883b650427962531c9f627ace757dfe7f621c37571d50f70a318e9",
     "libraries/SpaLiveApi/src/WebAssets.h": "0a2174deb2601e0da25a2682836abd733c2da3e75ea01ccc0fce899f4d2e5606",
     "libraries/SpaTopside/src/SpaTopside.h": "22c05981c25adaa3c9b7d323fdc1f3f18ac36d8019a5055cb0b75e2fa83fe0dd",
     "libraries/SpaTopside/src/TopsideConfig.h": "42b9ca0ea09d491eb0835c9bc15144c4d5a6d1feae34c78cb41af4c5f76d7f8d",
@@ -37,7 +37,7 @@
     "live-tests/WiFi.h": "6f759517e3d4ebfefe502f4842608d93d48d79371aacf5b0cb21bc19c10d1097",
     "live-tests/build_bridge.py": "c5239539de93e871c8557e5d727dc877f3e4f43aa2f85d9ac509e6c4cd2fa7b1",
     "live-tests/config.py": "40c7edc43d41fec57d5796d8493f3ef372a509b19ff8a058c736e3a80ee13a98",
-    "live-tests/run_live.py": "7c7666d16eb6928d98265c1fb2070d178bbfd95f39d26d6964d09cdcf43061e3",
+    "live-tests/run_live.py": "b572c1183811439daf8102796e476f44e2e885407b21de92b5ea31ed4560bcfd",
     "live-tests/run_regressions.py": "7a38a506fbe7b1af332819d0b5eda14595b081950a539b42dc8f7af94114b73e",
     "live-tests/verify_frozen.py": "83bc35c5adbcd9bce4548f771267da1169b066ee5a6fa02c8de2a71a4ca979f4",
     "topside-tests/render-svg.cpp": "840634308413cce7e6afc67c5442ee62e7361623f3999aa1b65ae76f1c3cf7ec",
@@ -68,6 +68,9 @@
     "libraries/SpaController/src/M7HeaterCycle.h": "1f063cb96a799914dca36ef148f64c023fff1708bcff24309d1b18b969af3bc1",
     "libraries/SpaController/src/M7Qualification.h": "15c5ea87db0075ba2803455a2d6dd098c9a7e13854442f52a5eadfb7c9334551",
     "libraries/SpaLiveApi/src/SpaFirmwareUpdate.h": "5149df1687b3bb9593ac424a4e2ac5bf379746602ad67f72cdeb485e465951db",
-    "sim/scenarios_live.inc": "835327ddde3cbf3e0fc6f7de1a53729b95d2c05060c0a28bce6cc918946630dd"
+    "sim/scenarios_live.inc": "835327ddde3cbf3e0fc6f7de1a53729b95d2c05060c0a28bce6cc918946630dd",
+    "libraries/SpaLiveApi/src/SpaMatter.h": "d8d0eea34fe190468d7be2d75aade81f6004655fe4b30eecc34287336734f1d7",
+    "live-tests/matter.cpp": "2f889e39c5c52571f704c78fa74f285b6124653c0db6f22f3870fc76d51a2d5c",
+    "live-tests/matter-stub/Matter.h": "dc1c2d03111ce06ab8ba9317df6d8356646e12bf210a937ed1229bb719570f60"
   }
 }

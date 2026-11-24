@@ -12,5 +12,11 @@ for mode in (0,1):
  subprocess.run(base+[f'-DSPA_BENCH_DEMO={mode}','-include',os.environ.get('SPA_TEST_WRAPPER','SpaLiveApi.h'),str(root/'live-tests/api.cpp'),'-o',str(exe)],check=True)
  for case in cases:
   p=subprocess.run([str(exe),case],capture_output=True,text=True,timeout=20);print('PASS' if p.returncode==0 else 'FAIL',mode,case,p.stderr.strip());results.append({'build':'Demo' if mode else 'Main','case':case,'passed':p.returncode==0,'output':p.stdout+p.stderr})
+# Optional Google Home / Matter bridge (SPA_MATTER 1), Main build, host stand-in for the Matter library.
+exe=root/'live-tests'/'matter-0'
+mbase=[x for x in base if x!='-DSPA_TEMP_ADC_ADS1115=1']
+subprocess.run(mbase+['-DSPA_BENCH_DEMO=0','-DSPA_MATTER=1','-DSPA_MATTER_HOST_TEST','-I'+str(root/'live-tests/matter-stub'),'-include','SpaLiveApi.h',str(root/'live-tests/matter.cpp'),'-o',str(exe)],check=True)
+for case in 'begin temperature light wake ready-timeout service-lockout fault-lockout light-from-dashboard pairing'.split():
+  p=subprocess.run([str(exe),case],capture_output=True,text=True,timeout=20);print('PASS' if p.returncode==0 else 'FAIL','matter',case,p.stderr.strip());results.append({'build':'Main+Matter','case':case,'passed':p.returncode==0,'output':p.stdout+p.stderr})
 (root/'live-logs/api-results.json').write_text(json.dumps(results,indent=2)+'\n')
 raise SystemExit(any(not r['passed'] for r in results))

@@ -250,5 +250,59 @@
     "case": "v09-lockout",
     "passed": true,
     "output": "PASS 1 v09-lockout\n"
+  },
+  {
+    "build": "Main+Matter",
+    "case": "begin",
+    "passed": true,
+    "output": "PASS begin\n"
+  },
+  {
+    "build": "Main+Matter",
+    "case": "temperature",
+    "passed": true,
+    "output": "PASS temperature\n"
+  },
+  {
+    "build": "Main+Matter",
+    "case": "light",
+    "passed": true,
+    "output": "PASS light\n"
+  },
+  {
+    "build": "Main+Matter",
+    "case": "wake",
+    "passed": true,
+    "output": "PASS wake\n"
+  },
+  {
+    "build": "Main+Matter",
+    "case": "ready-timeout",
+    "passed": true,
+    "output": "PASS ready-timeout\n"
+  },
+  {
+    "build": "Main+Matter",
+    "case": "service-lockout",
+    "passed": true,
+    "output": "PASS service-lockout\n"
+  },
+  {
+    "build": "Main+Matter",
+    "case": "fault-lockout",
+    "passed": true,
+    "output": "PASS fault-lockout\n"
+  },
+  {
+    "build": "Main+Matter",
+    "case": "light-from-dashboard",
+    "passed": true,
+    "output": "PASS light-from-dashboard\n"
+  },
+  {
+    "build": "Main+Matter",
+    "case": "pairing",
+    "passed": true,
+    "output": "PASS pairing\n"
   }
 ]

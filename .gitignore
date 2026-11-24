@@ -18,6 +18,7 @@ firmware/tests/v09-*
 firmware/sim/fw_sim
 firmware/sim/fw_sim_live
 firmware/sim/fw_sim_live_normal
+firmware/live-tests/matter-0
 
 # Local secrets (Arduino sketchbook)
 **/SpaOtaCredentials.h
