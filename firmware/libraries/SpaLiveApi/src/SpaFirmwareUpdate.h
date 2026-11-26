@@ -52,22 +52,28 @@ static void listen(void *)
     vTaskDelete(nullptr);
 }
 
+// V0.9.3: say which check refused, so a 409 is diagnosable from the dashboard.
+static const char *refusal = "";
+static bool refuse(const char *why) { refusal = why; return false; }
 static bool arm()
 {
-    if (!serviceMode || !storageHealthy || spa.fault != FaultCode::NONE ||
-        !controlWatchdog || !liveInputsSafe() || WiFi.status() != WL_CONNECTED ||
-        pendingVerification || !esp_ota_get_next_update_partition(nullptr)) {
-        return false;
-    }
-    if (listenerRunning.load()) return false;   // previous listener never finished: restart first
-    if (firmwareUpdateHold.exchange(true)) return false;
+    if (!serviceMode) return refuse("Service Mode is off");
+    if (!storageHealthy) return refuse("settings storage unhealthy");
+    if (spa.fault != FaultCode::NONE) return refuse("a fault is active");
+    if (!controlWatchdog) return refuse("control watchdog not running");
+    if (!liveInputsSafe()) return refuse("probe/high-limit inputs not healthy");
+    if (WiFi.status() != WL_CONNECTED) return refuse("Wi-Fi not reported connected");
+    if (pendingVerification) return refuse("previous update still awaiting its self-check (restart to retry it)");
+    if (!esp_ota_get_next_update_partition(nullptr)) return refuse("no free OTA slot");
+    if (listenerRunning.load()) return refuse("previous upload listener still running (restart first)");
+    if (firmwareUpdateHold.exchange(true)) return refuse("an upload window is already open");
     listenerRunning.store(true);
     armedAt = millis();
     staleLogged = false;
     if (xTaskCreate(listen, "spa-ota", 12288, nullptr, 1, nullptr) != pdPASS) {
         listenerRunning.store(false);
         firmwareUpdateHold.store(false);
-        return false;
+        return refuse("not enough free memory to start the upload listener");
     }
     return true;
 }

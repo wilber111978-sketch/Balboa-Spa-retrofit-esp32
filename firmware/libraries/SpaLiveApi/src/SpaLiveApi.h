@@ -136,7 +136,7 @@ void liveCommand(const std::string &path){
             liveReply(400,"Expected confirm:true");return;
         }
         if(!spaUpdate::arm()){
-            liveReply(409,"Update requires Service Mode, healthy probes and Wi-Fi, a free OTA slot, and no update already armed");return;
+            {std::string why=std::string("Upload window refused: ")+spaUpdate::refusal;liveRecord("OTA_REFUSED",why.c_str());liveReply(409,why.c_str());}return;
         }
         liveReply(200,"Wi-Fi upload ready for up to 10 minutes",true);return;
     }
