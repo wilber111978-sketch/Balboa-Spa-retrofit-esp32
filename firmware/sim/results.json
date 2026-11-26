@@ -647,7 +647,7 @@
  },
  {
   "scenario": "L01-good-flow-pulse-passes",
-  "verdict": "PASS: qualification passed=1 at 528s; heater on 18.0s (pulse only); max heater body 34.54; faults 0; inv lowHigh=0 heatNoLow=0 heatHigh=0 chatter=0 uvNoPump=0.0s heatPriming=0.0s",
+  "verdict": "PASS: qualification passed=1 at 540s; heater on 30.0s (pulse only); max heater body 34.54; faults 0; inv lowHigh=0 heatNoLow=0 heatHigh=0 chatter=0 uvNoPump=0.0s heatPriming=0.0s",
   "inv": {
    "lowHigh": 0,
    "heatNoLow": 0,
@@ -660,13 +660,13 @@
   },
   "tub": [
    34.0,
-   34.03,
+   34.04,
    34.0,
-   34.03
+   34.04
   ],
   "maxHeater": 34.5,
   "dry_s": 0.0,
-  "heaterOn_h": 0.0,
+  "heaterOn_h": 0.01,
   "low_h": 0.5,
   "high_min": 0.0,
   "uv_h": 0.5,
@@ -674,8 +674,8 @@
   "safetyOps": 2,
   "ssrOps": 2,
   "maxAmps": 11.03,
-  "over10A_min": 0.3,
-  "maxDispErr": 0.15,
+  "over10A_min": 0.5,
+  "maxDispErr": 0.14,
   "lightDesync_s": 0.0,
   "faults": "",
   "lockout": false,
@@ -799,7 +799,7 @@
  },
  {
   "scenario": "L05-normal-heating-after-pass",
-  "verdict": "PASS: passed at 528s; heated 34->max 38.00 final 37.96; heater 2.44h; inv lowHigh=0 heatNoLow=0 heatHigh=0 chatter=0 uvNoPump=0.0s heatPriming=0.0s",
+  "verdict": "PASS: passed at 540s; heated 34->max 38.00 final 37.97; heater 2.45h; inv lowHigh=0 heatNoLow=0 heatHigh=0 chatter=0 uvNoPump=0.0s heatPriming=0.0s",
   "inv": {
    "lowHigh": 0,
    "heatNoLow": 0,
@@ -812,13 +812,13 @@
   },
   "tub": [
    34.0,
-   37.96,
+   37.97,
    34.0,
    38.0
   ],
   "maxHeater": 38.5,
   "dry_s": 0.0,
-  "heaterOn_h": 2.44,
+  "heaterOn_h": 2.45,
   "low_h": 3.6,
   "high_min": 0.0,
   "uv_h": 3.59,
@@ -826,7 +826,7 @@
   "safetyOps": 6,
   "ssrOps": 6,
   "maxAmps": 11.03,
-  "over10A_min": 146.5,
+  "over10A_min": 146.7,
   "maxDispErr": 0.19,
   "lightDesync_s": 0.0,
   "faults": "",
@@ -837,7 +837,7 @@
  },
  {
   "scenario": "L06-element-open-no-response",
-  "verdict": "PASS: element open: passed=0 first fault 10 at 528s",
+  "verdict": "PASS: element open: passed=0 first fault 10 at 540s",
   "inv": {
    "lowHigh": 0,
    "heatNoLow": 0,
@@ -867,7 +867,7 @@
   "over10A_min": 0.0,
   "maxDispErr": 0.15,
   "lightDesync_s": 0.0,
-  "faults": "10@528s",
+  "faults": "10@540s",
   "lockout": true,
   "flags": "PL",
   "hl": false,
@@ -875,7 +875,7 @@
  },
  {
   "scenario": "L07-jets-high-blocks-heater",
-  "verdict": "PASS: jets on HIGH during qualification: inv lowHigh=0 heatNoLow=0 heatHigh=0 chatter=0 uvNoPump=0.0s heatPriming=0.0s; heater on 18.0s",
+  "verdict": "PASS: jets on HIGH during qualification: inv lowHigh=0 heatNoLow=0 heatHigh=0 chatter=0 uvNoPump=0.0s heatPriming=0.0s; heater on 30.0s",
   "inv": {
    "lowHigh": 0,
    "heatNoLow": 0,
@@ -888,13 +888,13 @@
   },
   "tub": [
    34.0,
-   34.19,
+   34.2,
    34.0,
-   34.19
+   34.2
   ],
   "maxHeater": 34.7,
   "dry_s": 0.0,
-  "heaterOn_h": 0.0,
+  "heaterOn_h": 0.01,
   "low_h": 0.17,
   "high_min": 20.0,
   "uv_h": 0.5,
@@ -902,8 +902,8 @@
   "safetyOps": 2,
   "ssrOps": 2,
   "maxAmps": 11.03,
-  "over10A_min": 0.3,
-  "maxDispErr": 0.16,
+  "over10A_min": 0.5,
+  "maxDispErr": 0.18,
   "lightDesync_s": 0.0,
   "faults": "",
   "lockout": false,

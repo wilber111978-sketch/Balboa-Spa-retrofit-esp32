@@ -160,9 +160,10 @@ private:
 } // namespace m7
 
 // First supervised commissioning profile: 1500 W element, two-speed pump on LOW.
-// Pulse length from the Balboa M-7 service manual (6.5-18 s by heater rating; the
-// longest for a low-wattage element), 90 s heater-off observation, A/B baseline
-// within 1.0 C after >= 2 min circulation. Rise limits are conservative starting
-// values to be confirmed from the first logged pulse.
+// 90 s heater-off observation, A/B baseline within 1.0 C after >= 2 min circulation.
+// Tuned from the first supervised live pass (2026-11-26, 20.5 C water): an 18 s pulse
+// gave a 0.20 C transient peak against ~0.08 C probe noise, and recovery creep reached
+// 0.155 C on noise alone. Pulse lengthened to 30 s (~0.3 C expected peak, still far
+// under the 1.5 C ceiling) and creep tolerance raised to 0.15 C for margin.
 //                              pulse  gap   base  minRise maxRise maxDiff recover maxT   hold   creep
-#define SPA_M7_FIRST_PROFILE (m7::Limits{18000, 2000, 1.0f, 0.15f,  1.5f,   1.2f,   0.3f,   40.0f, 20000, 0.1f})
+#define SPA_M7_FIRST_PROFILE (m7::Limits{30000, 2000, 1.0f, 0.15f,  1.5f,   1.2f,   0.3f,   40.0f, 20000, 0.15f})

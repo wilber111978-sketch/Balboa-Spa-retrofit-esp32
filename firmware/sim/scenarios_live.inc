@@ -8,15 +8,15 @@ void defineScenarios(){
 #ifndef FWSIM_NORMAL
  S.push_back({"L01-good-flow-pulse-passes", 30*MIN_, 0.1, []{P.Ttub=34;P.heaterW=1500;},
   {AT(1, heatManual(38))},
-  []{return expect(cleanInv()&&M.livePassed&&!M.firstFaultCode&&M.heaterOn>=17&&M.heaterOn<=19.5,
+  []{return expect(cleanInv()&&M.livePassed&&!M.firstFaultCode&&M.heaterOn>=29&&M.heaterOn<=31.5,
      F("qualification passed=%d at %.0fs; heater on %.1fs (pulse only); max heater body %.2f; faults %d; %s", M.livePassed, M.livePassT, M.heaterOn, M.maxHeater, M.firstFaultCode, inv().c_str()));}});
  S.push_back({"L02-no-flow-pulse-faults", 30*MIN_, 0.1, []{P.Ttub=34;P.heaterW=1500;P.flowFactor=0.0;},
   {AT(1, heatManual(38))},
-  []{return expect(!M.livePassed&&M.firstFaultCode!=0&&M.heaterOn<=19.5&&M.maxHeater<44,
+  []{return expect(!M.livePassed&&M.firstFaultCode!=0&&M.heaterOn<=31.5&&M.maxHeater<44,
      F("no flow: passed=%d first fault %d at %.0fs; heater on %.1fs; max heater body %.2f", M.livePassed, M.firstFaultCode, M.firstFaultT, M.heaterOn, M.maxHeater));}});
  S.push_back({"L03-weak-flow-pulse-faults", 30*MIN_, 0.1, []{P.Ttub=34;P.heaterW=1500;P.flowFactor=0.15;},
   {AT(1, heatManual(38))},
-  []{return expect(!M.livePassed&&M.heaterOn<=19.5&&M.maxHeater<44,
+  []{return expect(!M.livePassed&&M.heaterOn<=31.5&&M.maxHeater<44,
      F("15%% flow: passed=%d first fault %d; heater on %.1fs; max heater body %.2f", M.livePassed, M.firstFaultCode, M.heaterOn, M.maxHeater));}});
  S.push_back({"L04-ssr-shorted-caught-by-proof", 30*MIN_, 0.1, []{P.Ttub=34;P.heaterW=1500;P.ssrShort=true;},
   {AT(1, heatManual(38))},
