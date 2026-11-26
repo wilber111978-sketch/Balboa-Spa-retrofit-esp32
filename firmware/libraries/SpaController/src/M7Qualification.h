@@ -8,6 +8,7 @@ namespace m7 {
 
 constexpr uint32_t circulationMs = 180000; // Owner's preheat circulation target.
 constexpr uint32_t observationMs = 90000;   // Heater-off observation in the M7 guide.
+constexpr uint32_t baselineAverageMs = 10000; // V0.9.3: baseline = mean of last 10 s of circulation.
 
 enum class Phase { Idle, Circulating, Pulse, Observing, Passed, Failed };
 enum class Failure { None, Configuration, Interlock, InvalidSample, BaselineMismatch,
@@ -48,6 +49,8 @@ public:
         phaseStarted_ = lastSample_ = now;
         peakRiseC_ = 0;
         recoveryInRange_ = false;
+        baselineSumAC_ = baselineSumBC_ = 0;
+        baselineCount_ = 0;
         if (!(finite(limits_.baselineDifferenceC) && finite(limits_.minPeakRiseC) &&
               finite(limits_.maxPeakRiseC) && finite(limits_.maxDifferenceC) &&
               finite(limits_.recoveryRiseC) && finite(limits_.maxTemperatureC) &&
@@ -80,10 +83,18 @@ public:
         const uint32_t elapsedMs = sample.timeMs - phaseStarted_;
 
         if (phase_ == Phase::Circulating) {
+            // V0.9.3: a single-sample baseline caught probe noise (A 0.08 C low on the
+            // second live run), so average the last 10 s of circulation instead.
+            if (elapsedMs + baselineAverageMs >= circulationMs) {
+                baselineSumAC_ += sample.aC;
+                baselineSumBC_ += sample.bC;
+                ++baselineCount_;
+            }
             if (elapsedMs < circulationMs) return;
-            if (differenceC > limits_.baselineDifferenceC) return fail(Failure::BaselineMismatch);
-            baselineAC_ = sample.aC;
-            baselineBC_ = sample.bC;
+            baselineAC_ = baselineSumAC_ / (float)baselineCount_;
+            baselineBC_ = baselineSumBC_ / (float)baselineCount_;
+            if (absolute(baselineAC_ - baselineBC_) > limits_.baselineDifferenceC)
+                return fail(Failure::BaselineMismatch);
             transition(Phase::Pulse, sample.timeMs);
             return;
         }
@@ -150,6 +161,9 @@ private:
     uint32_t lastSample_ = 0;
     float baselineAC_ = 0;
     float baselineBC_ = 0;
+    float baselineSumAC_ = 0;
+    float baselineSumBC_ = 0;
+    uint32_t baselineCount_ = 0;
     float peakRiseC_ = 0;
     bool recoveryInRange_ = false;
     uint32_t recoveryStarted_ = 0;
@@ -161,9 +175,10 @@ private:
 
 // First supervised commissioning profile: 1500 W element, two-speed pump on LOW.
 // 90 s heater-off observation, A/B baseline within 1.0 C after >= 2 min circulation.
-// Tuned from the first supervised live pass (2026-11-26, 20.5 C water): an 18 s pulse
-// gave a 0.20 C transient peak against ~0.08 C probe noise, and recovery creep reached
-// 0.155 C on noise alone. Pulse lengthened to 30 s (~0.3 C expected peak, still far
-// under the 1.5 C ceiling) and creep tolerance raised to 0.15 C for margin.
+// Tuned from three supervised live runs (2026-11-26, 20.5 C water, ~1500 L, high LOW flow):
+// against a 10 s averaged baseline an 18 s pulse gave only 0.09-0.19 C peak rise, and
+// continuous heating showed ~0.20 C after 30 s and ~0.25 C after 45 s. Probe noise and
+// wander reach ~0.08 C, so minRise stays 0.15 C and the pulse is 45 s (still far under the
+// 1.5 C ceiling; no-flow cases are cut by the cycle within seconds). Recovery creep 0.15 C.
 //                              pulse  gap   base  minRise maxRise maxDiff recover maxT   hold   creep
-#define SPA_M7_FIRST_PROFILE (m7::Limits{30000, 2000, 1.0f, 0.15f,  1.5f,   1.2f,   0.3f,   40.0f, 20000, 0.15f})
+#define SPA_M7_FIRST_PROFILE (m7::Limits{45000, 2000, 1.0f, 0.15f,  1.5f,   1.2f,   0.3f,   40.0f, 20000, 0.15f})

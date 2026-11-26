@@ -35,6 +35,8 @@ LiveFaultInfo liveFaultInfo(FaultCode code) {
     case FaultCode::CONFIG_CORRUPT:return {"CONFIG_CORRUPT","","Settings integrity fault","Baseline settings validation or save verification failed.","Corrupt settings or failed NVS storage.","Repair stored settings deliberately; no automatic erase is provided."};
     case FaultCode::ADC_FAILURE:return {"ADC_FAILURE","Sn","ADC acquisition failure","ADC initialization or checked conversion failed.","ADC, I2C wiring or power fault.","Check the acquisition circuit and restart after repair."};
     case FaultCode::HIGH_LIMIT_OPEN:return {"HIGH_LIMIT_OPEN","","High-limit circuit open","The baseline high-limit input is not permissive.","Thermal protection or safety wiring fault.","Verify the independent protection before reset."};
+    case FaultCode::HEATER_CONTACTOR_FAULT:return {"HEATER_NO_RESPONSE","","Heater not heating","With the heater on and the pump on LOW, the sensors did not show heat: no A-B shift within 3 min, or under 0.15 C tub rise in 45 min.","Element open, SSR, contactor or LOW spare pole not making, or sensors not seeing the heater.","Check the heater circuit and both sensors, then reset. The event log says which check tripped."};
+    case FaultCode::HEATER_SSR_SUSPECT:return {"HEATER_SSR_SUSPECT","","Unexpected heat with heater off","Temperature rose with the contactor closed but the SSR off.","SSR shorted or leaking, or a wiring fault powering the element.","Isolate heater power and test the SSR before resetting."};
     default:return {"CONTROLLER_FAULT","","Controller protection fault","A baseline protection latched a fault.","See the internal numeric code and baseline report.","Inspect the cause before requesting acknowledgement."};
     }
 }

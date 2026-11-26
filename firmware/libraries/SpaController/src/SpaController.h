@@ -453,8 +453,19 @@ static constexpr float    HEATER_SENSOR_CAP_C = USER_MAX_SETPOINT_C + 1.0f; // e
 static constexpr uint32_t SSR_PROOF_MS = SPA_BENCH_DEMO ? 1000UL : 30000UL; // contactor on, SSR off, no rise
 static constexpr float    SSR_PROOF_RISE_C = 0.3f;
 static constexpr uint32_t SSR_PROOF_PERSIST_MS = 5000;                    // rise must persist (noise immunity)
-static constexpr uint32_t HEAT_RESPONSE_MS = 120000;                      // SSR on this long with flow...
-static constexpr float    HEAT_RESPONSE_MIN_DIFF_C = 0.25f;               // ...must show an outlet/inlet difference
+// V0.9.3 no-heat-response check, tuned from the first live runs (1.5 kW, pump LOW, 2026-11-26).
+// A raw |A-B| threshold cannot work: with the heater off the probe offset wanders about
+// +/-0.07 C, and a working element only moved A-B by +0.10 C (first 30 s) to +0.20 C (2 min).
+// So the signed A-B is smoothed and compared with the same smoothing frozen at SSR turn-on
+// (the contactor-only proof period). Backup: the cooler probe (tub water) must rise over
+// long heating, which catches a dead heater even if probe wander fools the shift test.
+static constexpr uint32_t HEAT_RESPONSE_MS = 180000;                      // shift must appear within 3 min of SSR on
+static constexpr uint32_t HEAT_RESPONSE_SETTLE_MS = 30000;                // ignore the first 30 s
+static constexpr float    HEAT_RESPONSE_TAU_S = 15.0f;                    // A-B smoothing time constant
+static constexpr float    HEAT_RESPONSE_SHIFT_C = 0.08f;                  // smoothed A-B shift vs pre-heat
+static constexpr uint32_t HEAT_RESPONSE_REARM_MS = 180000;                // re-energised sooner: heat soak, skip shift test
+static constexpr uint32_t HEAT_RISE_WINDOW_MS = 45UL * 60UL * 1000UL;     // accumulated SSR-on time
+static constexpr float    HEAT_RISE_MIN_C = 0.15f;                        // tub rise required within that time
 static constexpr uint32_t RISE_PERSIST_SSR_MS = SPA_BENCH_DEMO ? 0UL : 3000UL;   // noise immunity for rate checks
 static constexpr uint32_t RISE_PERSIST_FLOW_MS = 0UL;   // flow loss shows as a brief rate split: no persistence
 static constexpr uint32_t SENSOR_RECOVER_MS = 60000;                      // transient sensor fault auto-clears
@@ -1709,6 +1720,67 @@ bool heaterQualificationReady()
     return spa.heatQualificationPassed;
 }
 
+// V0.9.3: see HEAT_RESPONSE_* constants.
+static float heatIdleDiffEma = NAN, heatOnDiffEma = NAN, heatOnBaseline = NAN;
+static bool heatPrevSSR = false, heatShiftArmed = false, heatShiftSeen = false;
+static uint32_t heatRespLastMs = 0, heatRiseOnMs = 0;
+static float heatRiseStartC = NAN;
+
+void resetHeatResponse()
+{
+    heatIdleDiffEma = heatOnDiffEma = heatOnBaseline = heatRiseStartC = NAN;
+    heatPrevSSR = heatShiftArmed = heatShiftSeen = false;
+    heatRiseOnMs = 0;
+}
+
+void checkHeatResponse()
+{
+    const uint32_t now = millis();
+    const uint32_t stepMs = heatRespLastMs ? now - heatRespLastMs : 0;
+    heatRespLastMs = now;
+    const float signedDiff = tempA.filteredC - tempB.filteredC;
+    const float tubC = fmin(tempA.filteredC, tempB.filteredC);
+    if (!isfinite(signedDiff) || !isfinite(tubC)) return;
+    const float dt = fmin((float)stepMs, 2000.0f) / 1000.0f;
+    const float alpha = dt / (HEAT_RESPONSE_TAU_S + dt);
+    if (!spa.thermostatHeating && !spa.heaterSSR) { heatRiseOnMs = 0; heatRiseStartC = NAN; }
+
+    if (!spa.heaterSSR || spa.actualPump != PumpMode::LOW_SPEED) {
+        // Pre-heat reference: only meaningful with water flowing on LOW.
+        if (spa.actualPump != PumpMode::LOW_SPEED) heatIdleDiffEma = NAN;
+        else if (!isfinite(heatIdleDiffEma)) heatIdleDiffEma = signedDiff;
+        else heatIdleDiffEma += alpha * (signedDiff - heatIdleDiffEma);
+        heatPrevSSR = false;
+        return;
+    }
+    if (!heatPrevSSR) {
+        heatPrevSSR = true;
+        heatOnBaseline = isfinite(heatIdleDiffEma) ? heatIdleDiffEma : signedDiff;
+        heatOnDiffEma = heatOnBaseline;
+        heatShiftSeen = false;
+        heatShiftArmed = isfinite(heatIdleDiffEma) &&
+            (lastSSRoffMs == 0 || now - lastSSRoffMs >= HEAT_RESPONSE_REARM_MS);
+    }
+    heatOnDiffEma += alpha * (signedDiff - heatOnDiffEma);
+    const uint32_t onMs = now - spa.heaterStartedMs;
+    if (onMs >= HEAT_RESPONSE_SETTLE_MS && fabs(heatOnDiffEma - heatOnBaseline) >= HEAT_RESPONSE_SHIFT_C)
+        heatShiftSeen = true;
+    if (heatShiftArmed && !heatShiftSeen && onMs >= HEAT_RESPONSE_MS) {
+        logEvent("NO HEAT RESPONSE: A-B did not shift with SSR on; check element, SSR, contactor, LOW spare poles, sensors");
+        raiseFault(FaultCode::HEATER_CONTACTOR_FAULT, true);
+        return;
+    }
+
+    // Backup: the tub (cooler probe) must rise over long heating.
+    if (!isfinite(heatRiseStartC)) { heatRiseStartC = tubC; heatRiseOnMs = 0; }
+    heatRiseOnMs += stepMs;
+    if (tubC - heatRiseStartC >= HEAT_RISE_MIN_C) { heatRiseStartC = tubC; heatRiseOnMs = 0; }
+    else if (heatRiseOnMs >= HEAT_RISE_WINDOW_MS) {
+        logEvent("NO HEAT RESPONSE: tub did not rise 0.15 C in 45 min of heating");
+        raiseFault(FaultCode::HEATER_CONTACTOR_FAULT, true);
+    }
+}
+
 void monitorHeaterTemperatures()
 {
     if (!temperatureSystemHealthy())
@@ -1757,15 +1829,9 @@ void monitorHeaterTemperatures()
         }
     } else flowRiseSinceMs = 0;
 #if !SPA_BENCH_DEMO
-    // V0.9.1: with water flowing, a working 2 kW element always opens an outlet/inlet
-    // difference within two minutes. None means: element open, SSR/contactor/spare-pole
-    // not making, or frozen sensor readings. Demo injects temperatures, so Main only.
-    if (spa.heaterSSR && spa.actualPump == PumpMode::LOW_SPEED &&
-        millis() - spa.heaterStartedMs >= HEAT_RESPONSE_MS &&
-        isfinite(spa.tempDifference) && spa.tempDifference < HEAT_RESPONSE_MIN_DIFF_C) {
-        logEvent("NO HEAT RESPONSE: check element, SSR, contactor, LOW spare poles, sensors");
-        raiseFault(FaultCode::HEATER_CONTACTOR_FAULT, true);
-    }
+    // No response means: element open, SSR/contactor/spare-pole not making, or frozen
+    // sensor readings. Demo injects temperatures, so Main only.
+    checkHeatResponse();
 #endif
 }
 
@@ -2221,7 +2287,7 @@ String executeCommand(String line) {
         if (!configurationValid || (!SPA_BENCH_DEMO && !adcAvailable))
             return "REJECTED: repair configuration/ADC and restart";
         manualPumpRequest = false; heatPumpNeeded = false;
-        allHeaterOutputsOff(); spa.fault = FaultCode::NONE; spa.lockedOut = false;
+        allHeaterOutputsOff(); resetHeatResponse(); spa.fault = FaultCode::NONE; spa.lockedOut = false;
         spa.heatQualificationPassed = false; spa.thermostatHeating = false;
         if (!persistSafety()) return "ERROR: fault acknowledgement not saved; outputs stopped";
         requestPumpMode(PumpMode::OFF); logEvent("FAULT RESET"); return "OK: fault reset; pump OFF";
