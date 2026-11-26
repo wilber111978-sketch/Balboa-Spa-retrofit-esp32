@@ -1,3 +1,5 @@
+> **RETIRED, reference only.** The VL260/MVP260 topside has been replaced by the V0.8 GC9A01 topside. Pin numbers here are historical; see ../MASTER_GPIO_MAP.md.
+
 # MVP260 Interface Notes
 
 ## Goal

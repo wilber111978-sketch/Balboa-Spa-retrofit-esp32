@@ -78,6 +78,29 @@ At representative spa temperatures this gives comfortably measurable voltages:
 - 42.5 °C / 14.7 kΩ: ~1.09 V
 - 52.5 °C / 10 kΩ: ~0.825 V
 
+## Fitted front end (Nov 2026)
+
+Each sensor has its own divider; the two channels share only a filtered sensor rail.
+
+```
+3V3 --100 Ω--+-- sensor rail (≈3.27 V) ----------------> ADS1115 A2 (when fitted)
+             |
+          100 µF (+ to rail, − to GND)
+
+sensor rail --30 kΩ--+-- junction A --1 kΩ--+--> GPIO8 now / ADS1115 A0 later
+                     |                      |
+                 M7 sensor A             100 nF (ceramic, at the input pin)
+                     |                      |
+                    GND                    GND
+(sensor B identical: 30 kΩ, 1 kΩ, 100 nF → GPIO9 now / ADS1115 A1 later)
+```
+
+- Parts: 2 × 30 kΩ, 2 × 1 kΩ, 2 × 100 nF ceramic ("104"), 1 × 100 Ω (Jaycar RR0548), 1 × 100 µF electrolytic. All grounds to the Waveshare header GND.
+- Never share one 30 kΩ between both sensors: the sensors would be in parallel and A/B could not be told apart.
+- **Now (onboard ADC):** `SPA_TEMP_ADC_ADS1115 0`, `RAIL_REF_FITTED false`. Readings run about 0.25 °C warm because the firmware assumes a 3.30 V rail; the offset is the same on both channels.
+- **When the ADS1115 is fitted:** move the outputs to A0/A1, add the rail to A2, then wire VDD→3V3 (never 5 V: the board's I²C pull-ups go to VDD), GND, SCL→GPIO9, SDA→GPIO8, ADDR→GND (address 0x48), ALRT unconnected. Set `SPA_TEMP_ADC_ADS1115 1` and `RAIL_REF_FITTED true` (ratiometric correction from A2). Remove the sensor outputs from GPIO8/9 first; those pins become the I²C bus. Check the chip is marked BOGI (BRPI is an ADS1015) and that raw counts are not all multiples of 16.
+- Bench checks (unpowered): rail–junction 30 kΩ each, junction A–junction B 60 kΩ, junction–output 1 kΩ, 3V3–rail 100 Ω. Powered with sensors unplugged, both outputs sit near the rail (open-sensor fault); with sensors at about 25 °C, about 1.6 V.
+
 ## Future calibration / conversion strategy
 
 Use the Balboa published resistance table as the primary conversion reference.

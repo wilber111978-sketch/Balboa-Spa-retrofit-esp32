@@ -22,7 +22,7 @@ int main(int argc,char**argv){
  if(test=="watchdog-restart"||test=="brownout-restart"){
   require(serviceMode,"abnormal restart uses existing Service lockout");require(!command(Key::Jets),"panel cannot bypass restart lockout");
  }else{
-  spa.fault=FaultCode::NONE;spa.lockedOut=false;serviceMode=false;storageHealthy=true;healthy();sensorsAcquired=true;
+  spa.fault=FaultCode::NONE;spa.lockedOut=false;serviceMode=false;storageHealthy=true;healthy();sensorsAcquired=true;primingActive=false;
   if(test=="startup"){
    loop();require(!topside::taskStarted,"host/demo requires no physical display");require(topside::pendingView.screen==Screen::Normal,"normal screen startup");
    require(strstr(topside::pendingView.lines[5],"INHIBITED"),"commissioning inhibition visible");
@@ -37,8 +37,16 @@ int main(int argc,char**argv){
   }else if(test=="preview"){
    require(command(Key::Up),"target accepted");auto s=topsideState();require(topsideModel.view(s,millis()+4999).screen==Screen::Adjust,"preview before 5s");require(topsideModel.view(s,millis()+5000).screen==Screen::Normal,"preview ends at 5s");
    command(Key::Up);fakeMs+=4000;command(Key::Light);require(topsideModel.view(topsideState(),millis()+4999).screen==Screen::Adjust,"other interaction extends preview");
+  }else if(test=="v09-priming-end"){
+   primingActive=true;primingUntilMs=millis()+PRIMING_MS;auto t=config.setpointC;require(command(Key::Up),"Up during priming");require(!primingActive&&config.setpointC==t,"Up ends priming, setpoint unchanged");
+  }else if(test=="v09-light-colour"){
+   require(command(Key::Light),"light on");run(12000);auto p=lightProgram;require(command(Key::Light,Gesture::Long),"long Light while on");require(lightProgram==p%LIGHT_PROGRAM_COUNT+1,"next colour");require(topsideModel.view(topsideState(),millis()).screen!=Screen::Info,"no info screen while light on");
+  }else if(test=="v09-reading-age"){
+   circulatingWaterValid=true;lastCirculatingWaterC=37.2f;lastCirculatingWaterMs=millis();fakeMs+=6*60000;healthy();auto v=topsideModel.view(topsideState(),millis());require(strstr(v.large,"37.2")&&strstr(v.lines[1],"Updated 6 min ago"),"age shown after 5 min");
+  }else if(test=="v09-no-reading"){
+   circulatingWaterValid=false;auto v=topsideModel.view(topsideState(),millis());require(strstr(v.large,"--.-")&&strstr(v.lines[1],"Checking"),"--.- until first circulating reading");
   }else if(test=="jets-heating"){
-   spa.heaterSSR=true;require(command(Key::Jets)&&command(Key::Jets),"LOW then HIGH high-level request");run(10000);require(spa.actualPump==PumpMode::HIGH_SPEED,"baseline sequences HIGH");require(!spa.heaterSSR,"HIGH excludes heater");require(command(Key::Jets),"Jets OFF request");require(!manualPumpRequest,"OFF releases manual demand only");
+   spa.heaterSSR=true;require(command(Key::Jets),"LOW request");run(INPUT_LOCKOUT_MS);require(command(Key::Jets),"V0.9: HIGH accepted after 2 s lockout");run(10000);require(spa.actualPump==PumpMode::HIGH_SPEED,"baseline sequences HIGH");require(!spa.heaterSSR,"HIGH excludes heater");require(command(Key::Jets),"Jets OFF request");require(!manualPumpRequest,"OFF releases manual demand only");
   }else if(test=="service"){
    executeCommand("service on");for(auto k:{Key::Jets,Key::Light,Key::Up,Key::Down})require(!command(k),"Service rejects normal requests");require(topsideModel.view(topsideState(),millis()).screen==Screen::Service,"Service display");require(command(Key::Light,Gesture::Long),"information is read-only");require(topsideModel.view(topsideState(),millis()).screen==Screen::Service,"Service overrides information");
   }else if(test=="fault-priority"){

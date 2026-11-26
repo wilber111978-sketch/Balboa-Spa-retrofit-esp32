@@ -1,4 +1,5 @@
 #pragma once
+#define ESP_RST_UNKNOWN 0
 #define ESP_RST_POWERON 1
 #define ESP_RST_PANIC 4
 #define ESP_RST_INT_WDT 5

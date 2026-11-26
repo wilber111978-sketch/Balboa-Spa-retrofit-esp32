@@ -1,6 +1,6 @@
 # Balboa Spa Retrofit ESP32
 
-Modern retrofit controller for a Fisher 3-person spa originally using a **Balboa GS100** power/control board and **Balboa MVP260** topside panel.
+Modern retrofit controller for a Fisher 3-person spa originally using a **Balboa GS100** power/control board and **Balboa VL260 (MVP260)** topside panel. The topside is replaced by a custom GC9A01 round display with four buttons (V0.8).
 
 The goal is to retain the OEM spa experience and existing harnesses, while replacing the aging GS100 with an ESP32-S3 based controller that adds:
 
@@ -8,13 +8,15 @@ The goal is to retain the OEM spa experience and existing harnesses, while repla
 - Google Home via Matter
 - a local custom web interface
 - OEM-style M7 heater/flow logic
-- familiar short fault codes on the MVP260
+- familiar short fault codes on the custom topside
 - detailed fault history and probable-cause diagnostics
 - solar-priority heating
 - proper motor contactors and SSR heater switching
 - future pH / ORP monitoring and dosing support
 
-> **Status:** reviewed firmware **V0.6.2** is now tracked under [`firmware/`](firmware/README.md). Main and Demo compile and 141 host scenarios pass. Both physical heater outputs remain inhibited; hardware commissioning is outstanding. The original sketches remain frozen; separate V0.6.3 live sketches now provide the JSON API/static UI while preserving the same physical heater inhibition.
+> **V0.9 (current development branch `dev/v0.9`):** adds onboard-ADC support (no ADS1115 needed yet), UV/ozone on both pump speeds, a 20 min manual LOW timeout, a 35 °C economy floor outside the solar window, circulating-water temperature with reading age, polls in every mode, priming, freeze protection, a 2 s input lockout, light colours and 40 min timer, no-flow retry, a hot-water warning, a sensor-agreement check and an SSR proof window. Heater outputs stay locked. See [docs/V0_9_CHANGES.md](docs/V0_9_CHANGES.md); wiring in [docs/HARDWARE_INTERFACE.md](docs/HARDWARE_INTERFACE.md); pins in [docs/MASTER_GPIO_MAP.md](docs/MASTER_GPIO_MAP.md).
+>
+> **Previous status:** reviewed firmware **V0.6.2** is now tracked under [`firmware/`](firmware/README.md). Main and Demo compile and 141 host scenarios pass. Both physical heater outputs remain inhibited; hardware commissioning is outstanding. The original sketches remain frozen; separate V0.6.3 live sketches now provide the JSON API/static UI while preserving the same physical heater inhibition.
 
 ---
 

@@ -11,6 +11,7 @@
 - ferrule crimping tools
 - modular/RJ-style breakout / termination adapter for low-voltage panel work
 - Molex spa harness connector parts / crimp contacts as ordered
+- 12 V AC power supply for the spa light (switched by CH6)
 
 ## Ordered / pending or to confirm
 
@@ -19,9 +20,11 @@
 - independent heater high-limit device
 - DIN terminal/distribution blocks
 - coil suppressors
-- MVP260 interface components
-- ADS1115 module
-- 4-channel optocoupler module
+- ADS1115 module: NOT yet purchased. V0.9 runs on the onboard ADC until it is fitted (one build flag)
+- independent high-limit, manual reset, 44 °C, with a second contact or opto for the status input (GPIO16)
+- thermal fuse ~70–75 °C, mains-rated, for the heater body
+- 2 x 30 kΩ 0.1 % divider resistors, 1 kΩ + 100 nF input filters
+- GC9A01 round TFT + 4 waterproof buttons (V0.8 topside)
 - low-side MOSFET module for SSR drive (existing farm-sensor spare may be reused after verification)
 
 ## Bench-layout note

@@ -71,19 +71,22 @@ export function controlsBlocked(state, lastUpdated, now = Date.now()) {
   return !state || !state.controller.online || !state.network.wifi_connected || state.mode.service || state.fault.active || isStale(lastUpdated,now);
 }
 export function validateRequest(kind,payload) {
-  const fields={target:['target_c'],jets:['requested'],light:['on'],mode:['heating'],schedule:['enabled','start','end','days'],'service-mode':['enabled','confirm'],'fault-reset':['confirm']};
+  const fields={target:['target_c'],jets:['requested'],light:['on','program'],mode:['heating'],schedule:['enabled','start','end','days'],'service-mode':['enabled','confirm'],'fault-reset':['confirm'],'firmware-arm':['confirm'],'heater-restart-ack':['confirm']};
   if(!payload||typeof payload!=='object'||Array.isArray(payload)||!fields[kind]||Object.keys(payload).some(key=>!fields[kind].includes(key)))throw new Error('Unsupported request fields.');
   if (kind==='target' && (Object.keys(payload).length!==1 || !Number.isFinite(payload.target_c) || payload.target_c<LIMITS.min || payload.target_c>LIMITS.max || Math.abs(payload.target_c/LIMITS.step-Math.round(payload.target_c/LIMITS.step))>1e-8)) throw new Error('Target must be 20–40°C in 0.5°C steps.');
   if (kind==='jets' && !['OFF','LOW','HIGH'].includes(payload.requested)) throw new Error('Invalid jets request.');
   if (kind==='light' && typeof payload.on!=='boolean') throw new Error('Light requires an on/off request.');
+  if (kind==='light' && 'program' in payload &&
+      (!payload.on || !Number.isInteger(payload.program) || payload.program < 1 || payload.program > 255))
+    throw new Error('Choose a valid light program.');
   if (kind==='mode' && !['NORMAL','SOLAR_PRIORITY','OFF'].includes(payload.heating)) throw new Error('Invalid heating mode.');
   if (kind==='service-mode' && (typeof payload.enabled!=='boolean' || payload.confirm!==true)) throw new Error('Service change requires explicit confirmation.');
-  if (kind==='fault-reset' && payload.confirm!==true) throw new Error('Fault acknowledgement requires confirmation.');
+  if (['fault-reset','firmware-arm','heater-restart-ack'].includes(kind) && payload.confirm!==true) throw new Error('Fault acknowledgement requires confirmation.');
   if (kind==='schedule') {
     const time=/^(?:[01]\d|2[0-3]):[0-5]\d$/;
     if (typeof payload.enabled!=='boolean' || !time.test(payload.start) || !time.test(payload.end) || !Array.isArray(payload.days) || !payload.days.length || new Set(payload.days).size!==payload.days.length || payload.days.some(d=>!Number.isInteger(d)||d<1||d>7)) throw new Error('Choose valid times and at least one unique weekday.');
   }
-  if (!['target','jets','light','mode','schedule','service-mode','fault-reset'].includes(kind)) throw new Error('Unsupported high-level request.');
+  if (!['target','jets','light','mode','schedule','service-mode','fault-reset','firmware-arm','heater-restart-ack'].includes(kind)) throw new Error('Unsupported high-level request.');
 }
 // Validate transport data before a partial/unsafe response replaces known state.
 export function validateState(s) {
