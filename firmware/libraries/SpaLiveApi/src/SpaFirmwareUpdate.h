@@ -2,6 +2,7 @@
 
 #include <ArduinoOTA.h>
 #include <Update.h>
+#include <atomic>
 #include <esp_ota_ops.h>
 #include <esp_arduino_version.h>
 
@@ -22,6 +23,12 @@ constexpr uint32_t listenWindowMs = 10UL * 60UL * 1000UL;
 constexpr uint32_t verifyWindowMs = 60UL * 1000UL;
 constexpr uint32_t healthyWindowMs = 10UL * 1000UL;
 static bool pendingVerification = false;
+// V0.9.3: the first live OTA test left the hold set after the 10 min window closed with no
+// upload, which also blocked leaving Service Mode until a restart. The listener now drops the
+// hold before tearing ArduinoOTA down, and the loop clears a hold left past the window.
+static std::atomic<bool> listenerRunning{false};
+static uint32_t armedAt = 0;
+static bool staleLogged = false;
 static uint32_t verificationStarted = 0;
 static uint32_t healthySince = 0;
 
@@ -38,8 +45,10 @@ static void listen(void *)
         ArduinoOTA.handle();
         vTaskDelay(pdMS_TO_TICKS(25));
     }
+    if (!Update.isRunning()) firmwareUpdateHold.store(false);
     ArduinoOTA.end();
     firmwareUpdateHold.store(false);
+    listenerRunning.store(false);
     vTaskDelete(nullptr);
 }
 
@@ -50,8 +59,13 @@ static bool arm()
         pendingVerification || !esp_ota_get_next_update_partition(nullptr)) {
         return false;
     }
+    if (listenerRunning.load()) return false;   // previous listener never finished: restart first
     if (firmwareUpdateHold.exchange(true)) return false;
+    listenerRunning.store(true);
+    armedAt = millis();
+    staleLogged = false;
     if (xTaskCreate(listen, "spa-ota", 12288, nullptr, 1, nullptr) != pdPASS) {
+        listenerRunning.store(false);
         firmwareUpdateHold.store(false);
         return false;
     }
@@ -73,8 +87,22 @@ static void beginVerification()
     }
 }
 
+static void clearStaleHold()
+{
+    if (pendingVerification || !firmwareUpdateHold.load() || Update.isRunning()) return;
+    if (millis() - armedAt < listenWindowMs + 60000UL) return;
+    firmwareUpdateHold.store(false);
+    if (!staleLogged) {
+        staleLogged = true;
+        logEvent(listenerRunning.load()
+            ? "OTA WINDOW OVERRAN: hold cleared; restart the controller before the next Wi-Fi upload"
+            : "OTA WINDOW OVERRAN: hold cleared");
+    }
+}
+
 static void verifyAfterLoop()
 {
+    clearStaleHold();
     if (!pendingVerification) return;
     const uint32_t now = millis();
     if (now - verificationStarted >= verifyWindowMs) {

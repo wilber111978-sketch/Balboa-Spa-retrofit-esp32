@@ -67,7 +67,7 @@
     "sim/run_sim.py": "6997ad0c72d1157827ce1bc1c4ebc24f9a3af03f3c945bffe3410ec755bea7aa",
     "libraries/SpaController/src/M7HeaterCycle.h": "1f063cb96a799914dca36ef148f64c023fff1708bcff24309d1b18b969af3bc1",
     "libraries/SpaController/src/M7Qualification.h": "6e2b3ee23aa981e75ccbc2909bc038f4e7c9d240aa700604d38a5f178c2d6898",
-    "libraries/SpaLiveApi/src/SpaFirmwareUpdate.h": "5149df1687b3bb9593ac424a4e2ac5bf379746602ad67f72cdeb485e465951db",
+    "libraries/SpaLiveApi/src/SpaFirmwareUpdate.h": "a9ad5cb1eadd8b450263351732bd171653ea6157fa897f22417848ae7a15edc0",
     "sim/scenarios_live.inc": "5a5029c34b723a9a1eebb37995637d5abb9be94a6dd873ced2ac712c0eb2f3dc",
     "libraries/SpaLiveApi/src/SpaMatter.h": "d8d0eea34fe190468d7be2d75aade81f6004655fe4b30eecc34287336734f1d7",
     "live-tests/matter.cpp": "2f889e39c5c52571f704c78fa74f285b6124653c0db6f22f3870fc76d51a2d5c",
