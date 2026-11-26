@@ -52,6 +52,12 @@ inline void publish() {
 }
 
 inline void begin() {
+    // The controller is already on the home Wi-Fi with its own credentials, so pair on the
+    // network: Espressif warns that BLE commissioning conflicts with sketch-held Wi-Fi
+    // credentials (first Google Home attempt 2026-11-26: "Can't reach device").
+    Matter.setBLECommissioningEnabled(false);
+    Matter.setVendorName("Fisher");
+    Matter.setProductName("Fisher Spa");
     lightPublished.store(spa.light);
     wakePublished.store(readyMode);
     temperature.begin(isfinite(spa.waterTemperature) ? spa.waterTemperature : 0.0);

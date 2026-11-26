@@ -5,6 +5,8 @@
 using spaMatter::light; using spaMatter::wake; using spaMatter::temperature;
 int main(int argc,char **argv){std::string test=argc>1?argv[1]:"begin";fakeMv[8]=fakeMv[9]=1650;setup();primingActive=false;run(3000);require(spa.fault==FaultCode::NONE,"healthy sensors");
  require(Matter.begins==1&&light.begun==1&&wake.begun==1,"bridge started once after the controller");
+ require(!Matter.ble&&Matter.namesSet==2,"on-network pairing (BLE commissioning off) and names set before Matter.begin");
+ require(WiFi.ipv6,"station IPv6 enabled for Matter");
  if(test=="begin"){step();require(!light.getOnOff()&&!wake.getOnOff(),"starts mirroring real state");}
  else if(test=="temperature"){run(11000);require(isfinite(spa.waterTemperature),"valid reading");require(fabs(temperature.value-spa.waterTemperature)<0.01,"publishes controller water temperature");}
  else if(test=="light"){run(3000);light.googleSets(true);step();require(spa.light&&pins[46],"Google light on uses the dashboard command");run(3000);light.googleSets(false);step();require(!spa.light&&!pins[46],"Google light off");}

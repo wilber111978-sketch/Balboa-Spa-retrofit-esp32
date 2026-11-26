@@ -18,4 +18,4 @@ inline int connect(std::string input=""){int id=next++;sockets[id]=std::make_sha
 }
 class WiFiClient {int id=-1;public:WiFiClient(){}WiFiClient(int x):id(x){}operator bool()const{return id>=0&&MockSockets::sockets[id]->active;}int fd()const{return id;}void stop(){if(id>=0)MockSockets::sockets[id]->active=false;}};
 class WiFiServer {public:explicit WiFiServer(uint16_t){}void begin(){}WiFiClient accept(){if(MockSockets::pending.empty())return {};int id=MockSockets::pending.front();MockSockets::pending.pop_front();return WiFiClient(id);}};
-struct WiFiStub{int state=3;int reconnects=0;void mode(int){}void setAutoReconnect(bool){}void begin(const char*,const char*){}int RSSI(){return -55;}MockIP localIP(){return {};}int status(){return state;}void reconnect(){reconnects++;}};inline WiFiStub WiFi;
+struct WiFiStub{int state=3;int reconnects=0;void mode(int){}void setAutoReconnect(bool){}bool ipv6=false;bool enableIPv6(bool e=true){ipv6=e;return true;}void begin(const char*,const char*){}int RSSI(){return -55;}MockIP localIP(){return {};}int status(){return state;}void reconnect(){reconnects++;}};inline WiFiStub WiFi;

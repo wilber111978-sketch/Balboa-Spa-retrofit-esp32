@@ -4,7 +4,7 @@
   "note": "V0.9 pinned sources. FROZEN_V062.json is kept for history only.",
   "files": {
     "libraries/SpaController/src/BoundedWebServer.h": "3411eba1fc9c91975bcfae93375ac66a9bf871efd888a67ae0e1e855cee1ae4f",
-    "libraries/SpaController/src/SpaController.h": "105279a67a097101ddf3ff8ee381b0ca169e26ee5183caabf7dce415e27d6c14",
+    "libraries/SpaController/src/SpaController.h": "d2ebf57212f2af87cfcb92299130973b542bc9bc18dd72760a3e0162f2a142fa",
     "libraries/SpaController/src/SpaPersistence.h": "d4a8c9341a865865b52400b00e2f11a79f78daca47c8306c79b443502bf6b3b7",
     "libraries/SpaLiveApi/src/LiveWebServer.h": "9bf8257c04f71a85c4e881f5d437dee0c70a1724736522f7b6267c93927e1f0a",
     "libraries/SpaLiveApi/src/SpaLiveApi.h": "a4cd706286cc1102067cb9f4282c9a6ffb54d7d9b5488a7283ee69efe45e4af3",
@@ -22,7 +22,7 @@
     "tests/Adafruit_ADS1X15.h": "4075d5a47d9ffdeb386cbc502cea0657c2764efe2a5f59d74b1a88fb4f4d4e2b",
     "tests/Arduino.h": "714ced4fe6f5bdd512a391c478688f53fd5583ad8a24507e4f1e84c471a8b0a0",
     "tests/Preferences.h": "0ff8cc5d7cf775d00bc80eced10cdb201dd90bbc83275babe1abd463dffb4588",
-    "tests/WiFi.h": "6f759517e3d4ebfefe502f4842608d93d48d79371aacf5b0cb21bc19c10d1097",
+    "tests/WiFi.h": "8e6574dae0cd1aa102e26436778c8422bfd995734464696d033559da05ec243a",
     "tests/Wire.h": "04bc67baa1de84f522e693f56ae520d83534797c9f4d449826e86a67a80e246e",
     "tests/esp_system.h": "1d4bf68d95d142763c91317458a3fa41ef5c20d3128f9855294c8b555fda78bf",
     "tests/esp_task_wdt.h": "c4741e2531efd3125dfdd029ba66b3eeb1b1c10fb6d542a84a4533994a78436a",
@@ -34,7 +34,7 @@
     "tests/verify_invariants.py": "01873c8dfc0815f6959742888293eda3d49418f277c18b25dd8cae80cfcca9bf",
     "live-tests/api.cpp": "4a51b124ac9b1bde03dd2a80cea61b755b429d49e643ab2956e3c9803ba2298e",
     "live-tests/bridge.cpp": "367b69dd019c0b19a23c54ffa718d317904008832676adb9d89eeea57a6d1496",
-    "live-tests/WiFi.h": "6f759517e3d4ebfefe502f4842608d93d48d79371aacf5b0cb21bc19c10d1097",
+    "live-tests/WiFi.h": "8e6574dae0cd1aa102e26436778c8422bfd995734464696d033559da05ec243a",
     "live-tests/build_bridge.py": "c5239539de93e871c8557e5d727dc877f3e4f43aa2f85d9ac509e6c4cd2fa7b1",
     "live-tests/config.py": "40c7edc43d41fec57d5796d8493f3ef372a509b19ff8a058c736e3a80ee13a98",
     "live-tests/run_live.py": "b572c1183811439daf8102796e476f44e2e885407b21de92b5ea31ed4560bcfd",
@@ -69,8 +69,8 @@
     "libraries/SpaController/src/M7Qualification.h": "6e2b3ee23aa981e75ccbc2909bc038f4e7c9d240aa700604d38a5f178c2d6898",
     "libraries/SpaLiveApi/src/SpaFirmwareUpdate.h": "a9ad5cb1eadd8b450263351732bd171653ea6157fa897f22417848ae7a15edc0",
     "sim/scenarios_live.inc": "5a5029c34b723a9a1eebb37995637d5abb9be94a6dd873ced2ac712c0eb2f3dc",
-    "libraries/SpaLiveApi/src/SpaMatter.h": "d8d0eea34fe190468d7be2d75aade81f6004655fe4b30eecc34287336734f1d7",
-    "live-tests/matter.cpp": "2f889e39c5c52571f704c78fa74f285b6124653c0db6f22f3870fc76d51a2d5c",
-    "live-tests/matter-stub/Matter.h": "dc1c2d03111ce06ab8ba9317df6d8356646e12bf210a937ed1229bb719570f60"
+    "libraries/SpaLiveApi/src/SpaMatter.h": "e6d3b0637fd816ceb4e2d80bf7c13128a25a701c6d6456ce9b2d976540459145",
+    "live-tests/matter.cpp": "202133506e39d08964df131fe1467c65b742a97d9b5d944c42678f8fe94c26f8",
+    "live-tests/matter-stub/Matter.h": "ddd7714a99011ea86740b8fe0f2f60b38c90048a816384bb6260adae0c1508d4"
   }
 }

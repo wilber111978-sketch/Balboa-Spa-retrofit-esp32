@@ -2161,6 +2161,11 @@ void setupWeb() {
         Serial.println("Wi-Fi disabled: configure SSID and web password"); return;
     }
     WiFi.mode(WIFI_STA); WiFi.setAutoReconnect(true);
+#if defined(SPA_MATTER) && SPA_MATTER
+    // Matter/Google Home reaches the controller over IPv6. Matter.begin() leaves Wi-Fi alone
+    // when the sketch started it, and Arduino does not enable station IPv6 by default.
+    WiFi.enableIPv6(true);
+#endif
     WiFi.begin(WIFI_SSID,WIFI_PASS); lastWifiAttempt=millis();
     configTzTime("AEST-10AEDT,M10.1.0,M4.1.0/3","pool.ntp.org","time.google.com");
     web.on("/", HTTP_GET, [](){
