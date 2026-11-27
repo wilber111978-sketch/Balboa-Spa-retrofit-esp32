@@ -179,3 +179,18 @@ Setup: add `#define SPA_MATTER 1` to `SpaMain_Live.ino`, keep the 16M (3MB APP/9
 - Install self-test with light colour decode (`COMMISSIONING_SELF_TEST.md`)
 - Local-only reset of latched faults via a topside button combination
 - Light program names and persistence of the last colour across power loss
+
+## V0.9.3 — live commissioning, 26–28 Nov 2026
+
+Changes made from the first supervised heater runs, the first Wi-Fi updates and the first Google Home pairing.
+
+| Area | Change | Why |
+|---|---|---|
+| Heater test (M7 qualification) | Pulse 18 s → **45 s**; baseline = mean of the last 10 s of circulation; recovery creep 0.10 → 0.15 °C | Spa is ~400 L with a 1.5 kW element and high LOW-speed flow. With an averaged baseline an 18 s pulse rose only 0.09–0.19 °C. The 45 s pulse gave 0.27 °C live. |
+| No-heat-response check (fault 14) | Was: \|A−B\| ≥ 0.25 °C after 2 min. Now: 15 s-smoothed signed A−B must shift ≥ 0.08 °C from the pre-heat reference within 3 min (skipped if re-energised within 3 min). Backup: the cooler probe must rise ≥ 0.15 °C per 45 min of heater-on time. | A working heater only moves A−B by 0.10–0.20 °C here; the old check faulted on every normal heating run. Replay of the live run: shift seen 30 s after SSR on. 1 h of live heating with no fault (20.8 → 23.9 °C). |
+| Wi-Fi update | Hold released when the 10 min window ends (and cleared by the loop if a window overruns); 409 now names the failing check and logs `OTA_REFUSED`; ArduinoOTA keeps off mDNS in Matter builds | Window expiry left uploads and Service exit blocked; a closing window crashed the Matter build. Upload with `espota.exe -i <spa IP> -p 3232 -P 52000 -a <password> -f <bin>` and a Windows firewall rule for TCP 52000. |
+| Google Home (Matter) | Station IPv6 enabled; BLE commissioning off (pair on the network); names set; fresh probe read after `Matter.begin()` | "Can't reach device" on first pairing; Espressif warns BLE commissioning conflicts with sketch-held Wi-Fi credentials. |
+| Dashboard | Plain names for faults 14 (Heater not heating) and 15 (Unexpected heat with heater off) | Showed as generic controller fault. |
+| Topside | Recovery controls: **Up+Down 3 s** acknowledge restart; **Light+Down 5 s, then Light** reset fault; **Jets+Light 5 s, then Jets** exit Service Mode; **Jets 5 s** emergency stop. Countdown/confirm prompts; any other key cancels; confirmation expires after 10 s. | Recovery was web-only. Same controller checks as the dashboard. |
+
+Known follow-ups: Settings/Diagnostics still show static "Matter not integrated" and do not reflect pairing; set a fixed DHCP address for the controller.
