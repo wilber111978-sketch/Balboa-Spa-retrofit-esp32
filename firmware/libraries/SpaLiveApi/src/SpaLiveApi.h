@@ -60,6 +60,14 @@ void liveRecord(const char *id,const char *title,FaultCode fault=FaultCode::NONE
     r.a=tempA.filteredC;r.b=tempB.filteredC;r.delta=spa.tempDifference;r.target=config.setpointC;r.pump=spa.actualPump;r.heater=spa.heaterSSR;r.uv=spa.uv;
     liveEventHead=(liveEventHead+1)%8;if(liveEventCount<8)++liveEventCount;
 }
+// Shared by the dashboard and the topside (V0.9.3): the same checks either way.
+bool liveRestartAck(){
+    if(SPA_BENCH_DEMO||serviceMode||primingActive||spa.lockedOut||spa.fault!=FaultCode::NONE||
+       !controlWatchdog||!liveInputsSafe()||spa.waterHot||spa.supplySag||spa.calibrationInhibit)return false;
+    if(heaterRestartHold){heaterRestartHold=false;liveRecord("HEATER_RESTART_ACK","Heater restart hold acknowledged");}
+    return true;
+}
+
 void liveObserveFault(){if(spa.fault!=liveObservedFault){liveObservedFault=spa.fault;if(spa.fault!=FaultCode::NONE){auto info=liveFaultInfo(spa.fault);liveRecord(info.id,info.title,spa.fault);}}}
 void liveFaultJSON(JsonObject d,FaultCode code,const LiveEvent *record=nullptr){
     auto info=liveFaultInfo(code);d["panel_code"]=info.panel;d["id"]=info.id;d["title"]=info.title;d["internal_code"]=(uint16_t)code;
@@ -145,14 +153,7 @@ void liveCommand(const std::string &path){
         if(!liveFields(obj,",confirm,",1)||!obj["confirm"].is<bool>()||!obj["confirm"].as<bool>()){
             liveReply(400,"Expected confirm:true");return;
         }
-        if(SPA_BENCH_DEMO||serviceMode||primingActive||spa.lockedOut||spa.fault!=FaultCode::NONE||
-           !controlWatchdog||!liveInputsSafe()||spa.waterHot||spa.supplySag||spa.calibrationInhibit){
-            liveReply(409,"Finish priming and clear any fault or Service Mode before acknowledging");return;
-        }
-        if(heaterRestartHold){
-            heaterRestartHold=false;
-            liveRecord("HEATER_RESTART_ACK","Heater restart hold acknowledged");
-        }
+        if(!liveRestartAck()){liveReply(409,"Finish priming and clear any fault or Service Mode before acknowledging");return;}
         liveReply(200,"Restart hold acknowledged; other heater checks still apply",true);return;
     }
     if(path=="target"){

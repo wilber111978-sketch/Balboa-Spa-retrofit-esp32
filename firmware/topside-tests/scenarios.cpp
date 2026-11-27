@@ -8,6 +8,8 @@ bool command(Key key,Gesture g=Gesture::Short){fakeMs+=300;return topsideCommand
 void inject(uint8_t mask){topsideInputs(millis(),mask);}
 void tick(uint32_t delta,uint8_t mask){fakeMs+=delta;inject(mask);}
 void shortPress(uint8_t mask){tick(300,mask);tick(40,mask);tick(40,0);tick(40,0);}
+void hold(uint8_t mask,uint32_t ms){for(uint32_t t=0;t<ms;t+=50){tick(50,mask);healthy();}}
+void release(){for(int i=0;i<6;i++){tick(50,0);healthy();}}
 struct MockCanvas {
  int x=0,y=0,size=1,writes=0;bool connected=true;unsigned delayMs=0;
  void fillScreen(int){}void setTextWrap(bool){}void setTextColor(int){}
@@ -73,6 +75,32 @@ int main(int argc,char**argv){
    require(spa.fault==FaultCode::OVERTEMP&&!pins[2]&&!pins[42],"fault processing while renderer delayed");require(!finished,"controller progressed before slow rendering ended");display.join();
   }else if(test=="persist-failure"){
    Preferences::failWrite=true;require(!command(Key::Up),"failed storage rejected");require(!storageHealthy&&!command(Key::Jets),"settings failure lockout retained");
+  }else if(test=="rec-ack-restart"){
+   inject(0);release();heaterRestartHold=true;hold(12,2500);require(heaterRestartHold,"not before 3 s");
+   require(strstr(topsideState().prompt,"in 1 s"),"countdown shown");release();require(heaterRestartHold,"early release does nothing");
+   hold(12,3100);release();require(SPA_BENCH_DEMO?heaterRestartHold:!heaterRestartHold,SPA_BENCH_DEMO?"Demo never acknowledges (same as web)":"Up+Down 3 s acknowledges restart");
+  }else if(test=="rec-reset-fault"){
+   inject(0);release();raiseFault(FaultCode::TEMP_DISAGREE,true);require(spa.fault!=FaultCode::NONE,"fault set");
+   hold(10,5100);release();require(spa.fault!=FaultCode::NONE,"hold alone only arms");require(strstr(topsideState().prompt,"Press LIGHT"),"asks for confirmation");
+   shortPress(2);require(spa.fault==FaultCode::NONE,"Light confirms reset");
+  }else if(test=="rec-reset-cancel"){
+   inject(0);release();raiseFault(FaultCode::TEMP_DISAGREE,true);hold(10,5100);release();shortPress(1);
+   require(spa.fault!=FaultCode::NONE,"another key cancels");require(spa.requestedPump==PumpMode::OFF,"cancel press is not a Jets command");
+  }else if(test=="rec-reset-unsafe"){
+   inject(0);release();raiseFault(FaultCode::TEMP_DISAGREE,true);ads.raw[0]=0;ads.raw[1]=0;hold(10,5100);release();shortPress(2);
+   require(SPA_BENCH_DEMO||spa.fault!=FaultCode::NONE,"reset refused while cause present (Main reads the real ADC; Demo injects temperatures)");
+  }else if(test=="rec-exit-service"){
+   inject(0);release();executeCommand("service on");require(serviceMode,"service on");
+   hold(3,5100);release();require(serviceMode,"hold alone only arms");shortPress(1);require(!serviceMode,"Jets confirms exit");
+  }else if(test=="rec-exit-timeout"){
+   inject(0);release();executeCommand("service on");hold(3,5100);release();tick(11000,0);shortPress(1);require(serviceMode,"confirmation expires after 10 s");
+  }else if(test=="rec-exit-with-fault"){
+   inject(0);release();executeCommand("service on");raiseFault(FaultCode::TEMP_DISAGREE,true);hold(3,5100);release();shortPress(1);require(serviceMode,"cannot exit Service with a fault");
+  }else if(test=="rec-estop"){
+   inject(0);release();require(!serviceMode,"running");hold(1,4900);require(!serviceMode,"not before 5 s");hold(1,200);release();require(serviceMode,"Jets 5 s = emergency stop");
+  }else if(test=="rec-no-bump"){
+   inject(0);release();executeCommand("service on");hold(3,4000);release();shortPress(1);require(serviceMode,"4 s bump does not arm");
+   executeCommand("service off confirm");release();hold(12,1000);release();shortPress(1);require(spa.requestedPump==PumpMode::LOW_SPEED,"normal Jets still works after an aborted combo");
   }else if(test=="schedule-unchanged"){
    auto mode=heatMode,start=solarStart,end=solarEnd;command(Key::Up);command(Key::Down);command(Key::Light);command(Key::Jets);require(heatMode==mode&&solarStart==start&&solarEnd==end,"UI never changes heating mode or schedule");
   }else require(false,"unknown scenario");

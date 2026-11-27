@@ -1,13 +1,14 @@
 #pragma once
 #define SPA_LIVE_EXTERNAL_ENTRYPOINTS 1
-#define SPA_LIVE_VERSION "0.9.2-topside"
-#define SPA_LIVE_BUILD "gc9a01-ui-4"
+#define SPA_LIVE_VERSION "0.9.3-topside"
+#define SPA_LIVE_BUILD "gc9a01-ui-5"
 #include <SpaLiveApi.h>
 #include "TopsideModel.h"
 #include "TopsideDisplay.h"
 static topside::Buttons topsideButtons;
 static topside::Model topsideModel;
 static topside::Screensaver topsideScreensaver;
+static topside::RecoveryInput topsideRecovery;
 static char topsideFeedback[40]={};static uint32_t topsideFeedbackAt=0;
 static void topsideMessage(const char*text){topside::copy(topsideFeedback,sizeof(topsideFeedback),text);topsideFeedbackAt=millis();}
 static bool topsideCommand(topside::Event e){
@@ -42,11 +43,37 @@ static bool topsideCommand(topside::Event e){
     if(e.key==Key::Up||e.key==Key::Down)topsideModel.acceptedTemperature(millis());
     topsideMessage("Request accepted");liveRecord("TOPSIDE_REQUEST",command.c_str());return true;
 }
+// V0.9.3 recovery at the tub; every action goes through the controller's normal checks.
+static void topsideRecover(topside::Recovery r){
+    using topside::Recovery;String res;const char*msg="";
+    if(r==Recovery::AckRestart){
+        if(!heaterRestartHold)msg="No restart hold to clear";
+        else msg=liveRestartAck()?"Restart acknowledged":"Refused: priming/fault/Service";
+    }else if(r==Recovery::ResetFault){
+        if(spa.fault==FaultCode::NONE)msg="No fault to reset";
+        else{res=executeCommand("resetfault");msg=res.startsWith("OK")?"Fault reset":res.startsWith("REJECTED: unsafe")?"Refused: cause still present":"Refused: see dashboard";}
+    }else if(r==Recovery::ExitService){
+        if(!serviceMode)msg="Not in Service Mode";
+        else{res=executeCommand("service off confirm");msg=res.startsWith("OK")?"Service Mode off":"Refused: fault or update active";}
+    }else if(r==Recovery::EmergencyStop){
+        res=executeCommand("service on");msg=res.startsWith("OK")?"STOPPED: Service Mode on":"Stopped; save failed";
+    }
+    topsideMessage(msg);
+    std::string rec=std::string(topside::recoveryName(r))+": "+msg;liveRecord("TOPSIDE_RECOVERY",rec.c_str());
+}
 inline void topsideInputs(uint32_t now,uint8_t pressed){
     // A press while the screen is dark only wakes it: the button handler never sees it.
     // Fault/Service keep the screen lit.
     bool wakeOnly=topsideScreensaver.input(now,pressed,serviceMode||spa.fault!=FaultCode::NONE);
-    auto event=topsideButtons.poll(now,wakeOnly?0:pressed);
+    uint8_t mask=wakeOnly?0:pressed;
+    auto held=topsideRecovery.poll(now,mask);
+    auto event=topsideButtons.poll(now,mask);
+    if(held!=topside::Recovery::None){topsideRecover(held);return;}
+    if(topsideRecovery.pending!=topside::Recovery::None&&event.key!=topside::Key::None){
+        auto r=topsideRecovery.confirm(event);
+        if(r!=topside::Recovery::None)topsideRecover(r);else topsideMessage("Cancelled");
+        return;
+    }
     if(topsideButtons.stuck)topsideMessage("Button stuck: release all buttons");
     else topsideCommand(event);
 }
@@ -64,6 +91,12 @@ static topside::State topsideState(){
     auto f=liveFaultInfo(spa.fault);topside::copy(s.faultId,sizeof(s.faultId),f.id);topside::copy(s.description,sizeof(s.description),f.title);
     topside::copy(s.mode,sizeof(s.mode),heatMode==1?"Solar Priority":heatMode==2?"Manual request":"Heating OFF");
     if(uint32_t(millis()-topsideFeedbackAt)<3000)topside::copy(s.feedback,sizeof(s.feedback),topsideFeedback);
+    s.restartHold=heaterRestartHold;
+    if(topsideRecovery.holding!=topside::Recovery::None)
+        snprintf(s.prompt,sizeof(s.prompt),"%.20s in %d s",topside::recoveryName(topsideRecovery.holding),topsideRecovery.secondsLeft);
+    else if(topsideRecovery.pending!=topside::Recovery::None)
+        snprintf(s.prompt,sizeof(s.prompt),"%s? Press %s",topsideRecovery.pending==topside::Recovery::ResetFault?"Reset fault":"Exit Service",
+                 topsideRecovery.pendingKey==topside::Key::Jets?"JETS":"LIGHT");
     return s;
 }
 #if SPA_BENCH_DEMO

@@ -150,6 +150,60 @@
     "output": "PASS v09-no-reading\n"
   },
   {
+    "build": "Main",
+    "case": "rec-ack-restart",
+    "passed": true,
+    "output": "PASS rec-ack-restart\n"
+  },
+  {
+    "build": "Main",
+    "case": "rec-reset-fault",
+    "passed": true,
+    "output": "PASS rec-reset-fault\n"
+  },
+  {
+    "build": "Main",
+    "case": "rec-reset-cancel",
+    "passed": true,
+    "output": "PASS rec-reset-cancel\n"
+  },
+  {
+    "build": "Main",
+    "case": "rec-reset-unsafe",
+    "passed": true,
+    "output": "PASS rec-reset-unsafe\n"
+  },
+  {
+    "build": "Main",
+    "case": "rec-exit-service",
+    "passed": true,
+    "output": "PASS rec-exit-service\n"
+  },
+  {
+    "build": "Main",
+    "case": "rec-exit-timeout",
+    "passed": true,
+    "output": "PASS rec-exit-timeout\n"
+  },
+  {
+    "build": "Main",
+    "case": "rec-exit-with-fault",
+    "passed": true,
+    "output": "PASS rec-exit-with-fault\n"
+  },
+  {
+    "build": "Main",
+    "case": "rec-estop",
+    "passed": true,
+    "output": "PASS rec-estop\n"
+  },
+  {
+    "build": "Main",
+    "case": "rec-no-bump",
+    "passed": true,
+    "output": "PASS rec-no-bump\n"
+  },
+  {
     "build": "Demo",
     "case": "startup",
     "passed": true,
@@ -298,5 +352,59 @@
     "case": "v09-no-reading",
     "passed": true,
     "output": "PASS v09-no-reading\n"
+  },
+  {
+    "build": "Demo",
+    "case": "rec-ack-restart",
+    "passed": true,
+    "output": "PASS rec-ack-restart\n"
+  },
+  {
+    "build": "Demo",
+    "case": "rec-reset-fault",
+    "passed": true,
+    "output": "PASS rec-reset-fault\n"
+  },
+  {
+    "build": "Demo",
+    "case": "rec-reset-cancel",
+    "passed": true,
+    "output": "PASS rec-reset-cancel\n"
+  },
+  {
+    "build": "Demo",
+    "case": "rec-reset-unsafe",
+    "passed": true,
+    "output": "PASS rec-reset-unsafe\n"
+  },
+  {
+    "build": "Demo",
+    "case": "rec-exit-service",
+    "passed": true,
+    "output": "PASS rec-exit-service\n"
+  },
+  {
+    "build": "Demo",
+    "case": "rec-exit-timeout",
+    "passed": true,
+    "output": "PASS rec-exit-timeout\n"
+  },
+  {
+    "build": "Demo",
+    "case": "rec-exit-with-fault",
+    "passed": true,
+    "output": "PASS rec-exit-with-fault\n"
+  },
+  {
+    "build": "Demo",
+    "case": "rec-estop",
+    "passed": true,
+    "output": "PASS rec-estop\n"
+  },
+  {
+    "build": "Demo",
+    "case": "rec-no-bump",
+    "passed": true,
+    "output": "PASS rec-no-bump\n"
   }
 ]

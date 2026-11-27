@@ -4,7 +4,7 @@ import os,subprocess,json
 root=Path(__file__).resolve().parents[1];out=root/'topside-logs';out.mkdir(exist_ok=True)
 base=['g++','-std=c++17','-Wall','-Wextra','-Werror','-pthread','-DSPA_WIFI_SSID="test-network"','-DSPA_WEB_PASS="test-password-only"','-DSPA_TEMP_ADC_ADS1115=1']
 for p in [root/'live-tests',root/'tests',root/'libraries/SpaLiveApi/src',root/'libraries/SpaController/src',root/'libraries/SpaTopside/src',Path(os.environ['ARDUINOJSON_SRC'])]:base+=['-I'+str(p)]
-cases='startup debounce light-long repeat limits preview jets-heating service fault-priority invalid-temperature stuck boot-held wifi-loss rapid-conflicts simultaneous display-disconnect watchdog-restart brownout-restart render-delay persist-failure schedule-unchanged v09-priming-end v09-light-colour v09-reading-age v09-no-reading'.split()
+cases='startup debounce light-long repeat limits preview jets-heating service fault-priority invalid-temperature stuck boot-held wifi-loss rapid-conflicts simultaneous display-disconnect watchdog-restart brownout-restart render-delay persist-failure schedule-unchanged v09-priming-end v09-light-colour v09-reading-age v09-no-reading rec-ack-restart rec-reset-fault rec-reset-cancel rec-reset-unsafe rec-exit-service rec-exit-timeout rec-exit-with-fault rec-estop rec-no-bump'.split()
 results=[]
 for mode in (0,1):
  exe=out/f'topside-{mode}'
