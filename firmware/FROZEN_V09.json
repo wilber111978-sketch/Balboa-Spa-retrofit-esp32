@@ -7,7 +7,7 @@
     "libraries/SpaController/src/SpaController.h": "d2ebf57212f2af87cfcb92299130973b542bc9bc18dd72760a3e0162f2a142fa",
     "libraries/SpaController/src/SpaPersistence.h": "d4a8c9341a865865b52400b00e2f11a79f78daca47c8306c79b443502bf6b3b7",
     "libraries/SpaLiveApi/src/LiveWebServer.h": "9bf8257c04f71a85c4e881f5d437dee0c70a1724736522f7b6267c93927e1f0a",
-    "libraries/SpaLiveApi/src/SpaLiveApi.h": "2fa24fb102f6ad9acd2c87145e129fa164b6adbb76889347d84078215b993e5c",
+    "libraries/SpaLiveApi/src/SpaLiveApi.h": "30f23aff4bfdbb50fb264956a449f3a963f3627216b7c07919ede09d7a3dd8ab",
     "libraries/SpaLiveApi/src/WebAssets.h": "0a2174deb2601e0da25a2682836abd733c2da3e75ea01ccc0fce899f4d2e5606",
     "libraries/SpaTopside/src/SpaTopside.h": "22c05981c25adaa3c9b7d323fdc1f3f18ac36d8019a5055cb0b75e2fa83fe0dd",
     "libraries/SpaTopside/src/TopsideConfig.h": "42b9ca0ea09d491eb0835c9bc15144c4d5a6d1feae34c78cb41af4c5f76d7f8d",
@@ -37,7 +37,7 @@
     "live-tests/WiFi.h": "8e6574dae0cd1aa102e26436778c8422bfd995734464696d033559da05ec243a",
     "live-tests/build_bridge.py": "c5239539de93e871c8557e5d727dc877f3e4f43aa2f85d9ac509e6c4cd2fa7b1",
     "live-tests/config.py": "40c7edc43d41fec57d5796d8493f3ef372a509b19ff8a058c736e3a80ee13a98",
-    "live-tests/run_live.py": "b572c1183811439daf8102796e476f44e2e885407b21de92b5ea31ed4560bcfd",
+    "live-tests/run_live.py": "5d14d35b73238a3276029f6e6d88448ca571eb913a9aa846de542564388a54b0",
     "live-tests/run_regressions.py": "7a38a506fbe7b1af332819d0b5eda14595b081950a539b42dc8f7af94114b73e",
     "live-tests/verify_frozen.py": "83bc35c5adbcd9bce4548f771267da1169b066ee5a6fa02c8de2a71a4ca979f4",
     "topside-tests/render-svg.cpp": "840634308413cce7e6afc67c5442ee62e7361623f3999aa1b65ae76f1c3cf7ec",
@@ -70,7 +70,7 @@
     "libraries/SpaLiveApi/src/SpaFirmwareUpdate.h": "20d3529aa8dfdc73087029a95de6dd20e0acea2331a91f5c32c7fd2edf1e2685",
     "sim/scenarios_live.inc": "5a5029c34b723a9a1eebb37995637d5abb9be94a6dd873ced2ac712c0eb2f3dc",
     "libraries/SpaLiveApi/src/SpaMatter.h": "e6d3b0637fd816ceb4e2d80bf7c13128a25a701c6d6456ce9b2d976540459145",
-    "live-tests/matter.cpp": "202133506e39d08964df131fe1467c65b742a97d9b5d944c42678f8fe94c26f8",
-    "live-tests/matter-stub/Matter.h": "ddd7714a99011ea86740b8fe0f2f60b38c90048a816384bb6260adae0c1508d4"
+    "live-tests/matter.cpp": "b949b8b04e1c6a057a414c810ccc0345b5a19effd35906857dbd3fb42ff2888b",
+    "live-tests/matter-stub/Matter.h": "7c2cfbd0875857cc135716444bc65c83f56c6480ebab9e77ad3d9e529e28c4cd"
   }
 }

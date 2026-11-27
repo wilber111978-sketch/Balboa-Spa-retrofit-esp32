@@ -304,5 +304,11 @@
     "case": "pairing",
     "passed": true,
     "output": "PASS pairing\n"
+  },
+  {
+    "build": "Main+Matter",
+    "case": "slow-begin",
+    "passed": true,
+    "output": "PASS slow-begin\n"
   }
 ]

@@ -218,6 +218,9 @@ void spaLiveSetup(){
     liveObserveFault();
 #if SPA_MATTER_ACTIVE
     spaMatter::begin();
+    // Matter.begin() blocks for more than SENSOR_STALE_MS, and loop() checks timestamps before
+    // acquiring, so every boot latched SENSOR_STALE (fault 22). Take a real fresh reading.
+    readTemperatureSensors();
 #endif
 }
 void spaLiveLoop(){

@@ -13,8 +13,8 @@ struct MatterOnOffStub {
 struct MatterOnOffLight: MatterOnOffStub {};
 struct MatterOnOffPlugin: MatterOnOffStub {};
 struct MatterTemperatureSensor { double value=-1000; bool begin(double t=0){value=t;return true;} bool setTemperature(double t){value=t;return true;} };
-struct MatterStub { int begins=0; bool commissioned=false; bool ble=true; int namesSet=0;
-    void begin(){begins++;}
+struct MatterStub { uint32_t beginDelayMs=0; int begins=0; bool commissioned=false; bool ble=true; int namesSet=0;
+    void begin(){begins++;fakeMs+=beginDelayMs;}
     bool setBLECommissioningEnabled(bool e){if(begins)return false;ble=e;return true;}
     bool setVendorName(const char*){namesSet++;return !begins;} bool setProductName(const char*){namesSet++;return !begins;} bool isDeviceCommissioned(){return commissioned;}
     String getManualPairingCode(){return String("34970112332");} String getOnboardingQRCodeUrl(){return String("https://project-chip.github.io/connectedhomeip/qrcode.html?data=MT:TEST");} };
