@@ -35,6 +35,11 @@ static uint32_t healthySince = 0;
 static void listen(void *)
 {
     ArduinoOTA.setHostname("fisher-spa");
+#if defined(SPA_MATTER) && SPA_MATTER
+    // Matter advertises itself over the same mDNS responder; ArduinoOTA.end() would tear it
+    // down and Google Home could no longer find the spa. Upload with espota by IP instead.
+    ArduinoOTA.setMdnsEnabled(false);
+#endif
     ArduinoOTA.setPassword(SPA_OTA_PASSWORD);
     ArduinoOTA.onStart([] {
         if (ArduinoOTA.getCommand() != U_FLASH) Update.abort();
