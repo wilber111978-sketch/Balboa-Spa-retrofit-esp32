@@ -28,7 +28,8 @@ LiveFaultInfo liveFaultInfo(FaultCode code) {
         return {"SENSOR_B_RANGE","Sn","Sensor B reading invalid","Sensor B failed voltage or temperature validation.","Sensor, connector or input circuit fault.","Isolate power and inspect Sensor B wiring and calibration."};
     case FaultCode::TEMP_DISAGREE:return {"SENSOR_MISMATCH","Sn","Heater sensors disagree","The baseline disagreement timer tripped.","Probe mismatch or uneven circulation.","Check both probes and circulation before acknowledgement."};
     case FaultCode::OVERTEMP:return {"OVER_TEMP","OH","Overtemperature lockout","A raw or filtered probe reached the baseline temperature trip.","Unintended heat, circulation or sensor fault.","Keep heating isolated; check with an independent thermometer."};
-    case FaultCode::RAPID_TEMP_RISE: case FaultCode::FLOW_SUSPECT:return {"NO_FLOW_SUSPECTED","dr","Thermal/flow anomaly","Baseline thermal-rate protection tripped.","Restricted flow, low water or probe problem.","Inspect circulation and the protective system before reset."};
+    case FaultCode::RAPID_TEMP_RISE:return {"RAPID_TEMP_RISE","dr","Rapid temperature rise","A probe rose faster than the water can heat.","Probe connection glitch, air lock or no flow.","Check probe plugs and circulation. It retries after 15 min; 3 in 24 h latches."};
+    case FaultCode::FLOW_SUSPECT:return {"NO_FLOW_SUSPECTED","dr","Thermal/flow anomaly","Baseline thermal-rate protection tripped.","Restricted flow, low water or probe problem.","Inspect circulation and the protective system before reset."};
     case FaultCode::SENSOR_STALE:return {"SENSOR_STALE","Sn","Sensor updates stale","A probe timestamp exceeded the baseline freshness limit.","Delayed control loop or acquisition failure.","Inspect acquisition timing and recorded events."};
     case FaultCode::WATCHDOG_RESET:return {"WATCHDOG_RECOVERY","","Watchdog/restart lockout","Watchdog or panic recovery requires acknowledgement.","Task stall or controller instability.","Inspect reset history; acknowledge then separately exit Service Mode."};
     case FaultCode::POWER_FAULT:return {"POWER_FAULT","","Power recovery lockout","Baseline brownout recovery latched a fault.","Supply instability.","Inspect control power before acknowledging."};
@@ -68,7 +69,9 @@ bool liveRestartAck(){
     return true;
 }
 
-void liveObserveFault(){if(spa.fault!=liveObservedFault){liveObservedFault=spa.fault;if(spa.fault!=FaultCode::NONE){auto info=liveFaultInfo(spa.fault);liveRecord(info.id,info.title,spa.fault);}}}
+void liveObserveFault(){if(spa.fault!=liveObservedFault){liveObservedFault=spa.fault;if(spa.fault!=FaultCode::NONE){auto info=liveFaultInfo(spa.fault);
+    if(faultDetail[0]){std::string t=std::string(info.title)+" - "+faultDetail;liveRecord(info.id,t.c_str(),spa.fault);}else liveRecord(info.id,info.title,spa.fault);}
+    faultDetail[0]=0;}}
 void liveFaultJSON(JsonObject d,FaultCode code,const LiveEvent *record=nullptr){
     auto info=liveFaultInfo(code);d["panel_code"]=info.panel;d["id"]=info.id;d["title"]=info.title;d["internal_code"]=(uint16_t)code;
     d["trigger_condition"]=info.trigger;d["probable_causes"].to<JsonArray>().add(info.cause);d["recommended_checks"].to<JsonArray>().add(info.check);

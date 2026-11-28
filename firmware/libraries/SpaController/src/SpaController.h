@@ -533,6 +533,8 @@ void allHeaterOutputsOff();
 void logEvent(const String &message);
 String eventsText();
 void raiseFault(FaultCode code, bool lockout);
+// V0.9.3: why the last heater-supervision fault tripped (shown in History).
+static char faultDetail[72] = "";
 float voltageToResistance(float voltage);
 float resistanceToTemperatureC(
     float resistance,
@@ -1035,6 +1037,7 @@ void flowTrip() {
     flowTripCount = n;
     if (flowTripCount < FLOW_TRIPS_TO_LATCH) flowTripAt[flowTripCount++] = now;
     bool latch = flowTripCount >= FLOW_TRIPS_TO_LATCH;
+    snprintf(faultDetail, sizeof(faultDetail), "Rate check: A %.2f B %.2f C/s", tempA.rateCPerSec, tempB.rateCPerSec);
     raiseFault(FaultCode::RAPID_TEMP_RISE, latch);
     flowRetryPending = !latch;
     flowRetryAtMs = now + FLOW_RETRY_DELAY_MS;
@@ -1848,6 +1851,11 @@ static void processLiveM7()
         (previous == m7::Phase::Pulse || previous == m7::Phase::Observing) &&
         (spa.waterHot || spa.calibrationInhibit || spa.supplySag || spa.tempDifference >= TEMP_DIFF_INHIBIT_C ||
          fmax(tempA.filteredC, tempB.filteredC) >= HEATER_SENSOR_CAP_C)) {
+        snprintf(faultDetail, sizeof(faultDetail), "M7 %s: heater inhibited (%s)",
+                 previous == m7::Phase::Pulse ? "pulse" : "observe",
+                 spa.waterHot ? "water hot" : spa.supplySag ? "24 V sag" : spa.calibrationInhibit ? "calibration" :
+                 spa.tempDifference >= TEMP_DIFF_INHIBIT_C ? "A/B split" : "probe cap");
+        logEvent((const char *)faultDetail);
         raiseFault(FaultCode::FLOW_SUSPECT, true);
         liveM7Cycle.update({now, 0, 0, false, false}, false);
         return;
@@ -1868,6 +1876,11 @@ static void processLiveM7()
     m7::Outputs output = liveM7Cycle.update(
         {now, tempA.filteredC, tempB.filteredC, fresh, permitted}, spa.thermostatHeating);
     if (output.fault != m7::Shutdown::None) {
+        if (output.fault == m7::Shutdown::UnexpectedHeat) snprintf(faultDetail, sizeof(faultDetail), "M7: heat with SSR off");
+        else snprintf(faultDetail, sizeof(faultDetail), "M7 %s: %s",
+                      previous == m7::Phase::Passed ? "while heating" : "heater test",
+                      m7::failureName(liveM7Cycle.qualificationFailure()));
+        logEvent((const char *)faultDetail);
         raiseFault(output.fault == m7::Shutdown::UnexpectedHeat
             ? FaultCode::HEATER_SSR_SUSPECT : FaultCode::FLOW_SUSPECT, true);
         return;

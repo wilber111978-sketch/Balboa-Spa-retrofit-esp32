@@ -24,7 +24,7 @@ void defineScenarios(){
      F("SSR short: SSR-suspect fault=%d at %.0fs; heater on %.1fs; max heater body %.2f", seen(FaultCode::HEATER_SSR_SUSPECT), M.faultFirstT[15], M.heaterOn, M.maxHeater));}});
  S.push_back({"L06-element-open-no-response", 30*MIN_, 0.1, []{P.Ttub=34;P.heaterW=1500;P.heaterOpen=true;},
   {AT(1, heatManual(38))},
-  []{return expect(!M.livePassed&&M.firstFaultCode!=0,
+  []{return expect(strstr(faultDetail,"no heat response")!=nullptr&&!M.livePassed&&M.firstFaultCode!=0,
      F("element open: passed=%d first fault %d at %.0fs", M.livePassed, M.firstFaultCode, M.firstFaultT));}});
  S.push_back({"L07-jets-high-blocks-heater", 30*MIN_, 0.1, []{P.Ttub=34;P.heaterW=1500;},
   {AT(1, heatManual(38)), AT(60, cmd("high"))},

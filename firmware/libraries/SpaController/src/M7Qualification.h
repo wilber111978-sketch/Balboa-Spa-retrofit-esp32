@@ -35,6 +35,22 @@ struct Sample {
     bool interlocksOk; // Simulated/replayed demand, LOW, cutoff and fault state.
 };
 
+inline const char *failureName(Failure f)
+{
+    switch (f) {
+    case Failure::Configuration: return "configuration";
+    case Failure::Interlock: return "interlock dropped";
+    case Failure::InvalidSample: return "late or invalid probe reading";
+    case Failure::BaselineMismatch: return "A/B baseline mismatch";
+    case Failure::Overtemperature: return "over temperature";
+    case Failure::ExcessRise: return "rise too large";
+    case Failure::ExcessDifference: return "A/B difference too large";
+    case Failure::NoResponse: return "no heat response";
+    case Failure::DidNotRecover: return "did not settle after pulse";
+    default: return "none";
+    }
+}
+
 class Qualification {
 public:
     constexpr explicit Qualification(Limits limits) : limits_(limits) {}
