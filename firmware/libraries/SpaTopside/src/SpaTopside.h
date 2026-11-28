@@ -1,7 +1,7 @@
 #pragma once
 #define SPA_LIVE_EXTERNAL_ENTRYPOINTS 1
-#define SPA_LIVE_VERSION "0.9.3-topside"
-#define SPA_LIVE_BUILD "gc9a01-ui-5"
+#define SPA_LIVE_VERSION "0.9.4-topside"
+#define SPA_LIVE_BUILD "gc9a01-ui-6"
 #include <SpaLiveApi.h>
 #include "TopsideModel.h"
 #include "TopsideDisplay.h"
@@ -19,7 +19,7 @@ static bool topsideCommand(topside::Event e){
     if(e.key==Key::Light&&e.gesture==Gesture::Long){
         if(!lightOn||serviceMode||spa.fault!=FaultCode::NONE){topsideModel.information(millis());return true;}
         String r=executeCommand("lightprog "+String(lightProgram%LIGHT_PROGRAM_COUNT+1));
-        topsideMessage(r.startsWith("OK")?"Next light colour":"Rejected: wait 2 s");return r.startsWith("OK");
+        topsideMessage(r.startsWith("OK")?(String("Light: ")+lightColourName(lightProgram)).c_str():"Rejected: wait 2 s");return r.startsWith("OK");
     }
     // V0.9: Temp +/- during priming ends priming (as on the OEM panel).
     if((e.key==Key::Up||e.key==Key::Down)&&primingActive){executeCommand("primeend");topsideMessage("Priming ended");return true;}

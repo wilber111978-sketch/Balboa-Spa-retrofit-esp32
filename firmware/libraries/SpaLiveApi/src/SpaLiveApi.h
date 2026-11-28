@@ -81,12 +81,17 @@ void liveFaultJSON(JsonObject d,FaultCode code,const LiveEvent *record=nullptr){
     liveNumber(snapshot["delta_t_c"],record?record->delta:spa.tempDifference);liveNumber(snapshot["setpoint_c"],record?record->target:config.setpointC);
     snapshot["pump"]=livePump(record?record->pump:spa.actualPump);snapshot["heater"]=record?record->heater:spa.heaterSSR;snapshot["uv"]=record?record->uv:spa.uv;
 }
+#ifndef SPA_MATTER
+#define SPA_MATTER 0
+#endif
+// V0.9.4: Google Home pairing state, kept current by spaMatter::loop() (declared before SpaMatter.h).
+bool liveMatterPaired=false;
 void liveState(){JsonDocument d;
     auto c=d["controller"].to<JsonObject>();c["online"]=true;c["uptime_s"]=millis()/1000;c["firmware"]=SPA_BENCH_DEMO?SPA_LIVE_VERSION "-demo":SPA_LIVE_VERSION "-main";c["build"]=SPA_LIVE_BUILD;c["reset_reason"]=resetReason;c["watchdog_ok"]=controlWatchdog!=nullptr;
     auto t=d["temperature"].to<JsonObject>();liveNumber(t["water_c"],circulatingWaterValid?lastCirculatingWaterC:NAN);t["water_valid"]=circulatingWaterValid;if(circulatingWaterValid)t["water_age_s"]=(millis()-lastCirculatingWaterMs)/1000UL;else t["water_age_s"]=nullptr;liveNumber(t["probe_average_c"],spa.waterTemperature);t["target_c"]=config.setpointC;liveNumber(t["sensor_a_c"],tempA.filteredC);liveNumber(t["sensor_b_c"],tempB.filteredC);liveNumber(t["delta_t_c"],spa.tempDifference);liveNumber(t["rise_rate_c_min"],(tempA.rateCPerSec+tempB.rateCPerSec)*30);
     d["pump"]["requested"]=livePump(spa.requestedPump);d["pump"]["actual"]=livePump(spa.actualPump);
     d["heater"]["demand"]=spa.heaterDemand>0;d["heater"]["ssr_command"]=spa.heaterSSR;d["heater"]["safety_contactor"]=spa.heaterSafetyContactor;d["heater"]["allowed"]=LIVE_M7_NORMAL_HEATING&&spa.heatQualificationPassed;
-    d["heater"]["physical_outputs_inhibited"]=!LIVE_M7_PROFILE_FITTED;d["heater"]["restart_hold"]=heaterRestartHold;d["uv"]["on"]=spa.uv;d["light"]["on"]=spa.light;d["light"]["program"]=lightProgram;d["light"]["program_count"]=LIGHT_PROGRAM_COUNT;if(lightOn)d["light"]["auto_off_s"]=(LIGHT_TIMEOUT_MS-(millis()-lightOnSinceMs))/1000UL;else d["light"]["auto_off_s"]=nullptr;auto v9=d["v09"].to<JsonObject>();v9["priming"]=primingActive;if(primingActive)v9["priming_s"]=(primingUntilMs-millis())/1000UL;else v9["priming_s"]=nullptr;v9["freeze_protect"]=freezeActive;v9["water_hot"]=spa.waterHot;v9["sensor_mismatch"]=spa.calibrationInhibit;v9["economy_floor_heat"]=floorHeatNeeded;v9["economy_floor_c"]=ECONOMY_FLOOR_C;v9["no_flow_retry"]=flowRetryPending;v9["temp_adc"]=SPA_TEMP_ADC_ADS1115?"ADS1115":"ONBOARD";
+    d["heater"]["physical_outputs_inhibited"]=!LIVE_M7_PROFILE_FITTED;d["heater"]["restart_hold"]=heaterRestartHold;d["uv"]["on"]=spa.uv;d["light"]["on"]=spa.light;d["light"]["program"]=lightProgram;d["light"]["program_count"]=LIGHT_PROGRAM_COUNT;{auto progs=d["light"]["programs"].to<JsonArray>();for(uint8_t i=0;i<LIGHT_PROGRAM_COUNT;++i){auto o=progs.add<JsonObject>();o["name"]=LIGHT_COLOURS[i].name;o["colour"]=LIGHT_COLOURS[i].hex;}}if(lightOn)d["light"]["auto_off_s"]=(LIGHT_TIMEOUT_MS-(millis()-lightOnSinceMs))/1000UL;else d["light"]["auto_off_s"]=nullptr;auto v9=d["v09"].to<JsonObject>();v9["priming"]=primingActive;if(primingActive)v9["priming_s"]=(primingUntilMs-millis())/1000UL;else v9["priming_s"]=nullptr;v9["freeze_protect"]=freezeActive;v9["water_hot"]=spa.waterHot;v9["sensor_mismatch"]=spa.calibrationInhibit;v9["economy_floor_heat"]=floorHeatNeeded;v9["economy_floor_c"]=ECONOMY_FLOOR_C;v9["no_flow_retry"]=flowRetryPending;v9["temp_adc"]=SPA_TEMP_ADC_ADS1115?"ADS1115":"ONBOARD";
     d["m7"]["status"]=spa.fault==FaultCode::NONE?"CHECK":"FAULT";d["m7"]["flow_ok"]=LIVE_M7_PROFILE_FITTED&&spa.heatQualificationPassed;d["m7"]["note"]=SPA_BENCH_DEMO?"Simulated probe inputs":"Live two-probe qualification is unavailable in this build";
 #if SPA_LIVE_M7
     switch(liveM7Cycle.phase()){
@@ -105,7 +110,7 @@ void liveState(){JsonDocument d;
     d["mode"]["heating"]=liveMode();d["mode"]["service"]=serviceMode;d["mode"]["demo"]=(bool)SPA_BENCH_DEMO;
     d["schedule"]["enabled"]=solarStart!=solarEnd;d["schedule"]["start"]=liveTime(solarStart);d["schedule"]["end"]=liveTime(solarEnd);auto days=d["schedule"]["days"].to<JsonArray>();for(int i=1;i<=7;++i)days.add(i);
     d["fault"]["active"]=spa.fault!=FaultCode::NONE;if(spa.fault!=FaultCode::NONE){const LiveEvent *record=nullptr;for(uint8_t n=0;n<liveEventCount;++n){const auto &r=liveEvents[(liveEventHead+7-n)%8];if(r.fault==spa.fault){record=&r;break;}}liveFaultJSON(d["fault"].as<JsonObject>(),spa.fault,record);}else{d["fault"]["id"]="";d["fault"]["panel_code"]="";d["fault"]["title"]="";}
-    d["network"]["wifi_connected"]=WiFi.status()==WL_CONNECTED;d["network"]["rssi_dbm"]=WiFi.RSSI();d["network"]["matter_paired"]=false;liveSend(200,d);
+    d["network"]["wifi_connected"]=WiFi.status()==WL_CONNECTED;d["network"]["rssi_dbm"]=WiFi.RSSI();d["network"]["matter_enabled"]=(bool)SPA_MATTER;d["network"]["matter_paired"]=liveMatterPaired;liveSend(200,d);
 }
 void liveCapabilities(){JsonDocument d;d["api_version"]=1;d["heater_commissioned"]=false;
 #if defined(ARDUINO) && defined(SPA_OTA_PASSWORD)
@@ -204,9 +209,6 @@ void liveRoutes(){
     web.on("/api/faults",HTTP_GET,[](){if(webAuth())liveHistory();});web.on("/api/diagnostics",HTTP_GET,[](){if(webAuth())liveDiagnostics();});
     for(const char *name:{"target","jets","light","mode","schedule","service-mode","fault-reset","heater-restart-ack"}){std::string route=name;web.on(("/api/"+route).c_str(),HTTP_POST,[route](){if(webAuth())liveCommand(route);});}
 }
-#ifndef SPA_MATTER
-#define SPA_MATTER 0
-#endif
 #include "SpaMatter.h"
 void spaLiveSetup(){
     spa062Setup();

@@ -63,10 +63,10 @@
 <text x='69' y='179' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='102' lengthAdjust='spacingAndGlyphs'>HEATING INHIBITED</text>
 </g>
 <defs><clipPath id='s184'><rect x='0' y='184' width='240' height='8'/></clipPath></defs><g clip-path='url(#s184)'>
-<text x='120' y='195' fill='rgb(255,0,0)' font-family='monospace' font-size='8' textLength='0' lengthAdjust='spacingAndGlyphs'></text>
+<text x='45' y='195' fill='rgb(255,0,0)' font-family='monospace' font-size='8' textLength='150' lengthAdjust='spacingAndGlyphs'>Reset: hold Light+Down 5s</text>
 </g>
 <defs><clipPath id='s192'><rect x='0' y='192' width='240' height='8'/></clipPath></defs><g clip-path='url(#s192)'>
-<text x='120' y='195' fill='rgb(255,0,0)' font-family='monospace' font-size='8' textLength='0' lengthAdjust='spacingAndGlyphs'></text>
+<text x='45' y='195' fill='rgb(255,0,0)' font-family='monospace' font-size='8' textLength='150' lengthAdjust='spacingAndGlyphs'>Reset: hold Light+Down 5s</text>
 </g>
 <defs><clipPath id='s200'><rect x='0' y='200' width='240' height='8'/></clipPath></defs><g clip-path='url(#s200)'>
 <text x='120' y='211' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='0' lengthAdjust='spacingAndGlyphs'></text>

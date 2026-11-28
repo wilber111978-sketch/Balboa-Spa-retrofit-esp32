@@ -42,7 +42,7 @@ int main(int argc,char**argv){
   }else if(test=="v09-priming-end"){
    primingActive=true;primingUntilMs=millis()+PRIMING_MS;auto t=config.setpointC;require(command(Key::Up),"Up during priming");require(!primingActive&&config.setpointC==t,"Up ends priming, setpoint unchanged");
   }else if(test=="v09-light-colour"){
-   require(command(Key::Light),"light on");run(12000);auto p=lightProgram;require(command(Key::Light,Gesture::Long),"long Light while on");require(lightProgram==p%LIGHT_PROGRAM_COUNT+1,"next colour");require(topsideModel.view(topsideState(),millis()).screen!=Screen::Info,"no info screen while light on");
+   require(command(Key::Light),"light on");run(12000);auto p=lightProgram;require(command(Key::Light,Gesture::Long),"long Light while on");require(lightProgram==p%LIGHT_PROGRAM_COUNT+1,"next colour");require(std::string(topsideFeedback)==std::string("Light: ")+lightColourName(lightProgram),"V0.9.4: names the colour");require(topsideModel.view(topsideState(),millis()).screen!=Screen::Info,"no info screen while light on");
   }else if(test=="v09-reading-age"){
    circulatingWaterValid=true;lastCirculatingWaterC=37.2f;lastCirculatingWaterMs=millis();fakeMs+=6*60000;healthy();auto v=topsideModel.view(topsideState(),millis());require(strstr(v.large,"37.2")&&strstr(v.lines[1],"Updated 6 min ago"),"age shown after 5 min");
   }else if(test=="v09-no-reading"){

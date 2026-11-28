@@ -310,5 +310,53 @@
     "case": "slow-begin",
     "passed": true,
     "output": "PASS slow-begin\n"
+  },
+  {
+    "build": "Main+Matter",
+    "case": "colour-map",
+    "passed": true,
+    "output": "PASS colour-map\n"
+  },
+  {
+    "build": "Main+Matter",
+    "case": "colour-on-from-off",
+    "passed": true,
+    "output": "PASS colour-on-from-off\n"
+  },
+  {
+    "build": "Main+Matter",
+    "case": "colour-while-on",
+    "passed": true,
+    "output": "PASS colour-while-on\n"
+  },
+  {
+    "build": "Main+Matter",
+    "case": "colour-in-lockout",
+    "passed": true,
+    "output": "PASS colour-in-lockout\n"
+  },
+  {
+    "build": "Main+Matter",
+    "case": "colour-snap",
+    "passed": true,
+    "output": "PASS colour-snap\n"
+  },
+  {
+    "build": "Main+Matter",
+    "case": "colour-from-dashboard",
+    "passed": true,
+    "output": "PASS colour-from-dashboard\n"
+  },
+  {
+    "build": "Main+Matter",
+    "case": "colour-while-off",
+    "passed": true,
+    "output": "PASS colour-while-off\n"
+  },
+  {
+    "build": "Main+Matter",
+    "case": "colour-service-lockout",
+    "passed": true,
+    "output": "PASS colour-service-lockout\n"
   }
 ]

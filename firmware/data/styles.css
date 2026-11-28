@@ -4,3 +4,6 @@
 .lab-actions button{min-height:44px}.switch{width:54px;height:44px;min-height:44px;border:0;background:transparent;padding:4px;position:relative}.switch::before{content:"";position:absolute;inset:7px 0;border:1px solid #4b5b71;border-radius:20px;background:#354154}.switch span{position:relative;width:21px;height:21px;margin:0;z-index:1}.switch[aria-checked=true]{background:transparent;border:0}.switch[aria-checked=true]::before{background:#316b9e;border-color:#6aadde}.switch[aria-checked=true] span{margin-left:23px}
 
 .light-programs { display: flex; flex-wrap: wrap; gap: .5rem; }
+.light-programs button { display: inline-flex; align-items: center; gap: .5rem; }
+.light-programs button.selected { background: #294b70; border-color: #5b8cbc; }
+.swatch { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #ffffff55; flex-shrink: 0; }

@@ -16,7 +16,7 @@ for mode in (0,1):
 exe=root/'live-tests'/'matter-0'
 mbase=[x for x in base if x!='-DSPA_TEMP_ADC_ADS1115=1']
 subprocess.run(mbase+['-DSPA_BENCH_DEMO=0','-DSPA_MATTER=1','-DSPA_MATTER_HOST_TEST','-I'+str(root/'live-tests/matter-stub'),'-include','SpaLiveApi.h',str(root/'live-tests/matter.cpp'),'-o',str(exe)],check=True)
-for case in 'begin temperature light wake ready-timeout service-lockout fault-lockout light-from-dashboard pairing slow-begin'.split():
+for case in 'begin temperature light wake ready-timeout service-lockout fault-lockout light-from-dashboard pairing slow-begin colour-map colour-on-from-off colour-while-on colour-in-lockout colour-snap colour-from-dashboard colour-while-off colour-service-lockout'.split():
   p=subprocess.run([str(exe),case],capture_output=True,text=True,timeout=20);print('PASS' if p.returncode==0 else 'FAIL','matter',case,p.stderr.strip());results.append({'build':'Main+Matter','case':case,'passed':p.returncode==0,'output':p.stdout+p.stderr})
 (root/'live-logs/api-results.json').write_text(json.dumps(results,indent=2)+'\n')
 raise SystemExit(any(not r['passed'] for r in results))

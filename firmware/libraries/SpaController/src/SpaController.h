@@ -441,6 +441,30 @@ static constexpr uint32_t INPUT_LOCKOUT_MS = 2000;                        // jet
 static constexpr uint32_t UV_SETTLE_MS = 1000;                            // UV after pump (either speed) runs
 static constexpr uint32_t LIGHT_TIMEOUT_MS = 40UL * 60UL * 1000UL;
 static constexpr uint8_t  LIGHT_PROGRAM_COUNT = 7;                        // set from bench measurement
+// V0.9.4: colour of each program, recorded at the tub 2026-11-28 (program 1 first after reset).
+// hue in degrees, sat 0-254 (Matter scale); sat 0 = white. Used by the dashboard, topside and Matter.
+struct LightColour { const char *name; const char *hex; uint16_t hue; uint8_t sat; };
+static constexpr LightColour LIGHT_COLOURS[LIGHT_PROGRAM_COUNT] = {
+    {"Red",    "#ff3b30",   0, 254}, {"Green",  "#34c759", 120, 254}, {"Blue",   "#2f6bff", 240, 254},
+    {"Yellow", "#ffd60a",  60, 254}, {"Purple", "#a259ff", 280, 254}, {"Aqua",   "#32d6e6", 180, 254},
+    {"White",  "#f4f4f4",   0,   0},
+};
+inline const char *lightColourName(uint8_t program) {
+    return program >= 1 && program <= LIGHT_PROGRAM_COUNT ? LIGHT_COLOURS[program - 1].name : "Unknown";
+}
+// Nearest program for a requested colour (hue 0-359 deg, sat 0-254). Pale requests pick white.
+inline uint8_t lightProgramForColour(uint16_t hue, uint8_t sat) {
+    uint8_t best = 0; int bestDistance = 1000;
+    for (uint8_t i = 0; i < LIGHT_PROGRAM_COUNT; ++i) {
+        const LightColour &c = LIGHT_COLOURS[i];
+        int distance;
+        if (sat < 64) distance = c.sat == 0 ? 0 : 999;
+        else if (c.sat == 0) distance = 998;
+        else { int d = (int)(hue % 360) - (int)c.hue; if (d < 0) d = -d; distance = d > 180 ? 360 - d : d; }
+        if (distance < bestDistance) { bestDistance = distance; best = i; }
+    }
+    return best + 1;
+}
 static constexpr uint32_t LIGHT_STEP_OFF_MS = 500, LIGHT_STEP_ON_MS = 500;
 static constexpr uint32_t LIGHT_RESET_OFF_MS = 10000;                     // off this long -> light restarts at program 1
 static constexpr uint32_t FLOW_RETRY_DELAY_MS = 15UL * 60UL * 1000UL;     // OEM-style 'dr' wait

@@ -39,10 +39,10 @@
 <text x='81' y='115' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='78' lengthAdjust='spacingAndGlyphs'>Target 38.0 C</text>
 </g>
 <defs><clipPath id='s120'><rect x='0' y='120' width='240' height='8'/></clipPath></defs><g clip-path='url(#s120)'>
-<text x='120' y='131' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='0' lengthAdjust='spacingAndGlyphs'></text>
+<text x='51' y='131' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='138' lengthAdjust='spacingAndGlyphs'>Checking temperature...</text>
 </g>
 <defs><clipPath id='s128'><rect x='0' y='128' width='240' height='8'/></clipPath></defs><g clip-path='url(#s128)'>
-<text x='120' y='131' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='0' lengthAdjust='spacingAndGlyphs'></text>
+<text x='51' y='131' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='138' lengthAdjust='spacingAndGlyphs'>Checking temperature...</text>
 </g>
 <defs><clipPath id='s136'><rect x='0' y='136' width='240' height='8'/></clipPath></defs><g clip-path='url(#s136)'>
 <text x='63' y='147' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='114' lengthAdjust='spacingAndGlyphs'>Pump LOW | Wi-Fi OK</text>

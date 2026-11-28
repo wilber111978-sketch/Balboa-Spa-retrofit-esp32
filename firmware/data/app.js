@@ -1,7 +1,7 @@
 import {runtime} from './runtime.js';
 import {DemoSpaService,HttpSpaService} from './services.js';
 import {clone,controlsBlocked,isStale,LIMITS,validateState,nextTarget} from './model.js';
-import {icon,renderPage,renderBanners,renderDemoBar,faultDetail,escapeHTML} from './views.js';
+import {icon,matterLabel,renderPage,renderBanners,renderDemoBar,faultDetail,escapeHTML} from './views.js';
 const live=runtime.mode==='live';
 const service=live?new HttpSpaService({requireCapabilities:true}):new DemoSpaService();
 const vm={live,offline:false,capabilities:null,state:null,events:[],diagnostics:{},page:'home',filter:'all',scenario:'heating',updated:0,busy:false,paused:false,rejectNext:false,scheduleDraft:null};
@@ -38,7 +38,7 @@ function message(text,error=false){feedback.textContent=text;feedback.classList.
 function render(force=true){if(!vm.state)return;
   const blocked=vm.offline||controlsBlocked(vm.state,vm.updated)||vm.busy;
   banners.innerHTML=renderBanners(vm);
-  const connection=document.querySelector('#connection');connection.textContent=vm.offline||!vm.state.controller.online?'Offline':isStale(vm.updated)?'Stale data':live?'Controller online':'Demo online';connection.classList.toggle('disconnected',vm.offline||!vm.state.controller.online||isStale(vm.updated));
+  const connection=document.querySelector('#connection');connection.textContent=vm.offline||!vm.state.controller.online?'Offline':isStale(vm.updated)?'Stale data':live?'Controller online':'Demo online';connection.classList.toggle('disconnected',vm.offline||!vm.state.controller.online||isStale(vm.updated));const matterStatus=document.querySelector('#matter-status');if(matterStatus)matterStatus.textContent='Local-first · '+matterLabel(vm.state.network);
   main.setAttribute('aria-busy',String(vm.busy));
   if(force||blocked!==lastBlocked){
     const active=document.activeElement;const action=active?.dataset?.action,value=active?.dataset?.value;

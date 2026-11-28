@@ -195,3 +195,30 @@ Changes made from the first supervised heater runs, the first Wi-Fi updates and 
 | Topside | Recovery controls: **Up+Down 3 s** acknowledge restart; **Light+Down 5 s, then Light** reset fault; **Jets+Light 5 s, then Jets** exit Service Mode; **Jets 5 s** emergency stop. Countdown/confirm prompts; any other key cancels; confirmation expires after 10 s. | Recovery was web-only. Same controller checks as the dashboard. |
 
 Known follow-ups: Settings/Diagnostics still show static "Matter not integrated" and do not reflect pairing; set a fixed DHCP address for the controller.
+
+## V0.9.4 — light colours (28 Nov 2026)
+
+The 7 light programmes were identified at the tub (programme 1 first after a 10 s reset):
+1 Red, 2 Green, 3 Blue, 4 Yellow, 5 Purple, 6 Aqua, 7 White. They are recorded once in
+`LIGHT_COLOURS` (`SpaController.h`) and used everywhere:
+
+- **Dashboard:** the "Light programs" card is now "Light colour", with a swatch and name per
+  programme and the current colour in the heading. `/api/state` adds `light.programs[]`
+  (`name`, `colour`). The Matter status shown in the header, Diagnostics and Settings is now real
+  (`network.matter_enabled`, `network.matter_paired`) instead of a fixed "Not integrated".
+- **Topside:** a long Light press shows "Light: Green" etc. Version 0.9.4-topside / gc9a01-ui-6.
+- **Google Home (SPA_MATTER 1):** the light is now a Matter **Color Light**. A requested colour
+  selects the nearest programme by hue (saturation below 64 → White) and the colour wheel snaps
+  to the real colour. On + colour in one request starts directly on that colour; a colour while
+  on waits out the 2 s input lockout instead of being refused; a colour while off is remembered
+  for the next switch-on. Brightness is not adjustable (ignored). Service Mode, faults and
+  settings lockout refuse colour changes as before.
+- **Re-pair required:** the light endpoint changed device type, so remove the spa in Google Home,
+  restart the spa, and pair again (code 3497 011 2332).
+
+Tests: 8 new Matter cases (colour map, on+colour, while on, in lockout, snap, dashboard echo,
+while off, Service lockout) and the topside colour-name check. Baseline 183, simulator 115,
+live 60, topside suite, regressions, invariants and web tests all pass.
+
+Router note from commissioning: the RT-AC88U's 2.4 GHz *Group Key Rotation Interval* (3600 s)
+silently stopped multicast/mDNS reaching clients, which blocked Matter discovery. Set it to 0.

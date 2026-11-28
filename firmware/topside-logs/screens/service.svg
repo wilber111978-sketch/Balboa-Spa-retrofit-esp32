@@ -51,10 +51,10 @@
 <text x='120' y='147' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='0' lengthAdjust='spacingAndGlyphs'></text>
 </g>
 <defs><clipPath id='s152'><rect x='0' y='152' width='240' height='8'/></clipPath></defs><g clip-path='url(#s152)'>
-<text x='36' y='163' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='168' lengthAdjust='spacingAndGlyphs'>Use web confirmation to exit</text>
+<text x='45' y='163' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='150' lengthAdjust='spacingAndGlyphs'>Exit: hold Jets+Light 5 s</text>
 </g>
 <defs><clipPath id='s160'><rect x='0' y='160' width='240' height='8'/></clipPath></defs><g clip-path='url(#s160)'>
-<text x='36' y='163' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='168' lengthAdjust='spacingAndGlyphs'>Use web confirmation to exit</text>
+<text x='45' y='163' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='150' lengthAdjust='spacingAndGlyphs'>Exit: hold Jets+Light 5 s</text>
 </g>
 <defs><clipPath id='s168'><rect x='0' y='168' width='240' height='8'/></clipPath></defs><g clip-path='url(#s168)'>
 <text x='120' y='179' fill='rgb(255,255,255)' font-family='monospace' font-size='8' textLength='0' lengthAdjust='spacingAndGlyphs'></text>
