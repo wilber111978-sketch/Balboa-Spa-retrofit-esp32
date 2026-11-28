@@ -132,6 +132,12 @@
     "output": "PASS 0 restart\n"
   },
   {
+    "build": "Main",
+    "case": "heat-aim",
+    "passed": true,
+    "output": "PASS 0 heat-aim\n"
+  },
+  {
     "build": "Demo",
     "case": "state",
     "passed": true,
@@ -262,6 +268,12 @@
     "case": "restart",
     "passed": true,
     "output": "PASS 1 restart\n"
+  },
+  {
+    "build": "Demo",
+    "case": "heat-aim",
+    "passed": true,
+    "output": "PASS 1 heat-aim\n"
   },
   {
     "build": "Main+Matter",

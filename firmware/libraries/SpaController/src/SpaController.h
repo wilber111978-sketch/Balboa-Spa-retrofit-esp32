@@ -2162,6 +2162,18 @@ bool schedulePermitsHeating() {
     if (!spaClock(day, minute) || solarStart == solarEnd) return floorHeatNeeded;
     return solarWindowOpen(minute) || floorHeatNeeded;
 }
+// V0.9.4: what the heater is aiming for right now, for the dashboard. Mirrors the thermostat:
+// Solar Priority holds the economy floor outside the window (or with no valid clock).
+struct HeatAim { float targetC; const char *reason; int untilHour; };
+HeatAim currentHeatAim() {
+    if (heatMode == 0) return {NAN, "off", -1};
+    if (heatMode == 2) return {config.setpointC, "manual", -1};
+    int day = 0, minute = 0;
+    const bool clock = spaClock(day, minute);
+    if (clock && solarStart != solarEnd && solarWindowOpen(minute)) return {config.setpointC, "window", (int)solarEnd};
+    return {fminf(ECONOMY_FLOOR_C, config.setpointC), clock ? "economy" : "economy_no_clock",
+            clock && solarStart != solarEnd ? (int)solarStart : -1};
+}
 String statusJSON() {
     String s="{\"demo\":"+String(SPA_BENCH_DEMO?"true":"false");
     s+=",\"tempA\":"+(isfinite(tempA.filteredC)?String(tempA.filteredC,2):String("null"))+",\"tempB\":"+(isfinite(tempB.filteredC)?String(tempB.filteredC,2):String("null"));

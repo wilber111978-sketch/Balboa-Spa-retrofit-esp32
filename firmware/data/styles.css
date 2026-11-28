@@ -7,3 +7,5 @@
 .light-programs button { display: inline-flex; align-items: center; gap: .5rem; }
 .light-programs button.selected { background: #294b70; border-color: #5b8cbc; }
 .swatch { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #ffffff55; flex-shrink: 0; }
+
+.aim { margin: .25rem 0 0; color: #f3c27a; font-size: .95rem; }

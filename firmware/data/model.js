@@ -79,7 +79,7 @@ export function validateRequest(kind,payload) {
   if (kind==='light' && 'program' in payload &&
       (!payload.on || !Number.isInteger(payload.program) || payload.program < 1 || payload.program > 255))
     throw new Error('Choose a valid light program.');
-  if (kind==='mode' && !['NORMAL','SOLAR_PRIORITY','OFF'].includes(payload.heating)) throw new Error('Invalid heating mode.');
+  if (kind==='mode' && !['NORMAL','SOLAR_PRIORITY','OFF','MANUAL'].includes(payload.heating)) throw new Error('Invalid heating mode.');
   if (kind==='service-mode' && (typeof payload.enabled!=='boolean' || payload.confirm!==true)) throw new Error('Service change requires explicit confirmation.');
   if (['fault-reset','firmware-arm','heater-restart-ack','restart'].includes(kind) && payload.confirm!==true) throw new Error('Fault acknowledgement requires confirmation.');
   if (kind==='schedule') {
@@ -95,7 +95,7 @@ export function validateState(s) {
   for (const n of ['water_c','sensor_a_c','sensor_b_c','delta_t_c','rise_rate_c_min']) if (s.temperature[n]!==null && !Number.isFinite(s.temperature[n])) throw new Error('Invalid temperature state.');
   if (!Number.isFinite(s.temperature.target_c)||s.temperature.target_c<LIMITS.min||s.temperature.target_c>LIMITS.max || !['OFF','LOW','HIGH'].includes(s.pump.actual)||!['OFF','LOW','HIGH'].includes(s.pump.requested)) throw new Error('Invalid controller values.');
   if (![s.controller.online,s.controller.watchdog_ok,s.heater.demand,s.heater.ssr_command,s.heater.safety_contactor,s.heater.allowed,s.uv.on,s.light.on,s.mode.service,s.mode.demo,s.fault.active,s.network.wifi_connected].every(bool)) throw new Error('Invalid controller flags.');
-  if(!['NORMAL','SOLAR_PRIORITY','OFF','MANUAL_LEGACY'].includes(s.mode.heating))throw new Error('Invalid mode state.');validateRequest('schedule',s.schedule);
+  if(!['NORMAL','SOLAR_PRIORITY','OFF','MANUAL','MANUAL_LEGACY'].includes(s.mode.heating))throw new Error('Invalid mode state.');validateRequest('schedule',s.schedule);
   return s;
 }
 

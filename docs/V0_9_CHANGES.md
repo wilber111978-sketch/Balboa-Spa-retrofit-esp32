@@ -226,5 +226,13 @@ RESTART_REQUESTED in History, then reboots 1.5 s later. A software reset keeps S
 priming and re-arms the heater restart hold, so heating still needs acknowledging afterwards.
 Needed after Google Home pairing changes (the spa only opens its pairing window at boot).
 
+**Heating aim and Manual mode (V0.9.4c):** `/api/state` adds `heater.aim` (`economy`,
+`economy_no_clock`, `window`, `manual`, `off`), `heater.aim_c` and `heater.aim_until`, so the
+dashboard says what the heater is aiming for now, e.g. "Economy: holding 35.0°C until 11:00, then
+38.0°C". This mirrors the thermostat: Solar Priority holds the 35 °C economy floor outside the window.
+`POST /api/mode` now accepts `MANUAL` (firmware `heatmode manual`, target held all day; every heater
+safety check still applies). Capabilities list `MANUAL`, and the dashboard shows the third button only
+when the controller advertises it. The state value for heatMode 2 is now `MANUAL` (was `MANUAL_LEGACY`).
+
 Router note from commissioning: the RT-AC88U's 2.4 GHz *Group Key Rotation Interval* (3600 s)
 silently stopped multicast/mDNS reaching clients, which blocked Matter discovery. Set it to 0.
