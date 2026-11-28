@@ -988,6 +988,82 @@
   "fuse": false
  },
  {
+  "scenario": "L10-3s-stall-while-heating-no-fault",
+  "verdict": "PASS: 3 s stall at 3600 s: faults 0; tub 24->30.37",
+  "inv": {
+   "lowHigh": 0,
+   "heatNoLow": 0,
+   "heatHigh": 0,
+   "loadBreak": 0,
+   "chatter": 0,
+   "uvNoPump_s": 0.0,
+   "uvDuring24VSag_s": 0.0,
+   "heatDuringPriming_s": 0.0
+  },
+  "tub": [
+   24.0,
+   30.37,
+   24.0,
+   30.37
+  ],
+  "maxHeater": 30.6,
+  "dry_s": 0.0,
+  "heaterOn_h": 1.85,
+  "low_h": 2.0,
+  "high_min": 0.0,
+  "uv_h": 2.0,
+  "pumpStarts": 1,
+  "safetyOps": 3,
+  "ssrOps": 5,
+  "maxAmps": 11.03,
+  "over10A_min": 111.0,
+  "maxDispErr": 0.25,
+  "lightDesync_s": 0.0,
+  "faults": "",
+  "lockout": false,
+  "flags": "P",
+  "hl": false,
+  "fuse": false
+ },
+ {
+  "scenario": "L11-3s-stall-during-heater-test-retries",
+  "verdict": "PASS: 3 s stall in the pulse: passed=1 at 555s, faults 0",
+  "inv": {
+   "lowHigh": 0,
+   "heatNoLow": 0,
+   "heatHigh": 0,
+   "loadBreak": 0,
+   "chatter": 0,
+   "uvNoPump_s": 0.0,
+   "uvDuring24VSag_s": 0.0,
+   "heatDuringPriming_s": 0.0
+  },
+  "tub": [
+   24.0,
+   26.97,
+   24.0,
+   26.97
+  ],
+  "maxHeater": 27.2,
+  "dry_s": 0.0,
+  "heaterOn_h": 0.85,
+  "low_h": 1.0,
+  "high_min": 0.0,
+  "uv_h": 1.0,
+  "pumpStarts": 1,
+  "safetyOps": 3,
+  "ssrOps": 3,
+  "maxAmps": 11.03,
+  "over10A_min": 51.0,
+  "maxDispErr": 0.14,
+  "lightDesync_s": 0.0,
+  "faults": "",
+  "lockout": false,
+  "flags": "P",
+  "hl": false,
+  "fuse": false
+ },
+ {
   "scenario": "N01-heatup-manual-30to38",
   "verdict": "PASS: final 36.89 max 37.98 heater 3.64h; inv lowHigh=0 heatNoLow=0 heatHigh=0 chatter=0 uvNoPump=0.0s heatPriming=0.0s",
   "inv": {

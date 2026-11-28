@@ -23,11 +23,14 @@ public:
 
     constexpr Phase phase() const { return active_ ? qualification_.phase() : Phase::Idle; }
     constexpr Failure qualificationFailure() const { return qualification_.failure(); }
+    constexpr uint8_t retries() const { return retries_; }
+    static constexpr uint8_t maxRetries = 2;
 
     constexpr Outputs update(Sample sample, bool demand)
     {
         if (!demand || !sample.interlocksOk) {
             active_ = false;
+            retries_ = 0;
             return {};
         }
         if (!active_) {
@@ -48,7 +51,17 @@ public:
         const Phase previous = qualification_.phase();
         qualification_.update(sample);
         const Phase current = qualification_.phase();
-        if (current == Phase::Failed) return {false, false, Shutdown::Qualification};
+        if (current == Phase::Failed) {
+            // V0.9.3: a late/invalid reading during the test restarts it (heater already off)
+            // rather than latching; the third in one heating call is a fault.
+            if (qualification_.failure() == Failure::InvalidSample && previous != Phase::Passed &&
+                retries_ < maxRetries) {
+                ++retries_;
+                active_ = false;
+                return {};
+            }
+            return {false, false, Shutdown::Qualification};
+        }
 
         if (current == Phase::Circulating || (previous == Phase::Circulating && current == Phase::Pulse)) {
             if (sample.timeMs - started_ < circulationMs - proofMs_ - maxSampleGapMs_) return {};
@@ -82,7 +95,7 @@ public:
                 fault_ = Shutdown::UnexpectedHeat;
                 return {false, false, fault_};
             }
-            return {true, sample.timeMs - normalContactorAt_ >= settleMs};
+            return {true, sample.timeMs - normalContactorAt_ >= settleMs && qualification_.sampleOk()};
         }
         return {};
     }
@@ -99,6 +112,7 @@ private:
     uint32_t contactorSettleMs_;
     float proofRiseC_;
     bool active_ = false;
+    uint8_t retries_ = 0;
     bool proofStarted_ = false;
     bool normalContactorStarted_ = false;
     uint32_t started_ = 0;

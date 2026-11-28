@@ -350,7 +350,9 @@ bool configurationValid = false;
 bool storageHealthy = true;
 bool serviceMode = false;
 bool sensorsAcquired = false;
-static constexpr uint32_t SENSOR_STALE_MS = 2000;
+static constexpr uint32_t SENSOR_STALE_MS = 2000;        // heater off beyond this
+static constexpr uint32_t SENSOR_STALE_FAULT_MS = 10000; // V0.9.3: latched fault beyond this
+static bool sensorLateLogged = false;
 static constexpr uint32_t WATCHDOG_TIMEOUT_MS = 5000;
 esp_task_wdt_user_handle_t controlWatchdog = nullptr;
 int resetReason = 0;
@@ -628,10 +630,17 @@ bool setServiceMode(bool enabled) {
     updateSpaState();
     return true;
 }
+// V0.9.3 graduated response: a reading older than SENSOR_STALE_MS turns the heater off at
+// once (the pump may keep running) but is not a fault; only a loss longer than
+// SENSOR_STALE_FAULT_MS latches SENSOR_STALE. The heater is never on with a stale reading.
 void checkSensorFreshness() {
-    if (sensorsAcquired && (millis() - tempA.lastUpdateMs > SENSOR_STALE_MS ||
-        millis() - tempB.lastUpdateMs > SENSOR_STALE_MS))
-        raiseFault(FaultCode::SENSOR_STALE, true);
+    if (!sensorsAcquired) return;
+    const uint32_t ageA = millis() - tempA.lastUpdateMs, ageB = millis() - tempB.lastUpdateMs;
+    const uint32_t age = ageA > ageB ? ageA : ageB;
+    if (age <= SENSOR_STALE_MS) { sensorLateLogged = false; return; }
+    if (spa.heaterSSR || spa.heaterSafetyContactor) allHeaterOutputsOff();
+    if (age > SENSOR_STALE_FAULT_MS) { raiseFault(FaultCode::SENSOR_STALE, true); return; }
+    if (!sensorLateLogged) { sensorLateLogged = true; logEvent("PROBE READING LATE: heater paused"); }
 }
 void setupWatchdog() {
     esp_task_wdt_config_t wdt{};

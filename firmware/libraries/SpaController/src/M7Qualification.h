@@ -9,6 +9,7 @@ namespace m7 {
 constexpr uint32_t circulationMs = 180000; // Owner's preheat circulation target.
 constexpr uint32_t observationMs = 90000;   // Heater-off observation in the M7 guide.
 constexpr uint32_t baselineAverageMs = 10000; // V0.9.3: baseline = mean of last 10 s of circulation.
+constexpr uint32_t invalidToleranceMs = 10000; // V0.9.3: while heating, ride through late readings this long.
 
 enum class Phase { Idle, Circulating, Pulse, Observing, Passed, Failed };
 enum class Failure { None, Configuration, Interlock, InvalidSample, BaselineMismatch,
@@ -57,6 +58,7 @@ public:
 
     constexpr Phase phase() const { return phase_; }
     constexpr Failure failure() const { return failure_; }
+    constexpr bool sampleOk() const { return sampleOk_; }
 
     constexpr void start(uint32_t now)
     {
@@ -65,6 +67,8 @@ public:
         phaseStarted_ = lastSample_ = now;
         peakRiseC_ = 0;
         recoveryInRange_ = false;
+        sampleOk_ = true;
+        invalidSince_ = 0;
         baselineSumAC_ = baselineSumBC_ = 0;
         baselineCount_ = 0;
         if (!(finite(limits_.baselineDifferenceC) && finite(limits_.minPeakRiseC) &&
@@ -88,11 +92,17 @@ public:
     {
         if (phase_ == Phase::Idle || phase_ == Phase::Failed) return;
         if (!sample.interlocksOk) return fail(Failure::Interlock);
-        if (!sample.valid || !finite(sample.aC) || !finite(sample.bC) ||
-            sample.timeMs - lastSample_ > limits_.maxSampleGapMs) {
-            return fail(Failure::InvalidSample);
-        }
+        const bool late = sample.timeMs - lastSample_ > limits_.maxSampleGapMs;
         lastSample_ = sample.timeMs;
+        if (!sample.valid || !finite(sample.aC) || !finite(sample.bC) || late) {
+            // V0.9.3: after a pass, one late/invalid reading pauses the heater (sampleOk()
+            // false -> SSR off) instead of shutting the spa down; only a sustained loss fails.
+            if (phase_ != Phase::Passed) return fail(Failure::InvalidSample);
+            if (sampleOk_) { sampleOk_ = false; invalidSince_ = sample.timeMs; }
+            else if (sample.timeMs - invalidSince_ >= invalidToleranceMs) return fail(Failure::InvalidSample);
+            return;
+        }
+        sampleOk_ = true;
         if (sample.aC >= limits_.maxTemperatureC || sample.bC >= limits_.maxTemperatureC)
             return fail(Failure::Overtemperature);
         const float differenceC = absolute(sample.aC - sample.bC);
@@ -181,6 +191,8 @@ private:
     float baselineSumBC_ = 0;
     uint32_t baselineCount_ = 0;
     float peakRiseC_ = 0;
+    bool sampleOk_ = true;
+    uint32_t invalidSince_ = 0;
     bool recoveryInRange_ = false;
     uint32_t recoveryStarted_ = 0;
     float recoveryMinAC_ = 0;

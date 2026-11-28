@@ -40,6 +40,16 @@ void defineScenarios(){
   {AT(1, heatManual(38))},
   []{return expect(cleanInv()&&M.livePassed&&!M.firstFaultCode&&M.heaterOn>3000&&P.Ttub>21.0,
      F("weak dT: passed=%d faults %d; heater %.0fs; tub 20.5->%.2f; %s", M.livePassed, M.firstFaultCode, M.heaterOn, P.Ttub, inv().c_str()));}});
+ // V0.9.3 ride-through: a controller loop stall (2-5 s; longer resets via the 5 s watchdog)
+ // pauses the heater but must not shut the spa down, during normal heating or the test.
+ S.push_back({"L10-3s-stall-while-heating-no-fault", 2*H_, 0.1, []{P.Ttub=24;P.heaterW=1500;P.tubKg=400;P.flowLow=1.8;},
+  {AT(1, heatManual(38)), AT(3600, P.hung=true), AT(3603, P.hung=false)},
+  []{return expect(M.livePassed&&!M.firstFaultCode&&P.Ttub>28,
+     F("3 s stall at 3600 s: faults %d; tub 24->%.2f", M.firstFaultCode, P.Ttub));}});
+ S.push_back({"L11-3s-stall-during-heater-test-retries", 1*H_, 0.1, []{P.Ttub=24;P.heaterW=1500;P.tubKg=400;P.flowLow=1.8;},
+  {AT(1, heatManual(38)), AT(200, P.hung=true), AT(203, P.hung=false)},
+  []{return expect(M.livePassed&&!M.firstFaultCode&&M.livePassT>203,
+     F("3 s stall in the pulse: passed=%d at %.0fs, faults %d", M.livePassed, M.livePassT, M.firstFaultCode));}});
  // Mid-run element failure: the A-B shift was already seen at SSR start, so the 45 min
  // tub-rise backup catches it (a dead element is a no-heat failure, not a hazard).
  S.push_back({"L09-element-fails-after-pass", 2*H_, 0.1, []{P.Ttub=20.5;P.heaterW=1500;P.tubKg=1500;P.flowLow=1.8;},
