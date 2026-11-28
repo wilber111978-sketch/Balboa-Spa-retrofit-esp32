@@ -64,6 +64,9 @@ export class HttpSpaService {
     finally{clearTimeout(timer);}
   }
   async read(){if(this.requireCapabilities&&!this.capabilities){const caps=await this.json('/api/capabilities');if(caps.api_version!==1||caps.heater_commissioned!==false||!Array.isArray(caps.heating_modes)||caps.schedule?.precision_minutes!==60)throw new Error('Unsupported controller API capabilities.');this.capabilities=caps;}const [state,events,diagnostics]=await Promise.all([this.json('/api/state'),this.json('/api/faults'),this.json('/api/diagnostics')]);validateState(state);if(!Array.isArray(events)||events.length>50)throw new Error('Invalid bounded event list.');return {state,events,diagnostics,capabilities:this.capabilities};}
+  // Restart: the controller answers, then reboots, so there is no state to read back.
+  async restart(){validateRequest('restart',{confirm:true});const ack=await this.json('/api/restart',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirm:true})});
+    if(ack?.accepted!==true)throw new Error(ack?.message||'Controller did not acknowledge the restart.');return ack;}
   async request(kind,payload){validateRequest(kind,payload);const ack=await this.json('/api/'+kind,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     if(ack?.accepted!==true)throw new Error(ack?.message||'Controller did not acknowledge this request.');
     // Never turn the submitted values into state. Read the controller after ACK.

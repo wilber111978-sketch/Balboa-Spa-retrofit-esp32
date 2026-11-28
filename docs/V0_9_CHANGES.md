@@ -220,5 +220,11 @@ Tests: 8 new Matter cases (colour map, on+colour, while on, in lockout, snap, da
 while off, Service lockout) and the topside colour-name check. Baseline 183, simulator 115,
 live 60, topside suite, regressions, invariants and web tests all pass.
 
+**Restart button (V0.9.4b):** Settings has a *Restart controller* card (live controller only,
+advertised by `capabilities.restart`). `POST /api/restart {"confirm":true}` replies first, records
+RESTART_REQUESTED in History, then reboots 1.5 s later. A software reset keeps Service Mode, skips
+priming and re-arms the heater restart hold, so heating still needs acknowledging afterwards.
+Needed after Google Home pairing changes (the spa only opens its pairing window at boot).
+
 Router note from commissioning: the RT-AC88U's 2.4 GHz *Group Key Rotation Interval* (3600 s)
 silently stopped multicast/mDNS reaching clients, which blocked Matter discovery. Set it to 0.

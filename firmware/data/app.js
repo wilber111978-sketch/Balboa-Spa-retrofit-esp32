@@ -62,6 +62,12 @@ async function command(kind,payload){
   }catch(error){message('Request not confirmed: '+error.message,true);try{apply(await service.read());}catch{vm.offline=true;/* Keep last known values. */}}
   finally{vm.busy=false;render();}
 }
+async function restartController(){
+  if(vm.busy||vm.offline)return;vm.busy=true;message('Restart requested…');render();
+  try{await service.restart();message('Controller restarting. The dashboard reconnects by itself in about 30 seconds; acknowledge the heater restart in Settings afterwards.');}
+  catch(error){message('Restart not confirmed: '+error.message,true);}
+  finally{vm.busy=false;render();}
+}
 function openDialog(title,html,action=null){document.querySelector('#dialog-content').innerHTML=`<h2 id="dialog-title">${escapeHTML(title)}</h2>${html}`;confirmAction=action;document.querySelector('#dialog-confirm').hidden=!action;document.querySelector('#dialog-cancel').textContent=action?'Cancel':'Close';dialog.showModal();}
 document.querySelector('#dialog-cancel').addEventListener('click',()=>{confirmAction=null;dialog.close();});
 document.querySelector('#dialog-confirm').addEventListener('click',()=>{const action=confirmAction;confirmAction=null;dialog.close();action?.();});
@@ -82,6 +88,7 @@ document.addEventListener('click',event=>{
   else if(action==='confirm-service')openDialog(vm.state.mode.service?'Exit Service Mode?':live?'Stop all controller outputs?':'Stop all simulated outputs?',`<p>${vm.state.mode.service?'Automatic controller operation may resume after exit.':live?'Persistent controller Service Mode stops output commands and suspends schedules.':'Service Mode persists in this browser until explicitly exited. All simulated outputs stop and schedules are suspended.'}</p><p class="muted">${live?'This is a real controller request, not electrical isolation.':'This demo does not control hardware or provide electrical isolation.'}</p>`,()=>command('service-mode',{enabled:!vm.state.mode.service,confirm:true}));
   else if(action==='firmware-arm')openDialog('Open Wi-Fi upload window?','<p>Service Mode holds all outputs off during the upload window. Use the fisher-spa network port in Arduino IDE.</p>',()=>command('firmware-arm',{confirm:true}));
   else if(action==='heater-restart-ack')openDialog('Acknowledge heater restart hold?','<p>A cutoff trip or a power outage can look the same. Check the spa before acknowledging. Other heater lockouts still apply.</p>',()=>command('heater-restart-ack',{confirm:true}));
+  else if(action==='restart')openDialog('Restart the controller?','<p>The spa controller reboots and every output switches off for about 30 seconds. Service Mode is kept. Heating stays held until you acknowledge the heater restart in Settings.</p><p class="muted">Use this after Google Home pairing changes or if something looks stuck.</p>',restartController);
   else if(action==='confirm-reset')openDialog('Acknowledge cleared fault?','<p>The controller must confirm the cause is cleared. This does not exit Service Mode.</p>',()=>command('fault-reset',{confirm:true}));
   else if(action==='pause'){vm.paused=!vm.paused;document.querySelector('#demo-bar').innerHTML=renderDemoBar(vm);message(vm.paused?'Updates paused. Values become stale after six seconds.':'Updates resumed.');}
   else if(action==='reject'){vm.rejectNext=true;message('The next request will be rejected without applying it.');}

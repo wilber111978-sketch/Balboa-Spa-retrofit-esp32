@@ -86,6 +86,16 @@ void liveFaultJSON(JsonObject d,FaultCode code,const LiveEvent *record=nullptr){
 #endif
 // V0.9.4: Google Home pairing state, kept current by spaMatter::loop() (declared before SpaMatter.h).
 bool liveMatterPaired=false;
+// V0.9.4: pending dashboard restart (0 = none). Sent after the reply so the browser gets its answer.
+uint32_t liveRestartAtMs=0;
+bool liveRestartDone=false;   // host tests only
+inline void liveRestartNow(){
+#if defined(ARDUINO)
+    ESP.restart();
+#else
+    liveRestartDone=true;
+#endif
+}
 void liveState(){JsonDocument d;
     auto c=d["controller"].to<JsonObject>();c["online"]=true;c["uptime_s"]=millis()/1000;c["firmware"]=SPA_BENCH_DEMO?SPA_LIVE_VERSION "-demo":SPA_LIVE_VERSION "-main";c["build"]=SPA_LIVE_BUILD;c["reset_reason"]=resetReason;c["watchdog_ok"]=controlWatchdog!=nullptr;
     auto t=d["temperature"].to<JsonObject>();liveNumber(t["water_c"],circulatingWaterValid?lastCirculatingWaterC:NAN);t["water_valid"]=circulatingWaterValid;if(circulatingWaterValid)t["water_age_s"]=(millis()-lastCirculatingWaterMs)/1000UL;else t["water_age_s"]=nullptr;liveNumber(t["probe_average_c"],spa.waterTemperature);t["target_c"]=config.setpointC;liveNumber(t["sensor_a_c"],tempA.filteredC);liveNumber(t["sensor_b_c"],tempB.filteredC);liveNumber(t["delta_t_c"],spa.tempDifference);liveNumber(t["rise_rate_c_min"],(tempA.rateCPerSec+tempB.rateCPerSec)*30);
@@ -116,7 +126,7 @@ void liveCapabilities(){JsonDocument d;d["api_version"]=1;d["heater_commissioned
 #if defined(ARDUINO) && defined(SPA_OTA_PASSWORD)
     d["wifi_update"]=true;
 #endif
-    d["target"]["min"]=20;d["target"]["max"]=40;d["target"]["step"]=0.5;auto modes=d["heating_modes"].to<JsonArray>();modes.add("OFF");modes.add("SOLAR_PRIORITY");d["schedule"]["precision_minutes"]=60;d["schedule"]["weekdays_editable"]=false;d["schedule"]["enabled_by_window"]=true;d["events_max"]=8;d["simulation_inputs"]=(bool)SPA_BENCH_DEMO;liveSend(200,d);}
+    d["target"]["min"]=20;d["target"]["max"]=40;d["target"]["step"]=0.5;auto modes=d["heating_modes"].to<JsonArray>();modes.add("OFF");modes.add("SOLAR_PRIORITY");d["schedule"]["precision_minutes"]=60;d["schedule"]["weekdays_editable"]=false;d["schedule"]["enabled_by_window"]=true;d["events_max"]=8;d["simulation_inputs"]=(bool)SPA_BENCH_DEMO;d["restart"]=true;liveSend(200,d);}
 void liveHistory(){JsonDocument d;auto list=d.to<JsonArray>();size_t size=2;for(uint8_t n=0;n<liveEventCount;++n){auto &r=liveEvents[(liveEventHead+7-n)%8];JsonDocument item;auto obj=item.to<JsonObject>();if(r.fault!=FaultCode::NONE)liveFaultJSON(obj,r.fault,&r);else{obj["id"]=r.id;obj["title"]=r.title;obj["severity"]="INFO";obj["timestamp"]=nullptr;obj["uptime_ms"]=r.at;}size_t next=measureJson(item)+1;if(size+next>3500)break;list.add(obj);size+=next;}liveSend(200,d);}
 void liveDiagnostics(){JsonDocument d;d["raw_adc"]=nullptr;d["note"]="Raw ADC samples not retained by baseline; logical commands are not feedback.";d["heater_pins_inhibited"]=!LIVE_M7_PROFILE_FITTED;d["settings_healthy"]=storageHealthy;if(serviceMode){liveNumber(d["resistance_ohms"]["a"],tempA.resistance);liveNumber(d["resistance_ohms"]["b"],tempB.resistance);d["permissives"]["sensors_valid"]=liveInputsSafe();d["permissives"]["flow_ok"]=false;d["permissives"]["heater_allowed"]=false;}liveSend(200,d);}
 bool liveFields(JsonObject obj,const char *fields,size_t count){if(obj.size()!=count)return false;for(auto kv:obj){std::string key=","+std::string(kv.key().c_str())+",";if(std::string(fields).find(key)==std::string::npos)return false;}return true;}
@@ -157,6 +167,16 @@ void liveCommand(const std::string &path){
         liveReply(200,"Wi-Fi upload ready for up to 10 minutes",true);return;
     }
 #endif
+    if(path=="restart"){
+        // V0.9.4: deliberate reboot from Settings. Every output drops during the reboot; the
+        // software reset keeps Service Mode, skips priming and re-arms the heater restart hold.
+        if(!liveFields(obj,",confirm,",1)||!obj["confirm"].is<bool>()||!obj["confirm"].as<bool>()){
+            liveReply(400,"Expected confirm:true");return;
+        }
+        liveRecord("RESTART_REQUESTED","Controller restart requested from the dashboard");
+        liveRestartAtMs=millis()+1500UL;if(!liveRestartAtMs)liveRestartAtMs=1;
+        liveReply(200,"Restarting; the dashboard reconnects in about 30 seconds",true);return;
+    }
     if(path=="heater-restart-ack"){
         if(!liveFields(obj,",confirm,",1)||!obj["confirm"].is<bool>()||!obj["confirm"].as<bool>()){
             liveReply(400,"Expected confirm:true");return;
@@ -207,7 +227,7 @@ void liveRoutes(){
     web.on("/runtime.js",HTTP_GET,[](){if(webAuth())web.send(200,"text/javascript","export const runtime=Object.freeze({mode:'live',apiVersion:1});");});
     web.on("/api/state",HTTP_GET,[](){if(webAuth())liveState();});web.on("/api/capabilities",HTTP_GET,[](){if(webAuth())liveCapabilities();});
     web.on("/api/faults",HTTP_GET,[](){if(webAuth())liveHistory();});web.on("/api/diagnostics",HTTP_GET,[](){if(webAuth())liveDiagnostics();});
-    for(const char *name:{"target","jets","light","mode","schedule","service-mode","fault-reset","heater-restart-ack"}){std::string route=name;web.on(("/api/"+route).c_str(),HTTP_POST,[route](){if(webAuth())liveCommand(route);});}
+    for(const char *name:{"target","jets","light","mode","schedule","service-mode","fault-reset","heater-restart-ack","restart"}){std::string route=name;web.on(("/api/"+route).c_str(),HTTP_POST,[route](){if(webAuth())liveCommand(route);});}
 }
 #include "SpaMatter.h"
 void spaLiveSetup(){
@@ -231,6 +251,7 @@ void spaLiveSetup(){
 }
 void spaLiveLoop(){
     spa062Loop();liveObserveFault();
+    if(liveRestartAtMs&&(int32_t)(millis()-liveRestartAtMs)>=0){liveRestartAtMs=0;liveRestartNow();}
 #if defined(ARDUINO) && defined(SPA_OTA_PASSWORD)
     spaUpdate::verifyAfterLoop();
 #endif

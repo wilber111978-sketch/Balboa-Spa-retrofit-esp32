@@ -126,6 +126,12 @@
     "output": "PASS 0 v09-lockout\n"
   },
   {
+    "build": "Main",
+    "case": "restart",
+    "passed": true,
+    "output": "PASS 0 restart\n"
+  },
+  {
     "build": "Demo",
     "case": "state",
     "passed": true,
@@ -250,6 +256,12 @@
     "case": "v09-lockout",
     "passed": true,
     "output": "PASS 1 v09-lockout\n"
+  },
+  {
+    "build": "Demo",
+    "case": "restart",
+    "passed": true,
+    "output": "PASS 1 restart\n"
   },
   {
     "build": "Main+Matter",
