@@ -234,5 +234,12 @@ dashboard says what the heater is aiming for now, e.g. "Economy: holding 35.0°C
 safety check still applies). Capabilities list `MANUAL`, and the dashboard shows the third button only
 when the controller advertises it. The state value for heatMode 2 is now `MANUAL` (was `MANUAL_LEGACY`).
 
+**Event date and time (V0.9.4d):** events still record uptime, but once the controller clock is
+set by NTP (Sydney time zone) `/api/faults` gives every event from this boot an ISO UTC `timestamp`,
+worked back from its uptime, so events logged before the sync get real times too. Before the first
+sync `timestamp` stays null and the dashboard shows "1h 2m after start-up · clock not set yet" (never a
+made-up date). `/api/state` adds `controller.clock`, shown as *Clock* in Diagnostics. Events are
+still kept in RAM (last 8) and are cleared by a restart.
+
 Router note from commissioning: the RT-AC88U's 2.4 GHz *Group Key Rotation Interval* (3600 s)
 silently stopped multicast/mDNS reaching clients, which blocked Matter discovery. Set it to 0.

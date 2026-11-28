@@ -53,6 +53,14 @@ bool liveInputsSafe(){return configurationValid&&storageHealthy&&(SPA_BENCH_DEMO
     isfinite(tempA.filteredC)&&isfinite(tempB.filteredC)&&millis()-tempA.lastUpdateMs<=SENSOR_STALE_MS&&millis()-tempB.lastUpdateMs<=SENSOR_STALE_MS&&
     fmax(tempA.rawC,tempB.rawC)<ABSOLUTE_TEMP_TRIP_C&&fmax(tempA.filteredC,tempB.filteredC)<ABSOLUTE_TEMP_TRIP_C&&
     fabs(tempA.filteredC-tempB.filteredC)<TEMP_DIFF_INHIBIT_C&&(!(SPA_BENCH_DEMO||PIN_HIGH_LIMIT_OK>=0)||hardwareHighLimitOK());}
+// V0.9.4: wall-clock time for events. Events keep uptime; once the clock is set (NTP) every event
+// from this boot gets a real UTC timestamp worked back from its uptime. null before the first sync.
+bool liveClockValid(){struct tm t;return getLocalTime(&t,0);}
+template<class T> void liveTimestamp(T dest,uint32_t atMs){
+    if(!liveClockValid()){dest=nullptr;return;}
+    time_t when=time(nullptr)-(time_t)((millis()-atMs)/1000UL);struct tm u;gmtime_r(&when,&u);
+    char iso[24];strftime(iso,sizeof iso,"%Y-%m-%dT%H:%M:%SZ",&u);dest=(char*)iso;   // char* is copied
+}
 struct LiveEvent { uint32_t at=0; FaultCode fault=FaultCode::NONE; std::string id,title; float a=NAN,b=NAN,delta=NAN,target=NAN; PumpMode pump=PumpMode::OFF;bool heater=false,uv=false; };
 LiveEvent liveEvents[8];uint8_t liveEventHead=0,liveEventCount=0;FaultCode liveObservedFault=FaultCode::NONE;
 uint32_t liveLastCommandMs=0;bool liveCommandSeen=false;
@@ -76,7 +84,7 @@ void liveFaultJSON(JsonObject d,FaultCode code,const LiveEvent *record=nullptr){
     auto info=liveFaultInfo(code);d["panel_code"]=info.panel;d["id"]=info.id;d["title"]=info.title;d["internal_code"]=(uint16_t)code;
     d["trigger_condition"]=info.trigger;d["probable_causes"].to<JsonArray>().add(info.cause);d["recommended_checks"].to<JsonArray>().add(info.check);
     d["severity"]="FAULT";d["resettable"]=liveInputsSafe();d["retry_count"]=0;
-    d["timestamp"]=nullptr;d["uptime_ms"]=record?record->at:millis();d["capture_phase"]="observed after baseline safety processing";
+    {uint32_t at=record?record->at:millis();liveTimestamp(d["timestamp"],at);d["uptime_ms"]=at;}d["capture_phase"]="observed after baseline safety processing";
     auto snapshot=d["snapshot"].to<JsonObject>();liveNumber(snapshot["sensor_a_c"],record?record->a:tempA.filteredC);liveNumber(snapshot["sensor_b_c"],record?record->b:tempB.filteredC);
     liveNumber(snapshot["delta_t_c"],record?record->delta:spa.tempDifference);liveNumber(snapshot["setpoint_c"],record?record->target:config.setpointC);
     snapshot["pump"]=livePump(record?record->pump:spa.actualPump);snapshot["heater"]=record?record->heater:spa.heaterSSR;snapshot["uv"]=record?record->uv:spa.uv;
@@ -97,7 +105,7 @@ inline void liveRestartNow(){
 #endif
 }
 void liveState(){JsonDocument d;
-    auto c=d["controller"].to<JsonObject>();c["online"]=true;c["uptime_s"]=millis()/1000;c["firmware"]=SPA_BENCH_DEMO?SPA_LIVE_VERSION "-demo":SPA_LIVE_VERSION "-main";c["build"]=SPA_LIVE_BUILD;c["reset_reason"]=resetReason;c["watchdog_ok"]=controlWatchdog!=nullptr;
+    auto c=d["controller"].to<JsonObject>();c["online"]=true;c["uptime_s"]=millis()/1000;liveTimestamp(c["clock"],millis());c["firmware"]=SPA_BENCH_DEMO?SPA_LIVE_VERSION "-demo":SPA_LIVE_VERSION "-main";c["build"]=SPA_LIVE_BUILD;c["reset_reason"]=resetReason;c["watchdog_ok"]=controlWatchdog!=nullptr;
     auto t=d["temperature"].to<JsonObject>();liveNumber(t["water_c"],circulatingWaterValid?lastCirculatingWaterC:NAN);t["water_valid"]=circulatingWaterValid;if(circulatingWaterValid)t["water_age_s"]=(millis()-lastCirculatingWaterMs)/1000UL;else t["water_age_s"]=nullptr;liveNumber(t["probe_average_c"],spa.waterTemperature);t["target_c"]=config.setpointC;liveNumber(t["sensor_a_c"],tempA.filteredC);liveNumber(t["sensor_b_c"],tempB.filteredC);liveNumber(t["delta_t_c"],spa.tempDifference);liveNumber(t["rise_rate_c_min"],(tempA.rateCPerSec+tempB.rateCPerSec)*30);
     d["pump"]["requested"]=livePump(spa.requestedPump);d["pump"]["actual"]=livePump(spa.actualPump);
     d["heater"]["demand"]=spa.heaterDemand>0;d["heater"]["ssr_command"]=spa.heaterSSR;d["heater"]["safety_contactor"]=spa.heaterSafetyContactor;d["heater"]["allowed"]=LIVE_M7_NORMAL_HEATING&&spa.heatQualificationPassed;
@@ -127,7 +135,7 @@ void liveCapabilities(){JsonDocument d;d["api_version"]=1;d["heater_commissioned
     d["wifi_update"]=true;
 #endif
     d["target"]["min"]=20;d["target"]["max"]=40;d["target"]["step"]=0.5;auto modes=d["heating_modes"].to<JsonArray>();modes.add("OFF");modes.add("SOLAR_PRIORITY");modes.add("MANUAL");d["schedule"]["precision_minutes"]=60;d["schedule"]["weekdays_editable"]=false;d["schedule"]["enabled_by_window"]=true;d["events_max"]=8;d["simulation_inputs"]=(bool)SPA_BENCH_DEMO;d["restart"]=true;liveSend(200,d);}
-void liveHistory(){JsonDocument d;auto list=d.to<JsonArray>();size_t size=2;for(uint8_t n=0;n<liveEventCount;++n){auto &r=liveEvents[(liveEventHead+7-n)%8];JsonDocument item;auto obj=item.to<JsonObject>();if(r.fault!=FaultCode::NONE)liveFaultJSON(obj,r.fault,&r);else{obj["id"]=r.id;obj["title"]=r.title;obj["severity"]="INFO";obj["timestamp"]=nullptr;obj["uptime_ms"]=r.at;}size_t next=measureJson(item)+1;if(size+next>3500)break;list.add(obj);size+=next;}liveSend(200,d);}
+void liveHistory(){JsonDocument d;auto list=d.to<JsonArray>();size_t size=2;for(uint8_t n=0;n<liveEventCount;++n){auto &r=liveEvents[(liveEventHead+7-n)%8];JsonDocument item;auto obj=item.to<JsonObject>();if(r.fault!=FaultCode::NONE)liveFaultJSON(obj,r.fault,&r);else{obj["id"]=r.id;obj["title"]=r.title;obj["severity"]="INFO";liveTimestamp(obj["timestamp"],r.at);obj["uptime_ms"]=r.at;}size_t next=measureJson(item)+1;if(size+next>3500)break;list.add(obj);size+=next;}liveSend(200,d);}
 void liveDiagnostics(){JsonDocument d;d["raw_adc"]=nullptr;d["note"]="Raw ADC samples not retained by baseline; logical commands are not feedback.";d["heater_pins_inhibited"]=!LIVE_M7_PROFILE_FITTED;d["settings_healthy"]=storageHealthy;if(serviceMode){liveNumber(d["resistance_ohms"]["a"],tempA.resistance);liveNumber(d["resistance_ohms"]["b"],tempB.resistance);d["permissives"]["sensors_valid"]=liveInputsSafe();d["permissives"]["flow_ok"]=false;d["permissives"]["heater_allowed"]=false;}liveSend(200,d);}
 bool liveFields(JsonObject obj,const char *fields,size_t count){if(obj.size()!=count)return false;for(auto kv:obj){std::string key=","+std::string(kv.key().c_str())+",";if(std::string(fields).find(key)==std::string::npos)return false;}return true;}
 // ArduinoJson accepts duplicate keys/trailing text by design. Reject both

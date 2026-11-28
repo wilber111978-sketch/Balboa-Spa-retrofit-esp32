@@ -138,6 +138,12 @@
     "output": "PASS 0 heat-aim\n"
   },
   {
+    "build": "Main",
+    "case": "timestamps",
+    "passed": true,
+    "output": "PASS 0 timestamps\n"
+  },
+  {
     "build": "Demo",
     "case": "state",
     "passed": true,
@@ -274,6 +280,12 @@
     "case": "heat-aim",
     "passed": true,
     "output": "PASS 1 heat-aim\n"
+  },
+  {
+    "build": "Demo",
+    "case": "timestamps",
+    "passed": true,
+    "output": "PASS 1 timestamps\n"
   },
   {
     "build": "Main+Matter",
